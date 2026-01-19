@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan migrate:fresh:*)",
+      "Bash(php artisan tinker:*)"
+    ]
+  }
+}
