@@ -12,9 +12,27 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            RoleSeeder::class,           // Must be first - creates roles
-            UserSeeder::class,           // Depends on roles
+            // 1. Roles & Permissions (must be first)
+            RoleSeeder::class,
+
+            // 2. Consultation Types (needed for users and displays)
             ConsultationTypeSeeder::class,
+
+            // 3. Users (depends on roles and consultation types)
+            UserSeeder::class,
+
+            // 4. Doctor Schedules (depends on users and consultation types)
+            DoctorScheduleSeeder::class,
+
+            // 5. Services & Drugs (independent)
+            ServiceSeeder::class,
+            HospitalDrugSeeder::class,
+
+            // 6. System Settings (independent)
+            SystemSettingSeeder::class,
+
+            // 7. Queue Displays (depends on consultation types)
+            QueueDisplaySeeder::class,
         ]);
     }
 }

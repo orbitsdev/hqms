@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
+use App\Models\ConsultationType;
 use App\Models\PersonalInformation;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
@@ -14,7 +15,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin User
+        // === ADMIN USER ===
         $admin = User::create([
             'email' => 'admin@hqms.test',
             'password' => Hash::make('password'),
@@ -26,11 +27,89 @@ class UserSeeder extends Seeder
             'user_id' => $admin->id,
             'first_name' => 'System',
             'last_name' => 'Administrator',
-            'phone' => '09171234567',
+            'phone' => '09170000001',
             'gender' => 'male',
         ]);
 
-        // Doctor User
+        // === DOCTORS ===
+        // OB Doctor
+        $obDoctor = User::create([
+            'email' => 'dr.santos@hqms.test',
+            'password' => Hash::make('password'),
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+        $obDoctor->assignRole('doctor');
+        PersonalInformation::create([
+            'user_id' => $obDoctor->id,
+            'first_name' => 'Maria',
+            'middle_name' => 'Cruz',
+            'last_name' => 'Santos',
+            'phone' => '09170000010',
+            'gender' => 'female',
+            'date_of_birth' => '1980-05-15',
+            'province' => 'Sultan Kudarat',
+            'municipality' => 'Tacurong City',
+            'occupation' => 'OB-Gynecologist',
+        ]);
+        // Assign OB consultation type
+        $obType = ConsultationType::where('code', 'ob')->first();
+        if ($obType) {
+            $obDoctor->consultationTypes()->attach($obType->id);
+        }
+
+        // PEDIA Doctor
+        $pedDoctor = User::create([
+            'email' => 'dr.reyes@hqms.test',
+            'password' => Hash::make('password'),
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+        $pedDoctor->assignRole('doctor');
+        PersonalInformation::create([
+            'user_id' => $pedDoctor->id,
+            'first_name' => 'Juan',
+            'middle_name' => 'Dela',
+            'last_name' => 'Reyes',
+            'phone' => '09170000011',
+            'gender' => 'male',
+            'date_of_birth' => '1975-08-20',
+            'province' => 'Sultan Kudarat',
+            'municipality' => 'Tacurong City',
+            'occupation' => 'Pediatrician',
+        ]);
+        // Assign PEDIA consultation type
+        $pedType = ConsultationType::where('code', 'pedia')->first();
+        if ($pedType) {
+            $pedDoctor->consultationTypes()->attach($pedType->id);
+        }
+
+        // General Medicine Doctor
+        $genDoctor = User::create([
+            'email' => 'dr.garcia@hqms.test',
+            'password' => Hash::make('password'),
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+        $genDoctor->assignRole('doctor');
+        PersonalInformation::create([
+            'user_id' => $genDoctor->id,
+            'first_name' => 'Ana',
+            'last_name' => 'Garcia',
+            'phone' => '09170000012',
+            'gender' => 'female',
+            'date_of_birth' => '1985-03-10',
+            'province' => 'Sultan Kudarat',
+            'municipality' => 'Tacurong City',
+            'occupation' => 'General Practitioner',
+        ]);
+        // Assign GENERAL consultation type
+        $genType = ConsultationType::where('code', 'general')->first();
+        if ($genType) {
+            $genDoctor->consultationTypes()->attach($genType->id);
+        }
+
+        // Single email doctor (backward compatible with old seeder)
         $doctor = User::create([
             'email' => 'doctor@hqms.test',
             'password' => Hash::make('password'),
@@ -40,32 +119,63 @@ class UserSeeder extends Seeder
         $doctor->assignRole('doctor');
         PersonalInformation::create([
             'user_id' => $doctor->id,
-            'first_name' => 'Maria',
-            'middle_name' => 'Santos',
-            'last_name' => 'Dela Cruz',
-            'phone' => '09171234568',
-            'gender' => 'female',
-            'date_of_birth' => '1980-05-15',
+            'first_name' => 'Carlos',
+            'middle_name' => 'Antonio',
+            'last_name' => 'Mendoza',
+            'phone' => '09170000013',
+            'gender' => 'male',
+            'date_of_birth' => '1978-11-25',
+            'province' => 'Sultan Kudarat',
+            'municipality' => 'Tacurong City',
+            'occupation' => 'General Practitioner',
         ]);
+        // Assign all consultation types
+        if ($obType) {
+            $doctor->consultationTypes()->attach($obType->id);
+        }
+        if ($pedType) {
+            $doctor->consultationTypes()->attach($pedType->id);
+        }
+        if ($genType) {
+            $doctor->consultationTypes()->attach($genType->id);
+        }
 
-        // Nurse User
-        $nurse = User::create([
+        // === NURSES ===
+        $nurse1 = User::create([
             'email' => 'nurse@hqms.test',
             'password' => Hash::make('password'),
             'is_active' => true,
             'email_verified_at' => now(),
         ]);
-        $nurse->assignRole('nurse');
+        $nurse1->assignRole('nurse');
         PersonalInformation::create([
-            'user_id' => $nurse->id,
-            'first_name' => 'Ana',
-            'last_name' => 'Reyes',
-            'phone' => '09171234569',
+            'user_id' => $nurse1->id,
+            'first_name' => 'Rosa',
+            'last_name' => 'Cruz',
+            'phone' => '09170000020',
             'gender' => 'female',
-            'date_of_birth' => '1990-08-20',
+            'date_of_birth' => '1990-07-25',
+            'occupation' => 'Registered Nurse',
         ]);
 
-        // Cashier User
+        $nurse2 = User::create([
+            'email' => 'nurse.lopez@hqms.test',
+            'password' => Hash::make('password'),
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+        $nurse2->assignRole('nurse');
+        PersonalInformation::create([
+            'user_id' => $nurse2->id,
+            'first_name' => 'Carmen',
+            'last_name' => 'Lopez',
+            'phone' => '09170000021',
+            'gender' => 'female',
+            'date_of_birth' => '1988-11-12',
+            'occupation' => 'Registered Nurse',
+        ]);
+
+        // === CASHIER ===
         $cashier = User::create([
             'email' => 'cashier@hqms.test',
             'password' => Hash::make('password'),
@@ -75,37 +185,89 @@ class UserSeeder extends Seeder
         $cashier->assignRole('cashier');
         PersonalInformation::create([
             'user_id' => $cashier->id,
-            'first_name' => 'Juan',
-            'last_name' => 'Santos',
-            'phone' => '09171234570',
+            'first_name' => 'Pedro',
+            'last_name' => 'Mendoza',
+            'phone' => '09170000030',
             'gender' => 'male',
-            'date_of_birth' => '1985-03-10',
+            'date_of_birth' => '1992-04-18',
+            'occupation' => 'Hospital Cashier',
         ]);
 
-        // Patient User
-        $patient = User::create([
+        // === SAMPLE PATIENTS ===
+        // Patient 1: Adult female (for OB)
+        $patient1 = User::create([
             'email' => 'patient@hqms.test',
             'password' => Hash::make('password'),
             'is_active' => true,
             'email_verified_at' => now(),
         ]);
-        $patient->assignRole('patient');
+        $patient1->assignRole('patient');
         PersonalInformation::create([
-            'user_id' => $patient->id,
-            'first_name' => 'Rosa',
-            'middle_name' => 'Garcia',
-            'last_name' => 'Martinez',
-            'phone' => '09171234571',
+            'user_id' => $patient1->id,
+            'first_name' => 'Maria',
+            'middle_name' => 'Isabel',
+            'last_name' => 'Gonzales',
+            'phone' => '09171111111',
             'gender' => 'female',
-            'date_of_birth' => '1995-12-01',
+            'date_of_birth' => '1995-06-15',
             'marital_status' => 'married',
-            'province' => 'Laguna',
-            'municipality' => 'San Pablo City',
-            'barangay' => 'San Jose',
-            'street' => '123 Main Street',
+            'province' => 'Sultan Kudarat',
+            'municipality' => 'Tacurong City',
+            'barangay' => 'Poblacion',
+            'street' => '123 Bonifacio St.',
             'occupation' => 'Teacher',
-            'emergency_contact_name' => 'Pedro Martinez',
-            'emergency_contact_phone' => '09181234567',
+            'emergency_contact_name' => 'Jose Gonzales',
+            'emergency_contact_phone' => '09171111112',
+        ]);
+
+        // Patient 2: Parent with children (for PEDIA bookings)
+        $patient2 = User::create([
+            'email' => 'ana.parent@hqms.test',
+            'password' => Hash::make('password'),
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+        $patient2->assignRole('patient');
+        PersonalInformation::create([
+            'user_id' => $patient2->id,
+            'first_name' => 'Ana',
+            'last_name' => 'Reyes',
+            'phone' => '09172222222',
+            'gender' => 'female',
+            'date_of_birth' => '1988-09-20',
+            'marital_status' => 'married',
+            'province' => 'Sultan Kudarat',
+            'municipality' => 'Tacurong City',
+            'barangay' => 'New Isabela',
+            'street' => '456 Rizal Ave.',
+            'occupation' => 'Housewife',
+            'emergency_contact_name' => 'Roberto Reyes',
+            'emergency_contact_phone' => '09172222223',
+        ]);
+
+        // Patient 3: Adult male (for General)
+        $patient3 = User::create([
+            'email' => 'juan.patient@hqms.test',
+            'password' => Hash::make('password'),
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+        $patient3->assignRole('patient');
+        PersonalInformation::create([
+            'user_id' => $patient3->id,
+            'first_name' => 'Juan',
+            'last_name' => 'Dela Cruz',
+            'phone' => '09173333333',
+            'gender' => 'male',
+            'date_of_birth' => '1970-12-05',
+            'marital_status' => 'married',
+            'province' => 'Sultan Kudarat',
+            'municipality' => 'Tacurong City',
+            'barangay' => 'San Emmanuel',
+            'street' => '789 Mabini St.',
+            'occupation' => 'Farmer',
+            'emergency_contact_name' => 'Maria Dela Cruz',
+            'emergency_contact_phone' => '09173333334',
         ]);
     }
 }
