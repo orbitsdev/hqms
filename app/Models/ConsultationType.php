@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Traits\Models\ConsultationTypeRelations;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ConsultationType extends Model
 {
-    use ConsultationTypeRelations;
+    use ConsultationTypeRelations, HasFactory;
 
     protected $guarded = ['id'];
 

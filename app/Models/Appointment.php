@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Traits\Models\AppointmentRelations;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Appointment extends Model
 {
-    use AppointmentRelations;
+    use AppointmentRelations, HasFactory;
 
     protected $guarded = ['id'];
 

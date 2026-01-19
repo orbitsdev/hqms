@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Http\Resources\Api;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class ConsultationTypeResource extends JsonResource
+{
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'code' => $this->code,
+            'description' => $this->description,
+            'operating_hours' => [
+                'start' => $this->start_time?->format('H:i'),
+                'end' => $this->end_time?->format('H:i'),
+            ],
+            'average_duration_minutes' => $this->avg_duration,
+            'max_daily_patients' => $this->max_daily_patients,
+
+            // Availability info (when loaded)
+            'booked_count' => $this->when(isset($this->booked_count), $this->booked_count),
+            'available_slots' => $this->when(isset($this->available_slots), $this->available_slots),
+            'is_available' => $this->when(isset($this->is_available), $this->is_available),
+            'query_date' => $this->when(isset($this->query_date), $this->query_date),
+
+            'is_active' => $this->is_active,
+        ];
+    }
+}

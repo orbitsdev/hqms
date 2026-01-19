@@ -44,7 +44,7 @@ trait ConsultationTypeRelations
     public function isAcceptingAppointments($date): bool
     {
         $count = $this->appointments()
-            ->where('appointment_date', $date)
+            ->whereDate('appointment_date', $date)
             ->whereIn('status', ['pending', 'approved'])
             ->count();
 
