@@ -22,85 +22,66 @@
 
 ---
 
-## Core Tables Summary (16 + Spatie)
+## Core Tables Summary (17 + Spatie)
 
 **User Management:**
-1. `users` - Everyone (patients + staff with medical history)
+1. `users` - Authentication only (email, phone, password)
+2. `personal_information` - Account owner's profile (name, address, contact)
 
 **Consultation Management:**
-2. `consultation_types` - Flexible types (OB/PEDIA/GENERAL + future)
-3. `doctor_consultation_types` - Doctor specializations (pivot)
+3. `consultation_types` - Flexible types (OB/PEDIA/GENERAL + future)
+4. `doctor_consultation_types` - Doctor specializations (pivot)
 
 **Appointment & Queue:**
-4. `doctor_schedules` - Doctor availability
-5. `appointments` - Online + Walk-in bookings
-6. `queues` - Queue management (O-1, P-1, G-1)
+5. `doctor_schedules` - Doctor availability
+6. `appointments` - Online + Walk-in bookings
+7. `queues` - Queue management (O-1, P-1, G-1)
 
 **Medical Records:**
-7. `medical_records` - All-in-one patient records
-8. `prescriptions` - Medications (separate for multiple drugs)
+8. `medical_records` - Patient visit records (includes patient's personal info per visit)
+9. `prescriptions` - Medications (separate for multiple drugs)
 
 **Billing & Services:**
-9. `services` - Hospital services with pricing
-10. `billing_transactions` - Main billing
-11. `billing_items` - Itemized charges
-12. `hospital_drugs` - Available medications
+10. `services` - Hospital services with pricing
+11. `billing_transactions` - Main billing
+12. `billing_items` - Itemized charges
+13. `hospital_drugs` - Available medications
 
 **Other:**
-13. `admissions` - Track admissions (billing external)
-14. `system_settings` - Configuration
-15. `queue_displays` - Monitor management
-16. `notifications` - Laravel notifications
-17. **Spatie tables** - roles, permissions, pivots
+14. `admissions` - Track admissions (billing external)
+15. `system_settings` - Configuration
+16. `queue_displays` - Monitor management
+17. `notifications` - Laravel notifications
+18. **Spatie tables** - roles, permissions, pivots
 
 ---
 
-## 1. users (Everyone - Patients + Staff)
+## 1. users (Authentication Only)
 
-**Purpose:** Single table for all system users with medical history
+**Purpose:** Authentication credentials only - personal info is in `personal_information` table
+
+**Why Separate?**
+- User = Account owner (could be parent, patient, or staff)
+- Personal info belongs to the account owner
+- Patient info in medical_records is for the actual patient (could be child of account owner)
+- Cleaner separation of concerns
 
 **Laravel Migration:**
 ```php
 Schema::create('users', function (Blueprint $table) {
     $table->id();
-    
+
     // Authentication
     $table->string('email')->unique();
     $table->string('phone', 20)->unique();
     $table->string('password');
-    
-    // Personal Information
-    $table->string('first_name');
-    $table->string('middle_name')->nullable();
-    $table->string('last_name');
-    
-    // Demographics
-    $table->date('date_of_birth')->nullable();
-    $table->enum('gender', ['male', 'female'])->nullable();
-    $table->enum('marital_status', ['child', 'single', 'married', 'widow'])->nullable();
-    
-    // Address
-    $table->string('province')->nullable();
-    $table->string('municipality')->nullable();
-    $table->string('barangay')->nullable();
-    $table->text('street')->nullable();
-    
-    // Medical History (NEW)
-    $table->enum('blood_type', ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])->nullable();
-    $table->text('allergies')->nullable(); // Known allergies
-    $table->text('chronic_conditions')->nullable(); // Diabetes, Hypertension, etc.
-    
-    // Additional
-    $table->string('occupation')->nullable();
-    $table->string('emergency_contact_name')->nullable();
-    $table->string('emergency_contact_phone', 20)->nullable();
-    
+
     // System
     $table->boolean('is_active')->default(true);
     $table->timestamp('email_verified_at')->nullable();
     $table->timestamp('phone_verified_at')->nullable();
     $table->rememberToken();
-    
+
     $table->timestamps();
     $table->softDeletes();
 });
@@ -111,63 +92,73 @@ Schema::create('users', function (Blueprint $table) {
 class User extends Authenticatable
 {
     use HasRoles, Notifiable, SoftDeletes;
-    
+
+    // Account owner's personal information
+    public function personalInformation() {
+        return $this->hasOne(PersonalInformation::class);
+    }
+
     // Consultation types for doctors
     public function consultationTypes() {
         return $this->belongsToMany(ConsultationType::class, 'doctor_consultation_types');
     }
-    
-    // Medical records
+
+    // Medical records (as account owner, not necessarily the patient)
     public function medicalRecords() {
         return $this->hasMany(MedicalRecord::class);
     }
-    
+
     // Appointments
     public function appointments() {
         return $this->hasMany(Appointment::class, 'user_id');
     }
-    
+
     public function doctorAppointments() {
         return $this->hasMany(Appointment::class, 'doctor_id');
     }
-    
+
     // Schedules
     public function doctorSchedules() {
         return $this->hasMany(DoctorSchedule::class, 'doctor_id');
     }
-    
+
     // Queues
     public function queues() {
         return $this->hasMany(Queue::class, 'user_id');
     }
-    
+
     // Billing
     public function billingTransactions() {
         return $this->hasMany(BillingTransaction::class, 'user_id');
     }
-    
+
     // Admissions
     public function admissions() {
         return $this->hasMany(Admission::class, 'user_id');
     }
-    
+
     // Helper methods
     public function isPatient() {
         return $this->hasRole('patient');
     }
-    
+
     public function isDoctor() {
         return $this->hasRole('doctor');
     }
-    
+
     public function isNurse() {
         return $this->hasRole('nurse');
+    }
+
+    // Get display name from personal information
+    public function getNameAttribute() {
+        return $this->personalInformation?->full_name ?? $this->email;
     }
 }
 ```
 
 **Spatie Roles:**
-- `patient` - Mobile app users
+- `patient` - Mobile app users (parents or patients themselves)
 - `nurse` - Queue management, vital signs
 - `doctor` - Diagnosis, prescriptions, discount approval
 - `cashier` - Billing, payment processing
@@ -175,7 +166,98 @@ class User extends Authenticatable
 
 ---
 
-## 2. consultation_types (Flexible Consultation Types)
+## 2. personal_information (Account Owner's Profile)
+
+**Purpose:** Personal details of the account owner (parent, patient, or staff)
+
+**Key Concept:**
+- This is the ACCOUNT OWNER's information
+- For parents: their own personal info (not their child's)
+- For staff: doctor/nurse/cashier personal info
+- Patient's info during visit goes in `medical_records`
+
+**Laravel Migration:**
+```php
+Schema::create('personal_information', function (Blueprint $table) {
+    $table->id();
+
+    $table->foreignId('user_id')->constrained()->onDelete('cascade');
+
+    // Personal Information
+    $table->string('first_name');
+    $table->string('middle_name')->nullable();
+    $table->string('last_name');
+
+    // Demographics
+    $table->date('date_of_birth')->nullable();
+    $table->enum('gender', ['male', 'female'])->nullable();
+    $table->enum('marital_status', ['child', 'single', 'married', 'widow'])->nullable();
+
+    // Address
+    $table->string('province')->nullable();
+    $table->string('municipality')->nullable();
+    $table->string('barangay')->nullable();
+    $table->text('street')->nullable();
+
+    // Additional
+    $table->string('occupation')->nullable();
+    $table->string('emergency_contact_name')->nullable();
+    $table->string('emergency_contact_phone', 20)->nullable();
+
+    $table->timestamps();
+});
+```
+
+**Model:**
+```php
+class PersonalInformation extends Model
+{
+    protected $table = 'personal_information';
+
+    public function user() {
+        return $this->belongsTo(User::class);
+    }
+
+    // Full name accessor
+    public function getFullNameAttribute() {
+        $name = $this->first_name;
+        if ($this->middle_name) {
+            $name .= ' ' . $this->middle_name;
+        }
+        $name .= ' ' . $this->last_name;
+        return $name;
+    }
+
+    // Full address accessor
+    public function getFullAddressAttribute() {
+        $parts = array_filter([
+            $this->street,
+            $this->barangay,
+            $this->municipality,
+            $this->province,
+        ]);
+        return implode(', ', $parts);
+    }
+}
+```
+
+**Usage Examples:**
+```php
+// Get account owner's name
+$user->personalInformation->full_name; // "Maria Santos"
+
+// Parent books appointment for child
+// Parent's info: $user->personalInformation
+// Child's info: stored in medical_record (patient_* fields)
+
+// Staff lookup
+$nurse = User::role('nurse')->first();
+$nurse->personalInformation->full_name; // "Nurse Ana Cruz"
+```
+
+---
+
+## 3. consultation_types (Flexible Consultation Types)
 
 **Purpose:** Manage consultation types dynamically (OB, PEDIA, GENERAL + future additions)
 
@@ -298,7 +380,7 @@ class ConsultationType extends Model
 
 ---
 
-## 3. doctor_consultation_types (Doctor Specializations)
+## 4. doctor_consultation_types (Doctor Specializations)
 
 **Purpose:** Many-to-many relationship between doctors and consultation types
 
@@ -334,7 +416,7 @@ if ($doctor->consultationTypes->contains('code', 'ob')) {
 
 ---
 
-## 4. doctor_schedules (Doctor Availability)
+## 5. doctor_schedules (Doctor Availability)
 
 **Purpose:** Track when doctors are available
 
@@ -387,7 +469,7 @@ class DoctorSchedule extends Model
 
 ---
 
-## 5. appointments (Online + Walk-in Bookings)
+## 6. appointments (Online + Walk-in Bookings)
 
 **Purpose:** Patient appointment requests
 
@@ -494,7 +576,7 @@ pending → approved → checked_in → in_progress → completed
 
 ---
 
-## 6. queues (Daily Queue Management)
+## 7. queues (Daily Queue Management)
 
 **Purpose:** Real-time queue (online + walk-in combined)
 
@@ -644,71 +726,108 @@ $queue->estimated_time = $estimatedTime;
 
 ---
 
-## 7. medical_records (All-in-One Patient Records)
+## 8. medical_records (Patient Visit Records - Self-Contained)
 
-**Purpose:** Complete visit record including vitals, diagnosis, prescription notes
+**Purpose:** Complete visit record with PATIENT's personal info, vitals, diagnosis
+
+**Key Design Decision:**
+- Each medical record contains the PATIENT's info (not account owner)
+- Parent (Maria) books for child (Juan) → Juan's info stored here
+- Patient info captured AT TIME OF VISIT (historical accuracy)
+- Self-contained = no need to join with user's personal_information
 
 **Laravel Migration:**
 ```php
 Schema::create('medical_records', function (Blueprint $table) {
     $table->id();
-    
+
     // Relations
-    $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Patient
+    $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Account owner (could be parent)
     $table->foreignId('consultation_type_id')->constrained()->onDelete('cascade');
     $table->foreignId('appointment_id')->nullable()->constrained()->onDelete('set null');
     $table->foreignId('queue_id')->nullable()->constrained()->onDelete('set null');
     $table->foreignId('doctor_id')->nullable()->constrained('users')->onDelete('set null');
     $table->foreignId('nurse_id')->nullable()->constrained('users')->onDelete('set null');
-    
+
+    // === PATIENT PERSONAL INFORMATION (Self-Contained) ===
+    // This is the PATIENT being treated (may differ from account owner)
+    $table->string('patient_first_name');
+    $table->string('patient_middle_name')->nullable();
+    $table->string('patient_last_name');
+    $table->date('patient_date_of_birth')->nullable();
+    $table->enum('patient_gender', ['male', 'female'])->nullable();
+    $table->enum('patient_marital_status', ['child', 'single', 'married', 'widow'])->nullable();
+
+    // Patient Address (at time of visit)
+    $table->string('patient_province')->nullable();
+    $table->string('patient_municipality')->nullable();
+    $table->string('patient_barangay')->nullable();
+    $table->text('patient_street')->nullable();
+
+    // Patient Contact (may use parent's phone)
+    $table->string('patient_contact_number', 20)->nullable();
+    $table->string('patient_occupation')->nullable();
+
+    // Patient Medical Background
+    $table->enum('patient_blood_type', ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])->nullable();
+    $table->text('patient_allergies')->nullable();
+    $table->text('patient_chronic_conditions')->nullable();
+
+    // Emergency Contact (for this patient)
+    $table->string('emergency_contact_name')->nullable();
+    $table->string('emergency_contact_phone', 20)->nullable();
+
     // Visit Information
     $table->date('visit_date');
     $table->enum('visit_type', ['new', 'old', 'revisit']);
     $table->enum('service_type', ['checkup', 'admission']);
-    
+
     // Chief Complaints (Two fields as confirmed)
     $table->text('chief_complaints_initial')->nullable(); // From app/initial booking
     $table->text('chief_complaints_updated')->nullable(); // Nurse updates during interview
-    
+
     // === VITAL SIGNS (Nurse Input) ===
     // Basic Vitals (All Types)
     $table->decimal('temperature', 4, 1)->nullable(); // °C
     $table->string('blood_pressure', 20)->nullable(); // "120/80"
     $table->integer('cardiac_rate')->nullable(); // bpm
     $table->integer('respiratory_rate')->nullable(); // cpm
-    
+
     // PEDIA / GENERAL Specific
     $table->decimal('weight', 5, 2)->nullable(); // kg
     $table->decimal('height', 5, 2)->nullable(); // cm
     $table->decimal('head_circumference', 5, 2)->nullable(); // cm
     $table->decimal('chest_circumference', 5, 2)->nullable(); // cm
-    
+
     // OB Specific
     $table->integer('fetal_heart_tone')->nullable(); // bpm
     $table->decimal('fundal_height', 5, 2)->nullable(); // cm
     $table->date('last_menstrual_period')->nullable(); // LMP
-    
+
     // Vital Signs Timing
     $table->timestamp('vital_signs_recorded_at')->nullable();
-    
+
     // === DIAGNOSIS (Doctor Input) ===
     $table->text('pertinent_hpi_pe')->nullable(); // History / Physical Exam
     $table->text('diagnosis')->nullable();
     $table->text('plan')->nullable(); // Treatment plan
     $table->text('procedures_done')->nullable();
     $table->text('prescription_notes')->nullable(); // Free-text prescription notes
-    
+
     // Examination Timing
     $table->timestamp('examined_at')->nullable();
     $table->enum('examination_time', ['am', 'pm'])->nullable();
-    
+
     // Status
     $table->enum('status', ['in_progress', 'completed'])->default('in_progress');
-    
+
     $table->text('notes')->nullable();
-    
+
     $table->timestamps();
     $table->softDeletes();
+
+    // Index for patient lookup across visits
+    $table->index(['patient_first_name', 'patient_last_name', 'patient_date_of_birth'], 'patient_lookup_index');
 });
 ```
 
@@ -717,47 +836,130 @@ Schema::create('medical_records', function (Blueprint $table) {
 class MedicalRecord extends Model
 {
     public function user() {
-        return $this->belongsTo(User::class); // Patient
+        return $this->belongsTo(User::class); // Account owner (parent or patient)
     }
-    
+
     public function consultationType() {
         return $this->belongsTo(ConsultationType::class);
     }
-    
+
     public function doctor() {
         return $this->belongsTo(User::class, 'doctor_id');
     }
-    
+
     public function nurse() {
         return $this->belongsTo(User::class, 'nurse_id');
     }
-    
+
     public function appointment() {
         return $this->belongsTo(Appointment::class);
     }
-    
+
     public function queue() {
         return $this->belongsTo(Queue::class);
     }
-    
+
     public function prescriptions() {
         return $this->hasMany(Prescription::class);
     }
-    
+
     public function billingTransaction() {
         return $this->hasOne(BillingTransaction::class);
     }
-    
+
+    // === PATIENT ACCESSORS ===
+
+    // Get patient's full name
+    public function getPatientFullNameAttribute() {
+        $name = $this->patient_first_name;
+        if ($this->patient_middle_name) {
+            $name .= ' ' . $this->patient_middle_name;
+        }
+        $name .= ' ' . $this->patient_last_name;
+        return $name;
+    }
+
+    // Get patient's full address
+    public function getPatientFullAddressAttribute() {
+        $parts = array_filter([
+            $this->patient_street,
+            $this->patient_barangay,
+            $this->patient_municipality,
+            $this->patient_province,
+        ]);
+        return implode(', ', $parts);
+    }
+
+    // Calculate patient's age at time of visit
+    public function getPatientAgeAttribute() {
+        if (!$this->patient_date_of_birth) return null;
+        return $this->patient_date_of_birth->age;
+    }
+
     // Get effective chief complaints (updated or initial)
     public function getEffectiveChiefComplaintsAttribute() {
         return $this->chief_complaints_updated ?? $this->chief_complaints_initial;
     }
+
+    // === SCOPES ===
+
+    // Find all records for a specific patient (by name + DOB)
+    public function scopeForPatient($query, $firstName, $lastName, $dob = null) {
+        return $query->where('patient_first_name', $firstName)
+                     ->where('patient_last_name', $lastName)
+                     ->when($dob, fn($q) => $q->where('patient_date_of_birth', $dob));
+    }
 }
+```
+
+**Usage Examples:**
+```php
+// Parent Maria books for child Juan
+$medicalRecord = MedicalRecord::create([
+    'user_id' => $maria->id,  // Account owner (parent)
+
+    // Patient info (the child)
+    'patient_first_name' => 'Juan',
+    'patient_last_name' => 'Santos',
+    'patient_date_of_birth' => '2021-05-15',
+    'patient_gender' => 'male',
+    'patient_contact_number' => $maria->phone, // Use parent's phone
+
+    // Visit info
+    'consultation_type_id' => 2, // PEDIA
+    'visit_date' => today(),
+    'visit_type' => 'new',
+    'service_type' => 'checkup',
+    'chief_complaints_initial' => 'High fever, cough',
+]);
+
+// Maria books for herself
+$medicalRecord = MedicalRecord::create([
+    'user_id' => $maria->id,  // Account owner (self)
+
+    // Patient info (Maria herself)
+    'patient_first_name' => 'Maria',
+    'patient_last_name' => 'Santos',
+    'patient_date_of_birth' => '1996-03-20',
+    'patient_gender' => 'female',
+
+    // Visit info
+    'consultation_type_id' => 1, // OB
+    'visit_date' => today(),
+    'visit_type' => 'old',
+    // ...
+]);
+
+// Find all records for Juan Santos
+$juanRecords = MedicalRecord::forPatient('Juan', 'Santos', '2021-05-15')->get();
+
+// Get patient's age at visit
+$record->patient_age; // 4 (years)
 ```
 
 ---
 
-## 8. prescriptions (Medications)
+## 9. prescriptions (Medications)
 
 **Purpose:** Individual medications prescribed during visit
 
@@ -805,7 +1007,7 @@ class Prescription extends Model
 
 ---
 
-## 9. services (Hospital Services & Pricing)
+## 10. services (Hospital Services & Pricing)
 
 **Purpose:** Hospital services with actual pricing
 
@@ -927,7 +1129,7 @@ class Service extends Model
 
 ---
 
-## 10. billing_transactions (Main Billing)
+## 11. billing_transactions (Main Billing)
 
 **Purpose:** Financial transactions with discount support
 
@@ -1036,7 +1238,7 @@ class BillingTransaction extends Model
 
 ---
 
-## 11. billing_items (Itemized Charges)
+## 12. billing_items (Itemized Charges)
 
 **Purpose:** Individual charges in a bill
 
@@ -1114,7 +1316,7 @@ TOTAL                   ₱2,510
 
 ---
 
-## 12. hospital_drugs (Available Medications)
+## 13. hospital_drugs (Available Medications)
 
 **Purpose:** Simple list of drugs (NO stock tracking)
 
@@ -1156,7 +1358,7 @@ class HospitalDrug extends Model
 
 ---
 
-## 13. admissions (Patient Admissions)
+## 14. admissions (Patient Admissions)
 
 **Purpose:** Track admissions (billing handled by existing external system)
 
@@ -1226,7 +1428,7 @@ class Admission extends Model
 
 ---
 
-## 14. system_settings (Configuration)
+## 15. system_settings (Configuration)
 
 **Purpose:** System-wide settings
 
@@ -1326,7 +1528,7 @@ SystemSetting::set('emergency_fee_amount', 600);
 
 ---
 
-## 15. queue_displays (Monitor Management)
+## 16. queue_displays (Monitor Management)
 
 **Purpose:** Manage queue display monitors
 
@@ -1433,7 +1635,7 @@ https://hospital.com/display/pedia?token=def456
 
 ---
 
-## 16. notifications (Laravel Notifications)
+## 17. notifications (Laravel Notifications)
 
 **Purpose:** Push notifications via Reverb
 
@@ -1523,93 +1725,488 @@ class RoleSeeder extends Seeder
     public function run()
     {
         // Create roles
-        $patient = Role::create(['name' => 'patient', 'guard_name' => 'web']);
-        $nurse = Role::create(['name' => 'nurse', 'guard_name' => 'web']);
-        $doctor = Role::create(['name' => 'doctor', 'guard_name' => 'web']);
-        $cashier = Role::create(['name' => 'cashier', 'guard_name' => 'web']);
-        $admin = Role::create(['name' => 'admin', 'guard_name' => 'web']);
-        
-        // Create permissions
-        $permissions = [
-            // Appointments
-            'view-appointments',
-            'create-appointments',
-            'approve-appointments',
-            'decline-appointments',
-            'cancel-appointments',
-            
-            // Queue
-            'manage-queue',
-            'call-queue',
-            'skip-queue',
-            
-            // Medical
-            'input-vital-signs',
-            'view-medical-records',
-            'add-diagnosis',
-            'add-prescription',
-            
-            // Billing
-            'view-billing',
-            'process-billing',
-            'apply-discount',
-            
-            // Admission
-            'admit-patient',
-            'discharge-patient',
-            
-            // Reports
-            'view-reports',
-            
-            // System
-            'manage-users',
-            'manage-system-settings',
-            'manage-displays',
-        ];
-        
-        foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission, 'guard_name' => 'web']);
-        }
-        
-        // Assign permissions to roles
-        $nurse->givePermissionTo([
-            'view-appointments',
-            'approve-appointments',
-            'decline-appointments',
-            'manage-queue',
-            'call-queue',
-            'skip-queue',
-            'input-vital-signs',
-            'view-medical-records',
-        ]);
-        
-        $doctor->givePermissionTo([
-            'view-appointments',
-            'view-medical-records',
-            'add-diagnosis',
-            'add-prescription',
-            'apply-discount',
-            'admit-patient',
-            'discharge-patient',
-        ]);
-        
-        $cashier->givePermissionTo([
-            'view-billing',
-            'process-billing',
-        ]);
-        
-        $admin->givePermissionTo(Permission::all());
+        Role::create(['name' => 'patient', 'guard_name' => 'web']);
+        Role::create(['name' => 'nurse', 'guard_name' => 'web']);
+        Role::create(['name' => 'doctor', 'guard_name' => 'web']);
+        Role::create(['name' => 'cashier', 'guard_name' => 'web']);
+        Role::create(['name' => 'admin', 'guard_name' => 'web']);
+
+        // TODO: Permissions will be added later
     }
 }
 ```
 
 ---
 
+## Complete Seeders
+
+### UserSeeder (Test Users with Personal Information)
+
+```php
+class UserSeeder extends Seeder
+{
+    public function run()
+    {
+        // === ADMIN USER ===
+        $admin = User::create([
+            'email' => 'admin@hospital.com',
+            'phone' => '09170000001',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'is_active' => true,
+        ]);
+        $admin->assignRole('admin');
+        $admin->personalInformation()->create([
+            'first_name' => 'System',
+            'last_name' => 'Administrator',
+            'gender' => 'male',
+        ]);
+
+        // === DOCTORS ===
+        // OB Doctor
+        $obDoctor = User::create([
+            'email' => 'dr.santos@hospital.com',
+            'phone' => '09170000010',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'is_active' => true,
+        ]);
+        $obDoctor->assignRole('doctor');
+        $obDoctor->personalInformation()->create([
+            'first_name' => 'Maria',
+            'middle_name' => 'Cruz',
+            'last_name' => 'Santos',
+            'gender' => 'female',
+            'date_of_birth' => '1980-05-15',
+            'province' => 'Sultan Kudarat',
+            'municipality' => 'Tacurong City',
+            'occupation' => 'OB-Gynecologist',
+        ]);
+        // Assign OB consultation type
+        $obDoctor->consultationTypes()->attach(
+            ConsultationType::where('code', 'ob')->first()->id
+        );
+
+        // PEDIA Doctor
+        $pedDoctor = User::create([
+            'email' => 'dr.reyes@hospital.com',
+            'phone' => '09170000011',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'is_active' => true,
+        ]);
+        $pedDoctor->assignRole('doctor');
+        $pedDoctor->personalInformation()->create([
+            'first_name' => 'Juan',
+            'middle_name' => 'Dela',
+            'last_name' => 'Reyes',
+            'gender' => 'male',
+            'date_of_birth' => '1975-08-20',
+            'province' => 'Sultanpcr Kudarat',
+            'municipality' => 'Tacurong City',
+            'occupation' => 'Pediatrician',
+        ]);
+        $pedDoctor->consultationTypes()->attach(
+            ConsultationType::where('code', 'pedia')->first()->id
+        );
+
+        // General Medicine Doctor
+        $genDoctor = User::create([
+            'email' => 'dr.garcia@hospital.com',
+            'phone' => '09170000012',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'is_active' => true,
+        ]);
+        $genDoctor->assignRole('doctor');
+        $genDoctor->personalInformation()->create([
+            'first_name' => 'Ana',
+            'last_name' => 'Garcia',
+            'gender' => 'female',
+            'date_of_birth' => '1985-03-10',
+            'occupation' => 'General Practitioner',
+        ]);
+        $genDoctor->consultationTypes()->attach(
+            ConsultationType::where('code', 'general')->first()->id
+        );
+
+        // === NURSES ===
+        $nurse1 = User::create([
+            'email' => 'nurse.cruz@hospital.com',
+            'phone' => '09170000020',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'is_active' => true,
+        ]);
+        $nurse1->assignRole('nurse');
+        $nurse1->personalInformation()->create([
+            'first_name' => 'Rosa',
+            'last_name' => 'Cruz',
+            'gender' => 'female',
+            'date_of_birth' => '1990-07-25',
+            'occupation' => 'Registered Nurse',
+        ]);
+
+        $nurse2 = User::create([
+            'email' => 'nurse.lopez@hospital.com',
+            'phone' => '09170000021',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'is_active' => true,
+        ]);
+        $nurse2->assignRole('nurse');
+        $nurse2->personalInformation()->create([
+            'first_name' => 'Carmen',
+            'last_name' => 'Lopez',
+            'gender' => 'female',
+            'date_of_birth' => '1988-11-12',
+            'occupation' => 'Registered Nurse',
+        ]);
+
+        // === CASHIER ===
+        $cashier = User::create([
+            'email' => 'cashier@hospital.com',
+            'phone' => '09170000030',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'is_active' => true,
+        ]);
+        $cashier->assignRole('cashier');
+        $cashier->personalInformation()->create([
+            'first_name' => 'Pedro',
+            'last_name' => 'Mendoza',
+            'gender' => 'male',
+            'date_of_birth' => '1992-04-18',
+            'occupation' => 'Hospital Cashier',
+        ]);
+
+        // === SAMPLE PATIENTS ===
+        // Patient 1: Adult female (for OB)
+        $patient1 = User::create([
+            'email' => 'maria.patient@email.com',
+            'phone' => '09171111111',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'is_active' => true,
+        ]);
+        $patient1->assignRole('patient');
+        $patient1->personalInformation()->create([
+            'first_name' => 'Maria',
+            'middle_name' => 'Isabel',
+            'last_name' => 'Gonzales',
+            'gender' => 'female',
+            'date_of_birth' => '1995-06-15',
+            'marital_status' => 'married',
+            'province' => 'Sultan Kudarat',
+            'municipality' => 'Tacurong City',
+            'barangay' => 'Poblacion',
+            'street' => '123 Bonifacio St.',
+            'occupation' => 'Teacher',
+            'emergency_contact_name' => 'Jose Gonzales',
+            'emergency_contact_phone' => '09171111112',
+        ]);
+
+        // Patient 2: Parent with children (for PEDIA bookings)
+        $patient2 = User::create([
+            'email' => 'ana.parent@email.com',
+            'phone' => '09172222222',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'is_active' => true,
+        ]);
+        $patient2->assignRole('patient');
+        $patient2->personalInformation()->create([
+            'first_name' => 'Ana',
+            'last_name' => 'Reyes',
+            'gender' => 'female',
+            'date_of_birth' => '1988-09-20',
+            'marital_status' => 'married',
+            'province' => 'Sultan Kudarat',
+            'municipality' => 'Tacurong City',
+            'barangay' => 'New Isabela',
+            'street' => '456 Rizal Ave.',
+            'occupation' => 'Housewife',
+            'emergency_contact_name' => 'Roberto Reyes',
+            'emergency_contact_phone' => '09172222223',
+        ]);
+
+        // Patient 3: Adult male (for General)
+        $patient3 = User::create([
+            'email' => 'juan.patient@email.com',
+            'phone' => '09173333333',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'is_active' => true,
+        ]);
+        $patient3->assignRole('patient');
+        $patient3->personalInformation()->create([
+            'first_name' => 'Juan',
+            'last_name' => 'Dela Cruz',
+            'gender' => 'male',
+            'date_of_birth' => '1970-12-05',
+            'marital_status' => 'married',
+            'province' => 'Sultan Kudarat',
+            'municipality' => 'Tacurong City',
+            'occupation' => 'Farmer',
+        ]);
+    }
+}
+```
+
+### HospitalDrugSeeder
+
+```php
+class HospitalDrugSeeder extends Seeder
+{
+    public function run()
+    {
+        $drugs = [
+            // Common Pain/Fever
+            ['drug_name' => 'Paracetamol 500mg', 'generic_name' => 'Paracetamol', 'unit_price' => 5.00],
+            ['drug_name' => 'Paracetamol 250mg (Pedia)', 'generic_name' => 'Paracetamol', 'unit_price' => 4.00],
+            ['drug_name' => 'Ibuprofen 400mg', 'generic_name' => 'Ibuprofen', 'unit_price' => 8.00],
+            ['drug_name' => 'Mefenamic Acid 500mg', 'generic_name' => 'Mefenamic Acid', 'unit_price' => 7.00],
+
+            // Antibiotics
+            ['drug_name' => 'Amoxicillin 500mg', 'generic_name' => 'Amoxicillin', 'unit_price' => 10.00],
+            ['drug_name' => 'Amoxicillin 250mg (Pedia)', 'generic_name' => 'Amoxicillin', 'unit_price' => 8.00],
+            ['drug_name' => 'Co-Amoxiclav 625mg', 'generic_name' => 'Amoxicillin + Clavulanic Acid', 'unit_price' => 35.00],
+            ['drug_name' => 'Cefalexin 500mg', 'generic_name' => 'Cefalexin', 'unit_price' => 15.00],
+            ['drug_name' => 'Azithromycin 500mg', 'generic_name' => 'Azithromycin', 'unit_price' => 45.00],
+            ['drug_name' => 'Metronidazole 500mg', 'generic_name' => 'Metronidazole', 'unit_price' => 8.00],
+
+            // OB-Related
+            ['drug_name' => 'Ferrous Sulfate 325mg', 'generic_name' => 'Ferrous Sulfate', 'unit_price' => 3.00],
+            ['drug_name' => 'Folic Acid 5mg', 'generic_name' => 'Folic Acid', 'unit_price' => 2.00],
+            ['drug_name' => 'Calcium Carbonate 500mg', 'generic_name' => 'Calcium Carbonate', 'unit_price' => 5.00],
+            ['drug_name' => 'Multivitamins Prenatal', 'generic_name' => 'Prenatal Vitamins', 'unit_price' => 15.00],
+
+            // Cough & Cold
+            ['drug_name' => 'Salbutamol 2mg', 'generic_name' => 'Salbutamol', 'unit_price' => 5.00],
+            ['drug_name' => 'Carbocisteine 500mg', 'generic_name' => 'Carbocisteine', 'unit_price' => 8.00],
+            ['drug_name' => 'Loratadine 10mg', 'generic_name' => 'Loratadine', 'unit_price' => 6.00],
+            ['drug_name' => 'Cetirizine 10mg', 'generic_name' => 'Cetirizine', 'unit_price' => 5.00],
+
+            // GI Related
+            ['drug_name' => 'Omeprazole 20mg', 'generic_name' => 'Omeprazole', 'unit_price' => 10.00],
+            ['drug_name' => 'Ranitidine 150mg', 'generic_name' => 'Ranitidine', 'unit_price' => 6.00],
+            ['drug_name' => 'Loperamide 2mg', 'generic_name' => 'Loperamide', 'unit_price' => 5.00],
+            ['drug_name' => 'Oral Rehydration Salts', 'generic_name' => 'ORS', 'unit_price' => 15.00],
+
+            // Hypertension/Cardiac
+            ['drug_name' => 'Amlodipine 5mg', 'generic_name' => 'Amlodipine', 'unit_price' => 8.00],
+            ['drug_name' => 'Losartan 50mg', 'generic_name' => 'Losartan', 'unit_price' => 10.00],
+            ['drug_name' => 'Metoprolol 50mg', 'generic_name' => 'Metoprolol', 'unit_price' => 8.00],
+
+            // Diabetes
+            ['drug_name' => 'Metformin 500mg', 'generic_name' => 'Metformin', 'unit_price' => 5.00],
+            ['drug_name' => 'Glibenclamide 5mg', 'generic_name' => 'Glibenclamide', 'unit_price' => 4.00],
+        ];
+
+        foreach ($drugs as $drug) {
+            HospitalDrug::create([
+                'drug_name' => $drug['drug_name'],
+                'generic_name' => $drug['generic_name'],
+                'unit_price' => $drug['unit_price'],
+                'is_active' => true,
+            ]);
+        }
+    }
+}
+```
+
+### DoctorScheduleSeeder
+
+```php
+class DoctorScheduleSeeder extends Seeder
+{
+    public function run()
+    {
+        // Get doctors
+        $obDoctor = User::whereHas('roles', fn($q) => $q->where('name', 'doctor'))
+            ->whereHas('consultationTypes', fn($q) => $q->where('code', 'ob'))
+            ->first();
+
+        $pedDoctor = User::whereHas('roles', fn($q) => $q->where('name', 'doctor'))
+            ->whereHas('consultationTypes', fn($q) => $q->where('code', 'pedia'))
+            ->first();
+
+        $genDoctor = User::whereHas('roles', fn($q) => $q->where('name', 'doctor'))
+            ->whereHas('consultationTypes', fn($q) => $q->where('code', 'general'))
+            ->first();
+
+        $obType = ConsultationType::where('code', 'ob')->first();
+        $pedType = ConsultationType::where('code', 'pedia')->first();
+        $genType = ConsultationType::where('code', 'general')->first();
+
+        // OB Doctor: Mon-Fri 8am-5pm
+        foreach ([1, 2, 3, 4, 5] as $dayOfWeek) { // Mon=1, Fri=5
+            DoctorSchedule::create([
+                'user_id' => $obDoctor->id,
+                'consultation_type_id' => $obType->id,
+                'schedule_type' => 'regular',
+                'day_of_week' => $dayOfWeek,
+                'start_time' => '08:00',
+                'end_time' => '17:00',
+                'max_patients' => 30,
+                'is_available' => true,
+            ]);
+        }
+
+        // PEDIA Doctor: Mon-Sat 8am-3pm
+        foreach ([1, 2, 3, 4, 5, 6] as $dayOfWeek) { // Mon=1, Sat=6
+            DoctorSchedule::create([
+                'user_id' => $pedDoctor->id,
+                'consultation_type_id' => $pedType->id,
+                'schedule_type' => 'regular',
+                'day_of_week' => $dayOfWeek,
+                'start_time' => '08:00',
+                'end_time' => '15:00',
+                'max_patients' => 25,
+                'is_available' => true,
+            ]);
+        }
+
+        // General Doctor: Mon-Fri 9am-6pm
+        foreach ([1, 2, 3, 4, 5] as $dayOfWeek) {
+            DoctorSchedule::create([
+                'user_id' => $genDoctor->id,
+                'consultation_type_id' => $genType->id,
+                'schedule_type' => 'regular',
+                'day_of_week' => $dayOfWeek,
+                'start_time' => '09:00',
+                'end_time' => '18:00',
+                'max_patients' => 40,
+                'is_available' => true,
+            ]);
+        }
+    }
+}
+```
+
+### QueueDisplaySeeder
+
+```php
+class QueueDisplaySeeder extends Seeder
+{
+    public function run()
+    {
+        $obType = ConsultationType::where('code', 'ob')->first();
+        $pedType = ConsultationType::where('code', 'pedia')->first();
+        $genType = ConsultationType::where('code', 'general')->first();
+
+        // OB Display
+        QueueDisplay::create([
+            'name' => 'OB Queue Display',
+            'consultation_type_id' => $obType->id,
+            'location' => 'OB Waiting Area',
+            'display_settings' => [
+                'font_size' => 'large',
+                'theme' => 'light',
+                'show_estimated_time' => true,
+                'show_patient_count' => true,
+                'sound_enabled' => true,
+                'volume' => 80,
+            ],
+            'is_active' => true,
+        ]);
+
+        // PEDIA Display
+        QueueDisplay::create([
+            'name' => 'Pediatrics Queue Display',
+            'consultation_type_id' => $pedType->id,
+            'location' => 'Pediatrics Waiting Area',
+            'display_settings' => [
+                'font_size' => 'extra-large',
+                'theme' => 'light',
+                'show_estimated_time' => true,
+                'show_patient_count' => true,
+                'sound_enabled' => true,
+                'volume' => 70,
+            ],
+            'is_active' => true,
+        ]);
+
+        // General Display
+        QueueDisplay::create([
+            'name' => 'General Medicine Queue Display',
+            'consultation_type_id' => $genType->id,
+            'location' => 'Main Waiting Area',
+            'display_settings' => [
+                'font_size' => 'large',
+                'theme' => 'dark',
+                'show_estimated_time' => true,
+                'show_patient_count' => true,
+                'sound_enabled' => true,
+                'volume' => 75,
+            ],
+            'is_active' => true,
+        ]);
+    }
+}
+```
+
+### DatabaseSeeder (Main Seeder)
+
+```php
+class DatabaseSeeder extends Seeder
+{
+    public function run()
+    {
+        $this->call([
+            RoleSeeder::class,           // Must be first - creates roles
+            UserSeeder::class,           // Depends on roles
+            ConsultationTypeSeeder::class,
+        ]);
+    }
+}
+```
+
+**Test Accounts (after seeding):**
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@hqms.test | password |
+| Doctor | doctor@hqms.test | password |
+| Nurse | nurse@hqms.test | password |
+| Cashier | cashier@hqms.test | password |
+| Patient | patient@hqms.test | password |
+
+### Running Seeders
+
+```bash
+# Fresh migration with all seeders
+php artisan migrate:fresh --seed
+
+# Run specific seeder
+php artisan db:seed --class=UserSeeder
+
+# Run in production (with caution!)
+php artisan db:seed --force
+```
+
+### Test Data Summary
+
+After seeding, you'll have:
+
+| Type | Count | Details |
+|------|-------|---------|
+| Roles | 5 | patient, nurse, doctor, cashier, admin |
+| Admin | 1 | Full system access |
+| Doctor | 1 | Medical staff |
+| Nurse | 1 | Queue/vitals management |
+| Cashier | 1 | Billing processing |
+| Patient | 1 | Sample patient with profile |
+| Consultation Types | 3 | OB, PEDIA, GENERAL |
+
+---
+
 ## Database Relationships Diagram
 
 ```
-USERS (Patients + Staff)
-  ├─→ has many MEDICAL_RECORDS
+USERS (Authentication Only - Account Owners)
+  ├─→ has one PERSONAL_INFORMATION (account owner's profile)
+  ├─→ has many MEDICAL_RECORDS (as account owner, patient info stored IN record)
   ├─→ has many APPOINTMENTS
   ├─→ has many QUEUES
   ├─→ has many BILLING_TRANSACTIONS
@@ -1617,6 +2214,9 @@ USERS (Patients + Staff)
   ├─→ has many DOCTOR_SCHEDULES (if doctor)
   ├─→ belongs to many CONSULTATION_TYPES (if doctor)
   └─→ belongs to many ROLES (Spatie)
+
+PERSONAL_INFORMATION (Account Owner's Profile)
+  └─→ belongs to USER
 
 CONSULTATION_TYPES
   ├─→ has many APPOINTMENTS
@@ -1627,7 +2227,7 @@ CONSULTATION_TYPES
   └─→ belongs to many USERS (doctors)
 
 APPOINTMENTS
-  ├─→ belongs to USER (patient)
+  ├─→ belongs to USER (account owner)
   ├─→ belongs to CONSULTATION_TYPE
   ├─→ belongs to USER (doctor)
   ├─→ has one QUEUE
@@ -1635,13 +2235,14 @@ APPOINTMENTS
 
 QUEUES
   ├─→ belongs to APPOINTMENT (nullable - walk-in)
-  ├─→ belongs to USER (patient)
+  ├─→ belongs to USER (account owner)
   ├─→ belongs to CONSULTATION_TYPE
   ├─→ belongs to USER (doctor)
   └─→ has one MEDICAL_RECORD
 
-MEDICAL_RECORDS
-  ├─→ belongs to USER (patient)
+MEDICAL_RECORDS (Self-Contained with Patient Info)
+  ├─→ belongs to USER (account owner - may be parent)
+  ├─→ contains PATIENT_* fields (the actual patient's info)
   ├─→ belongs to CONSULTATION_TYPE
   ├─→ belongs to APPOINTMENT (nullable)
   ├─→ belongs to QUEUE (nullable)
@@ -1649,7 +2250,7 @@ MEDICAL_RECORDS
   └─→ has one BILLING_TRANSACTION
 
 BILLING_TRANSACTIONS
-  ├─→ belongs to USER (patient)
+  ├─→ belongs to USER (account owner)
   ├─→ belongs to MEDICAL_RECORD
   └─→ has many BILLING_ITEMS
 
@@ -1659,12 +2260,22 @@ BILLING_ITEMS
   └─→ belongs to HOSPITAL_DRUG (nullable)
 
 ADMISSIONS
-  ├─→ belongs to USER (patient)
+  ├─→ belongs to USER (account owner)
   ├─→ belongs to MEDICAL_RECORD
   └─→ belongs to USER (admitted_by doctor)
 
 QUEUE_DISPLAYS
   └─→ belongs to CONSULTATION_TYPE
+```
+
+**Key Concept Illustrated:**
+```
+Parent Maria (User #1)
+  └─→ personal_information: "Maria Santos, 28yo, female"
+  └─→ medical_records:
+        ├─→ Record #1: patient_* = "Juan Santos, 5yo, male" (her child)
+        ├─→ Record #2: patient_* = "Ana Santos, 3yo, female" (another child)
+        └─→ Record #3: patient_* = "Maria Santos, 28yo, female" (herself)
 ```
 
 ---
@@ -1713,22 +2324,23 @@ QUEUE_DISPLAYS
 
 ```bash
 1. users
-2. consultation_types
-3. doctor_consultation_types
-4. doctor_schedules
-5. appointments
-6. queues
-7. medical_records
-8. prescriptions
-9. services
-10. hospital_drugs
-11. billing_transactions
-12. billing_items
-13. admissions
-14. system_settings
-15. queue_displays
-16. notifications
-17. Spatie migrations (auto-run)
+2. personal_information
+3. consultation_types
+4. doctor_consultation_types
+5. doctor_schedules
+6. appointments
+7. queues
+8. medical_records
+9. prescriptions
+10. services
+11. hospital_drugs
+12. billing_transactions
+13. billing_items
+14. admissions
+15. system_settings
+16. queue_displays
+17. notifications
+18. Spatie migrations (auto-run)
 ```
 
 ---
@@ -1887,21 +2499,23 @@ event(new QueueUpdated($queue)); // Clear queue cache
 
 ### ✅ Confirmed Design Choices:
 
-1. **Single users table** - Everyone (patients + staff)
-2. **Flexible consultation types** - Can add new types easily
-3. **Queue format** - O-1, P-1, G-1 (short prefix)
-4. **Queue timing** - Auto-estimated with real-time updates
-5. **Medical records** - All-in-one table (vitals + diagnosis)
-6. **Chief complaints** - Two fields (initial + updated)
-7. **Prescriptions** - Separate table (multiple per visit)
-8. **Walk-in flow** - Always creates user account
-9. **Billing** - Itemized with discount support
-10. **Admissions** - Track only (external billing)
-11. **Services** - Real hospital pricing
-12. **Queue displays** - Managed via database
-13. **System settings** - Configurable via database
-14. **Notifications** - Laravel + Reverb
-15. **Permissions** - Spatie package
+1. **Users table = Auth only** - Email, phone, password (no personal info)
+2. **Personal information separate** - Account owner's profile in dedicated table
+3. **Medical records = Self-contained** - Patient's info stored IN each record
+4. **Parent/Child support** - Parent can book for children (patient info in record)
+5. **Flexible consultation types** - Can add new types easily
+6. **Queue format** - O-1, P-1, G-1 (short prefix)
+7. **Queue timing** - Auto-estimated with real-time updates
+8. **Chief complaints** - Two fields (initial + updated)
+9. **Prescriptions** - Separate table (multiple per visit)
+10. **Walk-in flow** - Always creates user account
+11. **Billing** - Itemized with discount support
+12. **Admissions** - Track only (external billing)
+13. **Services** - Real hospital pricing
+14. **Queue displays** - Managed via database
+15. **System settings** - Configurable via database
+16. **Notifications** - Laravel + Reverb
+17. **Permissions** - Spatie package
 
 ---
 
@@ -1917,6 +2531,7 @@ After DATABASE.md approval:
 
 ---
 
-*Document Version: FINAL 1.0*  
-*Last Updated: January 18, 2026*  
+*Document Version: FINAL 2.0*
+*Last Updated: January 19, 2026*
 *Status: Ready for Development*
+*Major Change: Normalized user/personal_info/medical_records structure*
