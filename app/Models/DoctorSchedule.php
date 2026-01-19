@@ -8,4 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class DoctorSchedule extends Model
 {
     use DoctorScheduleRelations;
+
+    protected $guarded = ['id'];
+
+    protected $casts = [
+        'date' => 'date',
+        'start_time' => 'datetime:H:i',
+        'end_time' => 'datetime:H:i',
+        'is_available' => 'boolean',
+    ];
 }

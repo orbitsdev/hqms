@@ -25,9 +25,9 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
         'email',
         'password',
+        'is_active',
     ];
 
     /**
@@ -56,14 +56,53 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the user's initials
+     * Get the user's initials from personal information
      */
     public function initials(): string
     {
-        return Str::of($this->name)
-            ->explode(' ')
-            ->take(2)
-            ->map(fn ($word) => Str::substr($word, 0, 1))
-            ->implode('');
+        $info = $this->personalInformation;
+        if ($info) {
+            return strtoupper(substr($info->first_name, 0, 1) . substr($info->last_name, 0, 1));
+        }
+
+        // Fallback: use email username (e.g., "admin@test.com" -> "AD")
+        $username = Str::before($this->email, '@');
+        return strtoupper(substr($username, 0, 2));
+    }
+
+    /**
+     * Get display name from personal information
+     */
+    public function getNameAttribute(): string
+    {
+        return $this->personalInformation?->full_name ?? $this->email;
+    }
+
+    /**
+     * Role helper methods
+     */
+    public function isPatient(): bool
+    {
+        return $this->hasRole('patient');
+    }
+
+    public function isDoctor(): bool
+    {
+        return $this->hasRole('doctor');
+    }
+
+    public function isNurse(): bool
+    {
+        return $this->hasRole('nurse');
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    public function isCashier(): bool
+    {
+        return $this->hasRole('cashier');
     }
 }
