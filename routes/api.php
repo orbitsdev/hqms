@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ConsultationTypeController;
+use App\Http\Controllers\Api\MedicalRecordController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -37,4 +38,9 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('/appointments', [AppointmentController::class, 'store']);
     Route::get('/appointments/{appointment}', [AppointmentController::class, 'show']);
     Route::put('/appointments/{appointment}/cancel', [AppointmentController::class, 'cancel']);
+
+    // Medical Records
+    Route::get('/medical-records/my', [MedicalRecordController::class, 'index']);
+    Route::get('/medical-records/{medicalRecord}', [MedicalRecordController::class, 'show']);
+    Route::get('/prescriptions/my', [MedicalRecordController::class, 'prescriptions']);
 });

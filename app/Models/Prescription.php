@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Traits\Models\PrescriptionRelations;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Prescription extends Model
 {
-    use PrescriptionRelations;
+    use HasFactory, PrescriptionRelations;
 
     protected $guarded = ['id'];
 
