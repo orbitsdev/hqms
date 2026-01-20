@@ -820,6 +820,7 @@ Schema::create('medical_records', function (Blueprint $table) {
 
     // Status
     $table->enum('status', ['in_progress', 'completed'])->default('in_progress');
+    $table->boolean('is_pre_visit')->default(false); // True when created at booking
 
     $table->text('notes')->nullable();
 

@@ -26,6 +26,10 @@ class MedicalRecordShow extends Component
             abort(403);
         }
 
+        if ($this->medicalRecord->is_pre_visit) {
+            abort(404);
+        }
+
         $this->prescriptions = $this->medicalRecord->prescriptions;
         $this->vitalSigns = array_filter([
             'temperature' => $this->medicalRecord->temperature,

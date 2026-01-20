@@ -25,6 +25,7 @@ class MedicalRecordController extends Controller
                 'prescriptions.doctor.personalInformation',
             ])
             ->where('status', 'completed')
+            ->where('is_pre_visit', false)
             ->orderBy('visit_date', 'desc')
             ->orderBy('created_at', 'desc');
 
@@ -90,6 +91,7 @@ class MedicalRecordController extends Controller
         // Get prescriptions from completed medical records
         $prescriptions = $user->medicalRecords()
             ->where('status', 'completed')
+            ->where('is_pre_visit', false)
             ->with(['prescriptions.doctor.personalInformation', 'prescriptions.medicalRecord'])
             ->get()
             ->pluck('prescriptions')

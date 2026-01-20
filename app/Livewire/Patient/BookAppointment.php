@@ -129,6 +129,15 @@ class BookAppointment extends Component
         $this->currentStep--;
     }
 
+    public function goToStep(int $step): void
+    {
+        if ($step < 1 || $step > $this->currentStep) {
+            return;
+        }
+
+        $this->currentStep = $step;
+    }
+
     private function validateStep(int $step): void
     {
         switch ($step) {

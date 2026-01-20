@@ -11,38 +11,43 @@
         />
     </div>
 
-    <div class="flex items-center justify-between mb-8">
-        @for($i = 1; $i <= 4; $i++)
-            <div class="flex items-center">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-                    {{ $currentStep >= $i
-                        ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
-                        : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400' }}">
-                    {{ $i }}
-                </div>
-                @if($i < 4)
-                    <div class="w-8 h-1 mx-2
-                        {{ $currentStep > $i
-                            ? 'bg-zinc-900 dark:bg-zinc-100'
-                            : 'bg-zinc-200 dark:bg-zinc-800' }}">
-                    </div>
-                @endif
-            </div>
-        @endfor
-    </div>
+    @php
+        $progressClass = [
+            1 => 'w-0',
+            2 => 'w-1/3',
+            3 => 'w-2/3',
+            4 => 'w-full',
+        ][$currentStep] ?? 'w-0';
+        $stepLabels = [
+            1 => 'Consultation Type',
+            2 => 'Select Date',
+            3 => 'Patient Details',
+            4 => 'Chief Complaints',
+        ];
+    @endphp
 
-    <div class="grid grid-cols-4 gap-4 mb-8 text-center">
-        <div class="text-sm {{ $currentStep >= 1 ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-500 dark:text-zinc-400' }}">
-            Consultation Type
-        </div>
-        <div class="text-sm {{ $currentStep >= 2 ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-500 dark:text-zinc-400' }}">
-            Select Date
-        </div>
-        <div class="text-sm {{ $currentStep >= 3 ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-500 dark:text-zinc-400' }}">
-            Patient Details
-        </div>
-        <div class="text-sm {{ $currentStep >= 4 ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-500 dark:text-zinc-400' }}">
-            Chief Complaints
+    <div class="relative mb-10">
+        <div class="absolute left-0 right-0 top-4 h-px bg-zinc-200 dark:bg-zinc-800"></div>
+        <div class="absolute left-0 top-4 h-px bg-zinc-900 dark:bg-zinc-100 {{ $progressClass }}"></div>
+
+        <div class="grid grid-cols-4 gap-4 text-center">
+            @foreach($stepLabels as $step => $label)
+                <div class="relative flex flex-col items-center gap-3">
+                    <flux:button
+                        wire:click="goToStep({{ $step }})"
+                        variant="ghost"
+                        size="sm"
+                        class="h-9 w-9 rounded-full border p-0 text-sm font-semibold {{ $currentStep >= $step
+                            ? 'border-zinc-900 bg-zinc-900 text-white hover:bg-zinc-900 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-100'
+                            : 'border-zinc-200 bg-white text-zinc-500 hover:bg-white dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900' }}"
+                    >
+                        {{ $step }}
+                    </flux:button>
+                    <span class="text-xs font-medium {{ $currentStep >= $step ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400' }}">
+                        {{ $label }}
+                    </span>
+                </div>
+            @endforeach
         </div>
     </div>
 

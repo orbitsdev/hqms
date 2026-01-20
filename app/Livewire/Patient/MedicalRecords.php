@@ -34,6 +34,7 @@ class MedicalRecords extends Component
         
         $query = $user->medicalRecords()
             ->with(['consultationType', 'prescriptions'])
+            ->where('is_pre_visit', false)
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('diagnosis', 'like', '%' . $this->search . '%')
