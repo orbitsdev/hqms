@@ -15,17 +15,56 @@ This project follows a **documentation-first, structured development** methodolo
 
 ---
 
+## Key Strategy Decisions
+
+### ✅ SMS Notifications (Primary)
+- **SMS System Implemented** - Using Semaphore as SMS provider
+- SMS notifications for: appointment approval, queue alerts, reminders
+- No need for push notifications (FCM) initially
+- Reliable delivery without requiring app installation
+
+### ✅ Responsive Web Portal for Patients (Instead of Native Mobile App)
+- **No Flutter app** - Using responsive Livewire/Flux web portal instead
+- Mobile-first responsive design (works on desktop, tablet, mobile)
+- Accessible via any browser - no app installation required
+- Uses **free Flux components only**
+- Faster development, easier maintenance, single codebase
+
+### Why This Approach?
+| Native App | Responsive Web |
+|------------|----------------|
+| Requires app download | Works instantly in browser |
+| App store approval needed | No approval process |
+| Separate codebase (Flutter) | Single Laravel codebase |
+| Push notifications (FCM setup) | SMS notifications (already working) |
+| 4 weeks development | 1-2 weeks development |
+
+---
+
 ## Development Process
+
+### Local Development (Laravel Herd)
+- Use Laravel Herd for local access: `https://hqms.test/`
+- No need to run `php artisan serve` when using Herd
+- If the page does not load, confirm Herd is running and the domain resolves
+
+### Reverb / Queue Pre-Checks (Before Testing)
+- If the feature relies on Reverb or queues, start them before testing to avoid HTTP errors
+- Recommended: run `composer dev` (server + queue + Vite) when doing realtime work
+- Alternatively run separately:
+  - `php artisan reverb:start`
+  - `php artisan queue:listen --tries=1`
 
 ### Phase 0: Planning & Architecture (✅ COMPLETED)
 - ✅ Project definition documented
-- ✅ Technology stack confirmed (Laravel 12 + Livewire + Flutter)
+- ✅ Technology stack confirmed (Laravel 12 + Livewire + Responsive Web)
 - ✅ Complete database schema designed (16 tables + Spatie)
 - ✅ System flow with real-world scenarios
 - ✅ User workflows documented
 - ✅ Edge cases identified
+- ✅ SMS system implemented (Semaphore)
 
-**Next:** API specifications, Reverb events, UI wireframes
+**Next:** UI wireframes, Reverb events, responsive layouts
 
 ---
 
@@ -35,10 +74,11 @@ This project follows a **documentation-first, structured development** methodolo
 ```
 Day 1-2: Project Setup
 - Initialize Laravel 12 project
-- Configure database (MySQL/PostgreSQL)
+- Configure database (MySQL)
 - Install packages: Livewire, Sanctum, Spatie Permission, Reverb
 - Setup Redis for caching/queues
 - Configure environment variables
+- Verify SMS system working
 
 Day 3-4: Database Implementation
 - Create ALL migrations (16 tables)
@@ -54,14 +94,13 @@ Day 3-4: Database Implementation
 - Seed database with test data
 
 Day 5-7: Authentication & Authorization
-- Setup Sanctum for API
-- Setup Breeze/Jetstream for web
+- Setup Fortify for web authentication
+- Setup Sanctum for API (internal use)
 - Implement Spatie permissions
 - Create policies for each model
 - Test authentication flows:
-  • Patient registration (mobile)
+  • Patient registration (web)
   • Staff login (web)
-  • Token generation (API)
   • Permission checks
 ```
 
@@ -82,6 +121,7 @@ Day 1-3: Create Eloquent Models
 - Admission
 - SystemSetting
 - QueueDisplay
+- SmsLog
 
 Day 4-5: Model Relationships & Accessors
 - Define all relationships (hasMany, belongsTo, belongsToMany)
@@ -93,42 +133,31 @@ Day 6-7: Business Logic (Services/Actions)
 - AppointmentService (create, approve, decline)
 - QueueService (generate, call, skip, complete)
 - BillingService (calculate totals, apply discount)
-- NotificationService (send to patients)
+- NotificationService (SMS notifications)
 - Test business logic with unit tests
 ```
 
-**Week 3: API Endpoints (For Flutter)**
+**Week 3: Core Services & SMS Integration**
 ```
-Day 1-2: Authentication Endpoints
-POST   /api/register
-POST   /api/login
-POST   /api/logout
-POST   /api/verify-otp
-GET    /api/user
-PUT    /api/user/profile
+Day 1-2: SMS Notification Integration
+- Configure SMS triggers:
+  • Appointment approved → SMS to patient
+  • Appointment declined → SMS with reason
+  • Queue called → SMS alert
+  • Day-before reminder → Scheduled SMS
+- Create SMS templates/messages
+- Test SMS delivery
 
-Day 3-4: Appointment Endpoints
-GET    /api/consultation-types (with availability)
-GET    /api/doctors/availability
-POST   /api/appointments (create appointment)
-GET    /api/appointments/my (user's appointments)
-PUT    /api/appointments/{id}/cancel
-GET    /api/appointments/{id}
+Day 3-5: Internal API (for AJAX/Livewire)
+- Authentication check endpoints
+- Appointment CRUD endpoints
+- Queue status endpoints
+- Medical records endpoints
 
-Day 5: Medical Records Endpoints
-GET    /api/medical-records/my (user's history)
-GET    /api/medical-records/{id}
-GET    /api/prescriptions/my
-
-Day 6-7: Queue & Notifications
-GET    /api/queues/my (user's active queue)
-GET    /api/notifications
-PUT    /api/notifications/{id}/read
-
-Testing:
-- Test with Postman/Insomnia
-- Document API with Scribe/OpenAPI
-- Ensure Sanctum authentication works
+Day 6-7: Testing & Documentation
+- Test all services
+- Document API endpoints
+- Create Postman collection
 ```
 
 ---
@@ -151,11 +180,11 @@ Day 3-5: Appointment Approval (Livewire Component)
 - Approve appointment:
   • Auto-generate queue number
   • Calculate estimated time
-  • Send notification to patient
+  • Send SMS notification to patient
 - Decline appointment:
   • State reason (Flux form)
   • Suggest alternative date (date picker)
-  • Send notification to patient
+  • Send SMS notification to patient
 - Filters: By date, by type, by status
 
 Day 6-7: Walk-in Registration (Livewire Component)
@@ -163,19 +192,21 @@ Day 6-7: Walk-in Registration (Livewire Component)
 - Create new patient account:
   • Personal info form
   • Medical history (optional)
+  • Phone number (for SMS)
   • Generate temp password
 - Create walk-in appointment:
   • Select consultation type
   • Fill chief complaints
   • Auto-approve
   • Auto-generate queue
+  • Send SMS with queue number
 - Print queue ticket (blade template + print.css)
 
 Testing Scenario:
-1. Nurse approves online appointment → Queue generated
-2. Nurse creates walk-in → Queue generated
+1. Nurse approves online appointment → Queue generated → SMS sent
+2. Nurse creates walk-in → Queue generated → SMS sent
 3. Both appear in same queue (correct order)
-4. Verify notifications sent
+4. Verify SMS notifications received
 ```
 
 **Week 2: Queue Management**
@@ -195,7 +226,7 @@ Day 4-5: Queue Actions (Livewire)
 - Call next patient:
   • Update status to "called"
   • Broadcast to displays
-  • Send notification to mobile app
+  • Send SMS to patient
   • Update estimated times for remaining
 - Skip patient (no-show):
   • Update status to "skipped"
@@ -225,6 +256,7 @@ Real-World Testing:
 4. Skip a no-show
 5. Mark one urgent (moves to front)
 6. Verify displays update in real-time
+7. Verify SMS sent when queue called
 ```
 
 **Week 3: Vital Signs & Patient Interview**
@@ -236,7 +268,7 @@ Day 1-3: Vital Signs Input (Livewire Component)
   • All types: Temp, BP, CR, RR
   • OB: + FHT, Fundal Height, LMP
   • PEDIA/GENERAL: + Weight, Height, Circumferences
-- Review initial chief complaints (from app)
+- Review initial chief complaints (from booking)
 - Update chief complaints (nurse interview)
 - Save vital signs
 - Automatically create medical record
@@ -268,6 +300,7 @@ Day 6-7: Testing & Refinement
   3. Forward to doctor
 - Verify data accuracy
 - Test real-time updates
+- Verify all SMS notifications
 ```
 
 ---
@@ -437,7 +470,7 @@ Day 3-4: System Settings (Livewire)
   • Average duration
   • Emergency fee amount
   • Max appointments per day
-  • Notification settings
+  • SMS notification settings
 - Save settings
 - Apply immediately (cache clear)
 
@@ -458,6 +491,7 @@ Day 6-7: Reports Dashboard (Livewire)
   • Queue statistics (avg wait time, avg service time)
   • No-show count
   • Revenue summary
+  • SMS sent count
 - Monthly/Yearly reports:
   • Total patients served
   • Revenue trends (charts using Chart.js)
@@ -533,230 +567,175 @@ Real-World Deployment:
 
 ---
 
-### Phase 6: Mobile App (Flutter) (Estimated: 4 weeks)
+### Phase 6: Patient Portal - Responsive Web (Estimated: 2 weeks)
 
-**Week 1: Setup & Authentication**
+> **Note:** This replaces the original Flutter mobile app. Instead, we build a responsive web portal that works beautifully on mobile browsers.
+
+**Week 1: Authentication & Home**
 ```
-Day 1-2: Project Setup
-- Initialize Flutter project
-- Add packages:
-  • dio (HTTP client)
-  • provider/riverpod (state management)
-  • flutter_secure_storage (token storage)
-  • firebase_messaging (push notifications)
-  • intl (date formatting)
-- Setup folder structure:
-  /lib
-    /models
-    /services
-    /providers
-    /screens
-    /widgets
-    /utils
-
-Day 3-5: Authentication Screens
-- Splash screen
-- Login screen:
-  • Phone/email input
-  • Password input
+Day 1-2: Patient Authentication (Livewire)
+- Responsive login page:
+  • Phone number or email
+  • Password
   • "Login" button
   • "Register" link
-- Registration screen:
-  • Personal info
-  • Phone number
-  • Email
+  • "Forgot Password" link
+- Responsive registration page:
+  • Personal info (name, birthdate, gender)
+  • Phone number (required for SMS)
+  • Email (optional)
   • Password
   • Emergency contact
   • Medical history (optional)
-- OTP verification (if SMS-based)
-- Implement Sanctum token handling:
-  • Store token securely
-  • Attach to all API requests
-  • Refresh token if expired
+- Mobile-optimized forms
+- Touch-friendly inputs
 
-Day 6-7: API Service Layer (Dio)
-- Create ApiService class
-- Implement all endpoints:
-  • Authentication (login, register, logout)
-  • Appointments (list, create, cancel)
-  • Medical records (list, view)
-  • Notifications (list, read)
-  • Queues (view active)
-- Error handling (network errors, API errors)
-- Token refresh interceptor
-- Test with backend API
+Day 3-4: Patient Home Dashboard (Livewire)
+- Responsive layout (mobile-first):
+  • Welcome message with user's name
+  • Quick action cards:
+    - Book Appointment
+    - My Appointments
+    - My Records
+    - Current Queue (if active)
+  • Upcoming appointment card (if any)
+  • Recent notifications
+- Bottom navigation (mobile) / Sidebar (desktop)
+- Clean, modern UI using Flux free components
+
+Day 5-7: Patient Profile (Livewire)
+- View/edit personal info:
+  • Name, birthdate, gender
+  • Phone number
+  • Address
+  • Emergency contact
+- Medical history:
+  • Blood type
+  • Allergies
+  • Chronic conditions
+  • Current medications
+- Change password
+- Notification preferences (SMS on/off)
+- Responsive form layout
+
+UI/UX Requirements:
+- Mobile-first design
+- Large touch targets (44px minimum)
+- Clear typography (readable on small screens)
+- Fast loading (optimized images, lazy load)
+- Works offline-ish (graceful degradation)
 ```
 
-**Week 2: Home & Appointments**
+**Week 2: Appointments & Queue**
 ```
-Day 1-2: Home Screen
-- Welcome message with user's name
-- Quick actions:
-  • Book Appointment
-  • View My Appointments
-  • View Medical Records
-  • Current Queue Status (if active)
-- Upcoming appointments (card list)
-- Recent notifications
+Day 1-3: Book Appointment (Livewire Component)
+- Step 1: Select consultation type
+  • OB (Obstetrics)
+  • PEDIA (Pediatrics)
+  • GENERAL (General Medicine)
+  • Card-based selection (large, touch-friendly)
+- Step 2: Select date
+  • Calendar view (mobile-optimized)
+  • Show available dates
+  • Show capacity per day (20/50 booked)
+  • Disable fully booked dates
+- Step 3: Fill details
+  • Chief complaints (textarea)
+  • Patient selection (self or dependent)
+  • For child: enter child's info
+- Step 4: Confirm & Submit
+  • Review all details
+  • Submit button
+  • Show "Pending Approval" status
+  • SMS confirmation sent
 
-Day 3-5: Book Appointment Screen
-- Select consultation type:
-  • OB
-  • PEDIA
-  • GENERAL
-- View availability:
-  • "OB doctors available on Jan 25, 8:00 AM - 5:00 PM"
-  • Show available dates (calendar)
-  • Show capacity indicator (20/50 booked)
-- Select date (date picker)
-- Fill chief complaints (textarea)
-- Submit button
-- Confirmation dialog
-- Show pending status
-
-Day 6-7: My Appointments Screen
-- List all appointments (past & upcoming)
-- Filter: All, Pending, Approved, Completed
-- Each appointment card shows:
-  • Date, time
-  • Consultation type
-  • Status badge
+Day 4-5: My Appointments (Livewire Component)
+- List all appointments (card-based, mobile-friendly):
+  • Date and time
+  • Consultation type (with color badge)
+  • Status (Pending/Approved/Completed/Cancelled)
   • Queue number (if approved)
-  • Actions (Cancel if pending/approved)
-- Pull-to-refresh
+- Filter tabs: Upcoming | Past | All
 - Tap appointment → View details:
-  • Chief complaints
-  • Status history
-  • Cancel button (with confirmation)
+  • Full appointment info
+  • Queue number and estimated time
+  • Cancel button (if pending/approved)
+- Pull-to-refresh (if supported)
+- Empty state: "No appointments yet"
 
-Testing:
-1. Register new patient
-2. Book OB appointment
-3. View in "Pending" status
-4. (Backend: Nurse approves)
-5. Refresh app → See "Approved" with queue number
-6. Cancel appointment
-7. Verify cancelled
+Day 6-7: Queue Status (Livewire Component)
+- Show current active queue (prominent display):
+  ┌────────────────────────────────┐
+  │  Your Queue                    │
+  │  Date: Jan 25, 2026            │
+  │  Type: OB                      │
+  │                                │
+  │  🎫 Queue Number: O-5          │
+  │                                │
+  │  ⏰ Estimated Time             │
+  │     10:00 AM - 10:30 AM        │
+  │                                │
+  │  📊 Current Status             │
+  │     Now Serving: O-3           │
+  │     Ahead of you: 2            │
+  │                                │
+  │  🔔 SMS alerts enabled         │
+  └────────────────────────────────┘
+- Real-time updates via Reverb
+- Progress indicator (visual)
+- SMS notification when:
+  • 2-3 patients ahead
+  • Your turn (queue called)
+- Fallback: Poll every 30 seconds
 ```
 
-**Week 3: Queue Status & Medical Records**
+**Week 3: Medical Records & Polish**
 ```
-Day 1-3: Queue Status Screen
-- Show current active queue:
-  ┌──────────────────────────────────┐
-  │  Your Appointment                │
-  │  Date: Jan 25, 2026              │
-  │  Type: OB                        │
-  │                                  │
-  │  🎫 Queue Number: O-5            │
-  │                                  │
-  │  ⏰ Estimated Time               │
-  │     10:00 AM - 10:30 AM          │
-  │                                  │
-  │  📊 Current Status               │
-  │     Serving: O-3                 │
-  │     Ahead of you: 2 patients     │
-  │                                  │
-  │  ⏳ Updates in real-time         │
-  └──────────────────────────────────┘
-- Real-time updates via WebSocket/Polling
-- Notification when nearby (2-3 away)
-- Notification when your turn
-- Animated progress indicator
-
-Day 4-5: Medical Records Screen
-- List all past visits (timeline view):
+Day 1-2: My Medical Records (Livewire Component)
+- List all past visits (timeline/card view):
   • Date
   • Consultation type
-  • Doctor name (if available)
   • Diagnosis (preview)
-- Tap visit → View full medical record:
-  • Personal info
+- Tap visit → View full record:
   • Chief complaints
   • Vital signs
   • Diagnosis
   • Prescriptions (with details)
-  • Plan/notes
-- Download/share record (PDF)
-- Search/filter records
+  • Doctor notes
+- Share/Download as PDF (optional)
+- Search/filter by date range
 
-Day 6-7: Profile & Settings
-- View/edit profile:
-  • Personal info
-  • Address
-  • Emergency contact
-  • Medical history (blood type, allergies, chronic conditions)
-- Change password
-- Notification settings (enable/disable)
-- App settings (theme, language)
-- Logout
+Day 3-4: Responsive Layout Polish
+- Test on multiple screen sizes:
+  • iPhone SE (small)
+  • iPhone 14 (medium)
+  • iPad (tablet)
+  • Desktop (large)
+- Fix any layout issues
+- Optimize touch targets
+- Ensure forms work on mobile keyboards
+- Test landscape orientation
+- Verify readable font sizes
 
-Testing:
-1. Book appointment for today
-2. (Backend: Approve, generate queue)
-3. Open Queue Status screen
-4. Verify real-time updates
-5. (Backend: Call previous queues)
-6. Verify "ahead of you" count decreases
-7. Receive "queue nearby" notification
-8. View medical records from past visits
-```
-
-**Week 4: Notifications & Polish**
-```
-Day 1-2: Push Notifications (FCM)
-- Setup Firebase Cloud Messaging
-- Request notification permissions
-- Handle notification types:
-  • Appointment approved
-  • Appointment declined
-  • 1 day before reminder
-  • 1 hour before reminder
-  • Queue nearby
-  • Queue called (your turn)
-- Tap notification → Navigate to relevant screen
-- Show notification badge count
-
-Day 3-4: UI Polish & UX
-- Consistent styling (Material Design)
-- Loading indicators (shimmer effect)
-- Empty states ("No appointments yet")
-- Error states (network error, retry)
-- Success/error snackbars
-- Form validation
-- Smooth transitions
-- Pull-to-refresh on lists
-
-Day 5-6: Testing & Bug Fixes
-- End-to-end testing:
-  • Complete user journey (register → book → notify → cancel)
-  • Real-time updates work correctly
-  • Notifications received on time
-  • Medical records display correctly
-- Test on both Android and iOS
-- Test on different screen sizes
-- Fix bugs
-
-Day 7: Performance & Optimization
-- Optimize API calls (caching)
-- Optimize images (compress, lazy load)
-- Optimize build size
-- Test performance (no lag, smooth scrolling)
-- Memory leak check
-- Battery usage check
-
-Release Testing Scenarios:
-1. Patient journey (online booking):
-   - Register → Book → Wait for approval → Receive notification → View queue status → Arrive at hospital
-2. Patient journey (repeat visit):
-   - Login → View past records → Book new appointment → Cancel → Rebook different date
-3. Stress test:
-   - 50 concurrent users booking appointments
-   - Real-time updates with 100+ queue changes
-4. Network scenarios:
-   - Slow internet
-   - No internet (offline behavior)
-   - Server down (error handling)
+Day 5-7: Testing & Optimization
+- Full patient journey test:
+  1. Register new account
+  2. Complete profile
+  3. Book OB appointment
+  4. Wait for approval (check SMS)
+  5. View approved appointment with queue
+  6. Check queue status
+  7. Receive SMS when called
+  8. View medical record after visit
+- Performance testing:
+  • Page load < 3 seconds on 3G
+  • Smooth scrolling
+  • No layout shifts
+- Cross-browser testing:
+  • Chrome (Android)
+  • Safari (iOS)
+  • Firefox
+  • Edge
 ```
 
 ---
@@ -767,13 +746,13 @@ Release Testing Scenarios:
 ```
 Day 1-2: End-to-End Flow Testing
 - Online patient flow:
-  1. Mobile: Register patient
-  2. Mobile: Book OB appointment for tomorrow
-  3. Web (Nurse): See pending appointment
-  4. Web (Nurse): Approve appointment
-  5. Mobile: Receive approval notification with queue number
-  6. Mobile: Receive 1-day-before reminder
-  7. Next day: Mobile receive 1-hour-before reminder
+  1. Web (Patient): Register on mobile browser
+  2. Web (Patient): Book OB appointment for tomorrow
+  3. SMS: Receive booking confirmation
+  4. Web (Nurse): See pending appointment
+  5. Web (Nurse): Approve appointment
+  6. SMS: Receive approval with queue number
+  7. SMS: Receive day-before reminder (scheduled)
   8. Patient arrives at hospital
   9. Web (Nurse): Check in patient
   10. Web (Nurse): Interview and input vital signs
@@ -784,19 +763,17 @@ Day 1-2: End-to-End Flow Testing
   15. Web (Doctor): Forward to billing
   16. Web (Cashier): Process payment
   17. Web (Nurse): Mark queue completed
-  18. Mobile: View completed medical record
-  19. Mobile: View prescriptions
+  18. Web (Patient): View completed medical record
 
 - Walk-in patient flow:
-  1. Patient arrives (no app, no account)
+  1. Patient arrives (no account)
   2. Web (Nurse): Create walk-in registration
-  3. Web (Nurse): Generate queue immediately
-  4. Web (Nurse): Input vital signs
-  5. Web (Nurse): Forward to doctor
-  6. Same as online from step 12 onwards
-  7. Patient given SMS with login credentials
-  8. Patient downloads app later
-  9. Patient logs in and sees medical record
+  3. SMS: Patient receives login credentials
+  4. Web (Nurse): Generate queue immediately
+  5. Web (Nurse): Input vital signs
+  6. Web (Nurse): Forward to doctor
+  7. Same as online from step 12 onwards
+  8. Web (Patient): Logs in later, sees record
 
 Day 3-4: Queue Display Integration
 - Setup 3 physical displays (or simulators)
@@ -804,8 +781,8 @@ Day 3-4: Queue Display Integration
   1. Nurse calls O-5
   2. OB display updates immediately
   3. Sound plays
-  4. Mobile app notifies patient O-5
-  5. Next patient O-6 sees updated status
+  4. SMS sent to patient O-5
+  5. Patient portal shows updated status
 - Test multiple rapid changes:
   • Call 5 patients in quick succession
   • Skip 2 patients
@@ -816,7 +793,6 @@ Day 5: Reverb/WebSocket Testing
 - Test real-time features:
   • Queue updates
   • Appointment approvals
-  • Notifications
   • Display updates
 - Load testing:
   • 50+ concurrent connections
@@ -830,9 +806,9 @@ Day 5: Reverb/WebSocket Testing
 
 Day 6-7: Security Testing
 - Test authentication:
-  • Token expiration
-  • Token refresh
-  • Invalid token handling
+  • Session expiration
+  • Invalid credentials
+  • Role-based access
 - Test authorization:
   • Patient can't access nurse portal
   • Nurse can't approve without permission
@@ -841,15 +817,16 @@ Day 6-7: Security Testing
   • SQL injection attempts
   • XSS attempts
   • CSRF protection
-- Test API rate limiting
-- Test file upload security (if any)
+- Test SMS security:
+  • Rate limiting
+  • Phone validation
 ```
 
 **Week 2: Bug Fixes & Performance**
 ```
 Day 1-3: Bug Fixing
 - Fix all critical bugs found in testing
-- Fix UI/UX issues
+- Fix UI/UX issues (especially mobile)
 - Fix data inconsistencies
 - Fix real-time update issues
 - Test fixes
@@ -859,18 +836,14 @@ Day 4-5: Performance Optimization
   • Add missing indexes
   • Optimize N+1 queries (eager loading)
   • Cache frequently accessed data
-- API response time optimization:
-  • Reduce payload size
-  • Implement pagination
-  • Add API caching
-- Frontend performance:
-  • Optimize Livewire components
-  • Reduce unnecessary re-renders
-  • Lazy load heavy components
-- Mobile app performance:
-  • Optimize API calls
-  • Implement local caching
-  • Reduce unnecessary rebuilds
+- Page load optimization:
+  • Minify CSS/JS
+  • Optimize images
+  • Lazy load components
+- Mobile performance:
+  • Test on slow networks (3G)
+  • Reduce bundle size
+  • Optimize for low-end devices
 
 Day 6-7: Load Testing
 - Simulate hospital workload:
@@ -880,13 +853,13 @@ Day 6-7: Load Testing
   • 10 concurrent nurse actions
   • 5 concurrent doctor actions
   • 2 concurrent cashier actions
-  • 100+ mobile app users
+  • 100+ patient portal users
 - Monitor:
   • Server CPU/memory
   • Database performance
-  • API response times
+  • Page response times
   • Reverb connection stability
-  • Mobile app performance
+  • SMS delivery rate
 - Identify bottlenecks
 - Optimize critical paths
 ```
@@ -900,8 +873,8 @@ Day 6-7: Load Testing
 Day 1-2: Server Setup
 - Provision production server:
   • Ubuntu 24 LTS
-  • PHP 8.3+
-  • MySQL/PostgreSQL
+  • PHP 8.4+
+  • MySQL
   • Redis
   • Nginx
 - Install SSL certificate (Let's Encrypt)
@@ -917,21 +890,21 @@ Day 3-4: Application Deployment
   • Install dependencies (composer)
   • Configure .env (production settings)
   • Run migrations
-  • Run seeders (production data: consultation types, services, settings)
+  • Run seeders (production data)
   • Configure Reverb (production mode)
   • Setup queue workers (supervisor)
   • Configure Laravel scheduler (cron)
-- Deploy mobile app:
-  • Build APK (Android)
-  • Build IPA (iOS)
-  • Upload to Google Play Store (internal testing)
-  • Upload to Apple App Store (TestFlight)
+  • Verify SMS provider configured
+- Setup monitoring:
+  • Error tracking (Sentry/Bugsnag)
+  • Uptime monitoring
+  • SMS delivery monitoring
 
 Day 5: Final Testing in Production
-- Test all workflows in production environment
-- Test with production data
-- Test external integrations (SMS, email, FCM)
-- Performance test with real hardware
+- Test all workflows in production
+- Test with real devices (staff phones)
+- Test SMS delivery
+- Performance test
 - Load test production server
 
 Day 6-7: Data Migration (if needed)
@@ -939,7 +912,6 @@ Day 6-7: Data Migration (if needed)
 - Transform to new format
 - Import into production database
 - Verify data integrity
-- Test with migrated data
 ```
 
 **Week 2: Staff Training & Go-Live**
@@ -954,10 +926,7 @@ Day 1-2: Nurse Training
   • Check-in patients
   • Input vital signs
   • Search patient records
-- Practice scenarios:
-  • Process 10 mock patients
-  • Handle no-shows
-  • Handle urgent patients
+- Practice scenarios
 - Q&A session
 - Training materials (PDF guide)
 
@@ -971,11 +940,8 @@ Day 3: Doctor Training
   • Add prescriptions
   • Billing and discounts
   • Forward to billing/admission
-- Practice scenarios:
-  • Process 5 mock patients
-  • Different consultation types
+- Practice scenarios
 - Q&A session
-- Quick reference guide (PDF)
 
 Day 4: Cashier & Admin Training
 - Cashier training:
@@ -988,13 +954,11 @@ Day 4: Cashier & Admin Training
   • System settings
   • Queue display management
   • Generate reports
-- Practice scenarios
-- Q&A session
 
 Day 5: Soft Launch (Pilot Day)
 - Go live with limited scope:
   • Morning session only (8 AM - 12 PM)
-  • One consultation type (e.g., GENERAL)
+  • One consultation type (GENERAL)
   • 10-20 patients maximum
 - Staff present for support
 - Monitor system closely
@@ -1014,441 +978,139 @@ Day 7: Post-Launch Review
   • System stability
   • User adoption
   • Error rates
-  • Performance issues
-- Collect feedback from staff and patients
+  • SMS delivery rate
+- Collect feedback
 - Prioritize improvements
 - Plan next iteration
 ```
 
 ---
 
-## Real-World Implementation Checklist
+## Patient Portal Features Summary
 
-### Pre-Launch (Must Complete)
-- ✅ All core features working
-- ✅ Database properly seeded
-- ✅ API fully tested
-- ✅ Real-time updates working
-- ✅ Mobile app tested on real devices
-- ✅ Queue displays tested on actual monitors
-- ✅ Security audit completed
-- ✅ Backup system configured
-- ✅ SSL certificate installed
-- ✅ Staff trained
-- ✅ User guides created
-- ✅ Support plan in place
+### For Patients/Parents (Responsive Web)
 
-### Launch Day
-- ✅ All systems online
-- ✅ Staff ready and trained
-- ✅ Support team on standby
-- ✅ Monitoring tools active
-- ✅ Backup plan ready
-- ✅ Communication plan (if system down)
+| Feature | Description | Notification |
+|---------|-------------|--------------|
+| **Register** | Create account with phone number | SMS: Welcome message |
+| **Login** | Access portal from any device | - |
+| **Book Appointment** | Select type, date, fill complaints | SMS: Booking confirmed |
+| **View Appointments** | See all appointments and status | - |
+| **Cancel Appointment** | Cancel pending/approved bookings | SMS: Cancellation confirmed |
+| **Queue Status** | Real-time queue position | SMS: Queue called |
+| **Medical Records** | View past visit history | - |
+| **Profile** | Update personal/medical info | - |
 
-### Post-Launch (First Week)
-- ✅ Daily monitoring
-- ✅ Daily feedback collection
-- ✅ Bug fix priority queue
-- ✅ Performance monitoring
-- ✅ User adoption metrics
-- ✅ Staff satisfaction survey
+### SMS Notifications (Automated)
 
-### Post-Launch (First Month)
-- ✅ Feature usage analytics
-- ✅ System performance review
-- ✅ Staff re-training (if needed)
-- ✅ Patient satisfaction survey
-- ✅ Plan improvements
-- ✅ Prioritize next features
-
----
-
-## Maintenance & Support
-
-### Daily Tasks
-- Monitor server health
-- Check error logs
-- Review failed jobs (queue)
-- Check backup status
-- Monitor Reverb connections
-
-### Weekly Tasks
-- Review system performance
-- Analyze usage patterns
-- Review user feedback
-- Update documentation
-- Plan improvements
-
-### Monthly Tasks
-- Security updates
-- Dependency updates
-- Database optimization
-- Generate monthly reports
-- Review and archive old data
-
-### As Needed
-- Add new features
-- Fix bugs
-- Improve performance
-- Scale infrastructure
-- User training refreshers
-
----
-
-## Laravel Architecture Overview
-
-### Project Structure (Standard Laravel 12)
-```
-/hospital-queue-system
-├── /app
-│   ├── /Http
-│   │   ├── /Controllers/Api          # API endpoints (Sanctum)
-│   │   └── /Livewire                 # Livewire components
-│   ├── /Models                       # Eloquent models
-│   ├── /Policies                     # Authorization policies
-│   ├── /Services                     # Business logic
-│   ├── /Events                       # Reverb events
-│   └── /Listeners                    # Event listeners
-├── /database
-│   ├── /migrations                   # Database schema
-│   └── /seeders                      # Test data
-├── /resources
-│   └── /views
-│       └── /livewire                 # Livewire blade views (Flux)
-└── /routes
-    ├── web.php                       # Livewire routes
-    └── api.php                       # Sanctum API routes
-```
-
-### Key Laravel Packages & Their Purpose
-
-#### Laravel Sanctum (API Authentication)
-- Token-based authentication for Flutter app
-- Protects API endpoints
-- Token generation on login
-- Token revocation on logout
-
-#### Spatie Laravel Permission (Roles & Authorization)
-- Role: `nurse`, `doctor`, `cashier`, `admin`
-- Permissions: `view-queue`, `approve-appointment`, `add-diagnosis`, etc.
-- Middleware: `role:doctor`, `permission:view-records`
-- Gates & Policies for fine-grained control
-
-#### Livewire + Flux (Web Portal)
-- Full-stack reactive components (no separate frontend build)
-- Real-time updates without page refresh
-- Flux components: Tables, Modals, Forms, Dialogs
-- Server-side rendering (SEO-friendly)
-
-#### Laravel Reverb (Real-time Communication)
-- WebSocket server (built into Laravel)
-- Queue position updates (real-time)
-- New appointment notifications
-- Patient status changes
-- Broadcasting events: `QueueUpdated`, `AppointmentApproved`
-
-### User Roles & Permissions (Spatie)
-
-**To be detailed in ROLES.md**, but high-level:
-
-```php
-// Roles
-- patient (mobile app users)
-- nurse (web portal - schedule/queue management)
-- doctor (web portal - diagnosis/prescription)
-- cashier (web portal - billing)
-- admin (full access)
-
-// Example Permissions
-- view-appointments
-- approve-appointments
-- manage-queue
-- input-vital-signs
-- view-patient-records
-- add-diagnosis
-- add-prescription
-- process-billing
-- generate-reports
-```
-
-### API Structure (Sanctum-Protected)
-
-**To be detailed in API.md**, but high-level endpoints:
-
-```php
-POST   /api/login                    # Get Sanctum token
-POST   /api/logout                   # Revoke token
-
-GET    /api/doctors/availability     # Check doctor schedules
-POST   /api/appointments             # Request appointment
-GET    /api/appointments/my          # User's appointments
-GET    /api/records/my               # User's medical history
-
-// All protected with: middleware(['auth:sanctum'])
-```
-
-### Real-time Events (Reverb)
-
-**To be detailed in EVENTS.md**, but examples:
-
-```php
-// Server broadcasts:
-event(new QueueUpdated($queueNumber));
-event(new AppointmentApproved($appointment));
-event(new PatientCalled($patientId));
-
-// Livewire components listen:
-public function getListeners()
-{
-    return ['QueueUpdated' => '$refresh'];
-}
-
-// Flutter app listens via WebSocket/Pusher client
-```
-
----
-
-## File Organization
-
-### Check-in Points
-- **Before major decisions** - Discuss technology choices, architecture decisions
-- **After completing modules** - Review, test, and get approval before moving forward
-- **When blocked** - Communicate issues immediately
-- **Regular updates** - Progress reports at defined intervals
-
-### Decision-Making Process
-1. **Present options** with pros/cons
-2. **Discuss implications** (cost, time, complexity)
-3. **Make decision together**
-4. **Document decision** and rationale
-
-### Documentation Files Organization
-
-We'll create these planning documents before coding:
-
-```
-/project-docs
-  ├── PROJECT.md           # ✅ Project definition
-  ├── WORKFLOW.md          # ✅ Development process
-  ├── DATABASE.md          # ⏳ Complete database schema
-  ├── API.md               # ⏳ All API endpoints (Sanctum)
-  ├── ROLES.md             # ⏳ Spatie roles & permissions matrix
-  ├── EVENTS.md            # ⏳ Reverb real-time events
-  ├── USER-FLOWS.md        # ⏳ User workflow diagrams
-  └── UI-WIREFRAMES.md     # ⏳ Screen layouts (Flux components)
-```
+| Event | Message Example |
+|-------|-----------------|
+| Appointment Booked | "HQMS: Your OB appointment for Jan 25 is pending approval." |
+| Appointment Approved | "HQMS: Approved! Queue #O-5 for Jan 25, 10:00 AM. Arrive 30 mins early." |
+| Appointment Declined | "HQMS: Your appointment was declined. Reason: [reason]. Please rebook." |
+| Day Before Reminder | "HQMS: Reminder - Your OB appointment is tomorrow at 10:00 AM. Queue #O-5." |
+| Queue Called | "HQMS: Your turn! Queue #O-5 is now being called. Please proceed." |
+| Queue Nearly Called | "HQMS: Get ready! You are 2nd in line. Queue #O-5." |
 
 ---
 
 ## Confirmed Technology Stack
 
-### ✅ Backend & Web
-- **Laravel 12** with Livewire (full-stack reactive framework)
-- **Flux** free components (tables, modals, dialogs, forms)
-- **Laravel Reverb** (WebSocket/real-time notifications)
-- **Laravel Sanctum** (API authentication for mobile)
+### ✅ Backend & Web Portal
+- **Laravel 12** with Livewire 4.0 (full-stack reactive framework)
+- **Flux UI Free** components only (tables, modals, forms, inputs)
+- **Laravel Reverb** (WebSocket/real-time updates)
+- **Laravel Sanctum** (session-based auth for web)
 - **Spatie Laravel Permission** (roles & permissions)
+- **Tailwind CSS 4.0** (responsive design)
 
-### ✅ Mobile
-- **Flutter** with **Dio** (HTTP client for API calls)
+### ✅ Notifications
+- **SMS via Semaphore** (primary notification method)
+- Queued SMS via Laravel Jobs
+- SMS logging and analytics
 
-### ⏳ To Be Decided
-- **Database:** MySQL or PostgreSQL? (both work well with Laravel)
-- **Hosting:** Cloud (AWS, DigitalOcean) or On-Premise?
-- **Flutter State Management:** Provider, Riverpod, or Bloc?
+### ✅ Patient Access
+- **Responsive Web Portal** (mobile-first design)
+- Works on all devices (phone, tablet, desktop)
+- No app installation required
+- Uses same Laravel/Livewire stack
 
----
+### ✅ Database
+- **MySQL** (production)
+- **SQLite** (development/testing)
 
-## Code Standards & Best Practices
-
-### Laravel-Specific Standards
-- **PSR-12** coding standard
-- **Laravel conventions** (naming, structure)
-- **Service/Action pattern** for business logic
-- **Repository pattern** (if needed for complex queries)
-- **Form Requests** for validation
-- **API Resources** for response formatting
-- **Events & Listeners** for decoupled logic
-- **Jobs & Queues** for async operations
-- **Policies** with Spatie Permission for authorization
-
-### Livewire Best Practices
-- Component-based architecture
-- Proper use of Flux components (tables, forms, modals)
-- Real-time updates via Reverb events
-- Efficient data loading (lazy loading, pagination)
-- Form validation using Laravel rules
-
-### Flutter/Dio Standards
-- **BLoC/Provider/Riverpod** pattern (TBD)
-- **Dio interceptors** for Sanctum token handling
-- **Error handling** for API calls
-- **Offline caching** (if needed)
-- **Material Design** guidelines
-
-### API Design (Laravel Sanctum)
-- **RESTful** endpoints
-- **Token-based** authentication (Sanctum)
-- **Versioning** (v1, v2, etc.)
-- **Consistent responses** (success/error format)
-- **Rate limiting** (throttle middleware)
-- **API documentation** (Scribe/OpenAPI)
-
-### Database Standards
-- **Migrations** for all schema changes
-- **Seeders** for test data
-- **Foreign key constraints**
-- **Soft deletes** for sensitive data
-- **Indexes** on frequently queried columns
-- **Timestamps** (created_at, updated_at)
+### ❌ Not Using (Deferred)
+- ~~Flutter mobile app~~ → Responsive web instead
+- ~~Firebase Cloud Messaging~~ → SMS notifications instead
+- ~~Flux Pro components~~ → Free components only
 
 ---
 
-## Healthcare-Specific Considerations
+## Responsive Design Guidelines
 
-### Data Privacy & Security
-- **HIPAA compliance** considerations (if applicable)
-- **Patient data encryption** at rest and in transit
-- **Access control** - role-based permissions
-- **Audit logs** - track who accessed what and when
-- **Data backup** strategy and disaster recovery
+### Breakpoints (Tailwind)
+```css
+/* Mobile first approach */
+sm: 640px   /* Small tablets */
+md: 768px   /* Tablets */
+lg: 1024px  /* Laptops */
+xl: 1280px  /* Desktops */
+```
 
-### Reliability Requirements
-- **99.9% uptime** target
-- **Data integrity** - no lost records
-- **Concurrent users** - handle peak clinic hours
-- **Offline capability** (if needed for mobile app)
+### Mobile-First Principles
+1. **Design for mobile first**, then scale up
+2. **Touch-friendly** - Minimum 44px touch targets
+3. **Readable typography** - 16px base font minimum
+4. **Thumb-friendly** - Important actions within reach
+5. **Fast loading** - Optimize for 3G connections
+6. **Progressive enhancement** - Core features work everywhere
 
----
-
-## Current Status & Focus
-
-### ✅ Completed
-- Project definition and problem analysis
-- Feature requirements documented
-- Data structure from hospital forms analyzed
-- Technology stack confirmed (Laravel 12, Livewire, Flux, Reverb, Sanctum, Spatie, Flutter, Dio)
-
-### 🎯 Current Focus: PLANNING ONLY (No Development Yet)
-**Goal:** Complete architectural planning before any coding begins
-
-### ⏳ Next Immediate Planning Steps
-1. **Database Schema Design** - All tables, relationships, indexes
-2. **Roles & Permissions Matrix** - Define all user roles and their capabilities using Spatie
-3. **API Endpoint Specifications** - All routes for Flutter app (Sanctum-protected)
-4. **Real-time Events Mapping** - What notifications/updates use Reverb
-5. **User Workflow Diagrams** - Detailed flow for each user type
-6. **UI/UX Wireframes** - Screen layouts using Flux components
-7. **Development Milestones** - Timeline and deliverables
-
-**🚫 NO CODE WRITTEN until complete planning is approved and documented**
-
----
-
-## My Role (Claude)
-
-### What I Can Help With
-- ✅ Architecture and design recommendations
-- ✅ Database schema design
-- ✅ API endpoint specifications
-- ✅ Code generation and examples
-- ✅ Testing strategy and test cases
-- ✅ Documentation and comments
-- ✅ Debugging and troubleshooting
-- ✅ Best practices and security guidance
-
-### What I Need From You
-- Technology stack preferences
-- Team capabilities and expertise
-- Access to test environments (when coding begins)
-- Feedback and approval on deliverables
-- Real hospital workflow clarifications (if needed)
-- Priority decisions when tradeoffs exist
-
----
-
-## Questions Before We Proceed with Planning
-
-### Team & Organization
-1. **Who are the team members?**
-   - Laravel developers (count & experience level)?
-   - Flutter developer(s)?
-   - Who handles database design?
-   - Project lead/manager?
-
-2. **Team Laravel Experience**
-   - Comfortable with Laravel 12 features?
-   - Experience with Livewire?
-   - Worked with Spatie Permission before?
-   - Familiar with Laravel Reverb (new in Laravel 11+)?
-
-### Technical Decisions
-3. **Database Choice**
-   - MySQL (most common with Laravel)?
-   - PostgreSQL (more features, better for complex queries)?
-
-4. **Flutter State Management**
-   - Provider (simple, official)?
-   - Riverpod (modern, recommended)?
-   - BLoC (enterprise, more complex)?
-
-5. **Hosting Environment**
-   - Cloud (Laravel Forge, DigitalOcean, AWS)?
-   - Hospital on-premise servers?
-   - Hybrid approach?
-
-### Project Scope
-6. **Timeline Expectations**
-   - Planning phase: 2-4 weeks?
-   - Development: 3-6 months?
-   - Any hard deadlines?
-
-7. **Phased Rollout or All-at-Once?**
-   - Start with Nurse module first?
-   - Build all modules then deploy?
-   - MVP features vs full features?
-
-8. **Integration Requirements**
-   - Any existing hospital systems?
-   - SMS provider for notifications?
-   - Payment gateway integration?
-   - Lab/imaging system integration?
+### Flux Free Components Available
+- `flux:input` - Text inputs
+- `flux:textarea` - Multi-line text
+- `flux:select` - Dropdowns
+- `flux:checkbox` - Checkboxes
+- `flux:radio` - Radio buttons
+- `flux:button` - Buttons
+- `flux:modal` - Modals/dialogs
+- `flux:dropdown` - Dropdown menus
+- `flux:badge` - Status badges
+- `flux:separator` - Dividers
+- `flux:heading` - Headings
+- `flux:text` - Text blocks
 
 ---
 
 ## Project Timeline Summary
 
-### Total Estimated Duration: 16-20 weeks (4-5 months)
+### Total Estimated Duration: 12-14 weeks (3-3.5 months)
 
-**Phase 0: Planning & Architecture** ✅ COMPLETED (2 weeks)
-- PROJECT.md, WORKFLOW.md, DATABASE.md finalized
-- Real-world scenarios documented
-- Technology stack confirmed
+**Phase 0: Planning & Architecture** ✅ COMPLETED
+- Documentation, SMS system implemented
 
 **Phase 1: Backend Foundation** (2-3 weeks)
-- Database, authentication, API endpoints
-- Deliverable: Working API with Postman tests
+- Database, authentication, services, SMS integration
+- Deliverable: Working backend with SMS
 
 **Phase 2: Web Portal - Nurse** (3 weeks)
 - Appointment management, queue system, vital signs
-- Deliverable: Functional nurse portal (live demo)
+- Deliverable: Functional nurse portal
 
 **Phase 3: Web Portal - Doctor** (2 weeks)
 - Patient queue, diagnosis, prescriptions, billing
-- Deliverable: Functional doctor portal (live demo)
+- Deliverable: Functional doctor portal
 
 **Phase 4: Web Portal - Cashier & Admin** (2 weeks)
 - Billing, reports, system management
-- Deliverable: Complete web portal system
+- Deliverable: Complete staff portal
 
 **Phase 5: Queue Display System** (1 week)
 - Public displays with real-time updates
-- Deliverable: Working displays on monitors
+- Deliverable: Working displays
 
-**Phase 6: Mobile App (Flutter)** (4 weeks)
-- Authentication, appointments, queue status, records
-- Deliverable: Functional mobile app (APK/IPA)
+**Phase 6: Patient Portal - Responsive Web** (2 weeks)
+- Registration, booking, queue status, records
+- Deliverable: Mobile-friendly patient portal
 
 **Phase 7: Integration & Testing** (2 weeks)
 - End-to-end testing, bug fixes, optimization
@@ -1466,15 +1128,14 @@ We'll create these planning documents before coding:
 - ✅ All core features working as specified
 - ✅ Real-time updates working smoothly
 - ✅ System handles 200+ patients/day
-- ✅ API response time < 500ms
-- ✅ Mobile app smooth on mid-range devices
+- ✅ Page load < 3 seconds on mobile
+- ✅ SMS delivery rate > 95%
 - ✅ 99.9% uptime
 - ✅ Zero data loss
-- ✅ Secure authentication and authorization
+- ✅ Responsive design works on all devices
 
 ### User Success
-- ✅ Patients can book appointments easily
-- ✅ 80%+ online booking adoption (within 3 months)
+- ✅ Patients can book appointments easily from phone
 - ✅ 60%+ reduction in waiting time
 - ✅ Staff find system easier than manual
 - ✅ Doctors have complete patient info
@@ -1484,93 +1145,37 @@ We'll create these planning documents before coding:
 ### Business Success
 - ✅ Reduced overcrowding in waiting area
 - ✅ Better patient flow management
-- ✅ Improved patient satisfaction
 - ✅ Complete digital medical records
 - ✅ Accurate billing and accounting
 - ✅ Data-driven decision making (reports)
-- ✅ Hospital operational efficiency improved
-
----
-
-## Risk Management
-
-### Technical Risks
-
-**Risk: Reverb/WebSocket Issues**
-- Impact: Real-time updates fail
-- Mitigation: Implement polling fallback
-- Contingency: Can operate with 30-second polling
-
-**Risk: Database Performance**
-- Impact: Slow queries, system lag
-- Mitigation: Proper indexing, query optimization, caching
-- Contingency: Scale database server, add read replicas
-
-**Risk: Mobile App Compatibility**
-- Impact: App doesn't work on some devices
-- Mitigation: Test on multiple devices, use stable Flutter version
-- Contingency: Provide web-based mobile view
-
-**Risk: Server Downtime**
-- Impact: System unavailable
-- Mitigation: Automated monitoring, auto-restart, load balancing
-- Contingency: Manual queue system (printed tickets)
-
-### User Adoption Risks
-
-**Risk: Staff Resistance to Change**
-- Impact: Low adoption, continued manual processes
-- Mitigation: Thorough training, gradual rollout, support available
-- Contingency: Additional training sessions, one-on-one coaching
-
-**Risk: Patients Don't Download App**
-- Impact: Low online booking rate
-- Mitigation: QR codes at hospital, SMS reminders, staff promotion
-- Contingency: Walk-in system works independently
-
-**Risk: Internet Connectivity Issues**
-- Impact: System slow or unavailable
-- Mitigation: Reliable ISP, backup connection, local caching
-- Contingency: Offline mode (limited functionality)
 
 ---
 
 ## Future Enhancements (Post-Launch)
 
 ### Phase 2 Features (Months 3-6)
-- SMS appointment reminders (via SMS gateway)
-- Email notifications
+- Email notifications (optional)
 - Print queue tickets at kiosk
 - Laboratory results integration
-- Imaging results (X-ray, ultrasound) integration
 - Multiple languages (Filipino, English)
-- Doctor schedule management (doctors can set own availability)
+- Doctor schedule management
 - Patient ratings and feedback
-- Telemedicine integration (video consultations)
 
 ### Phase 3 Features (Months 6-12)
-- Inventory management (medicines, supplies)
-- Inpatient management (full admission system)
+- Native mobile app (Flutter) - if needed
+- Push notifications (FCM)
+- Inventory management
+- Inpatient management
 - Pharmacy system integration
-- Laboratory system integration
-- Electronic medical records (EMR) full suite
 - Insurance claims processing
-- Financial reports and analytics (advanced)
-- Referral system (to other hospitals/specialists)
-- Patient portal (web version of mobile app)
 
 ### Advanced Features (Year 2+)
 - AI-powered queue prediction
-- Chatbot for common questions
-- Automated appointment reminders (voice calls)
-- Predictive analytics (patient volume forecasting)
-- Mobile app for staff (doctors, nurses)
-- Integration with national health systems
-- Research and analytics module
-- Multi-hospital support (chain management)
+- Telemedicine integration
+- Multi-hospital support
 
 ---
 
-*Document Version: FINAL 2.0*  
-*Last Updated: January 18, 2026*  
-*Status: Ready for Development*
+*Document Version: 3.0*
+*Last Updated: January 20, 2026*
+*Status: Ready for Development - Responsive Web Approach*
