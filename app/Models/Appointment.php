@@ -18,5 +18,6 @@ class Appointment extends Model
         'approved_at' => 'datetime',
         'checked_in_at' => 'datetime',
         'suggested_date' => 'date',
+        'patient_date_of_birth' => 'date',
     ];
 }

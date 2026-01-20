@@ -4,11 +4,24 @@
             <h1 class="text-2xl font-bold">Book Appointment</h1>
             <p class="text-sm text-zinc-600 dark:text-zinc-400">Follow the steps to schedule your visit.</p>
         </div>
-        <img
-            src="{{ asset('images/undraw_schedule_ry1w.svg') }}"
-            alt="Schedule appointment"
-            class="h-20 w-auto opacity-80"
-        />
+        <div class="flex items-center gap-3 self-start md:self-auto">
+            @if($currentStep > 1)
+                @if($maxStep >= 4)
+                    <flux:button type="button" wire:click="goToStep(4)" variant="outline" size="sm">
+                        Preview
+                    </flux:button>
+                @else
+                    <flux:button type="button" variant="outline" size="sm" disabled>
+                        Preview
+                    </flux:button>
+                @endif
+            @endif
+            <img
+                src="{{ asset('images/undraw_schedule_ry1w.svg') }}"
+                alt="Schedule appointment"
+                class="h-20 w-auto opacity-80"
+            />
+        </div>
     </div>
 
     @php
@@ -32,14 +45,20 @@
 
         <div class="grid grid-cols-4 gap-4 text-center">
             @foreach($stepLabels as $step => $label)
+                @php
+                    $isComplete = $currentStep >= $step;
+                    $canNavigate = $step <= $maxStep;
+                    $stateClasses = $isComplete
+                        ? 'border-zinc-900 bg-zinc-900 text-white hover:bg-zinc-900 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-100'
+                        : 'border-zinc-200 bg-white text-zinc-500 hover:bg-white dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900';
+                    $navClasses = $canNavigate ? '' : 'opacity-40 pointer-events-none';
+                @endphp
                 <div class="relative flex flex-col items-center gap-3">
                     <flux:button
                         wire:click="goToStep({{ $step }})"
                         variant="ghost"
                         size="sm"
-                        class="h-9 w-9 rounded-full border p-0 text-sm font-semibold {{ $currentStep >= $step
-                            ? 'border-zinc-900 bg-zinc-900 text-white hover:bg-zinc-900 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-100'
-                            : 'border-zinc-200 bg-white text-zinc-500 hover:bg-white dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900' }}"
+                        class="h-9 w-9 rounded-full border p-0 text-sm font-semibold {{ $stateClasses }} {{ $navClasses }}"
                     >
                         {{ $step }}
                     </flux:button>
@@ -51,6 +70,7 @@
         </div>
     </div>
 
+    {{-- Step 1: Consultation Type --}}
     @if($currentStep === 1)
         <div class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
             <div class="border-b border-zinc-200/70 px-4 py-3 dark:border-zinc-800">
@@ -74,10 +94,21 @@
                         </flux:button>
                     @endforeach
                 </div>
+                <div class="mt-4 flex justify-end">
+                    <flux:button
+                        type="button"
+                        wire:click="nextStep"
+                        variant="primary"
+                        :disabled="!$consultationTypeId"
+                    >
+                        Continue
+                    </flux:button>
+                </div>
             </div>
         </div>
     @endif
 
+    {{-- Step 2: Date Selection --}}
     @if($currentStep === 2)
         <div class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
             <div class="border-b border-zinc-200/70 px-4 py-3 dark:border-zinc-800">
@@ -117,10 +148,24 @@
                         @endif
                     @endforeach
                 </div>
+                <div class="mt-4 flex flex-wrap gap-3">
+                    <flux:button type="button" wire:click="previousStep" variant="outline">
+                        Previous
+                    </flux:button>
+                    <flux:button
+                        type="button"
+                        wire:click="nextStep"
+                        variant="primary"
+                        :disabled="!$appointmentDate"
+                    >
+                        Next
+                    </flux:button>
+                </div>
             </div>
         </div>
     @endif
 
+    {{-- Step 3: Patient Details --}}
     @if($currentStep === 3)
         <div class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
             <div class="border-b border-zinc-200/70 px-4 py-3 dark:border-zinc-800">
@@ -138,22 +183,33 @@
 
                     @if($patientType === 'dependent')
                         <div class="space-y-4 border-t pt-4">
-                            <flux:field label="Patient Name">
-                                <flux:input type="text" wire:model.live="dependentName" required />
-                            </flux:field>
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <flux:field label="First Name">
+                                    <flux:input type="text" wire:model.live="patientFirstName" placeholder="First name" required />
+                                </flux:field>
 
-                            <flux:field label="Birth Date">
-                                <flux:input type="date" wire:model.live="dependentBirthDate" required />
-                            </flux:field>
+                                <flux:field label="Middle Name">
+                                    <flux:input type="text" wire:model.live="patientMiddleName" placeholder="Middle name (optional)" />
+                                </flux:field>
 
-                            <flux:field label="Gender">
-                                <flux:select wire:model.live="dependentGender" required>
-                                    <option value="">Select Gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="other">Other</option>
-                                </flux:select>
-                            </flux:field>
+                                <flux:field label="Last Name">
+                                    <flux:input type="text" wire:model.live="patientLastName" placeholder="Last name" required />
+                                </flux:field>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <flux:field label="Birth Date">
+                                    <flux:input type="date" wire:model.live="patientDateOfBirth" required />
+                                </flux:field>
+
+                                <flux:field label="Gender">
+                                    <flux:select wire:model.live="patientGender" required>
+                                        <option value="">Select Gender</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                    </flux:select>
+                                </flux:field>
+                            </div>
                         </div>
                     @endif
 
@@ -170,6 +226,7 @@
         </div>
     @endif
 
+    {{-- Step 4: Chief Complaints --}}
     @if($currentStep === 4)
         <div class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
             <div class="border-b border-zinc-200/70 px-4 py-3 dark:border-zinc-800">
@@ -194,15 +251,21 @@
                         <div class="space-y-3 mt-4">
                             <div class="flex justify-between">
                                 <span class="font-medium">Consultation Type:</span>
-                                <span>{{ $consultationType->name }}</span>
+                                <span>{{ $consultationType?->name }}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="font-medium">Date:</span>
-                                <span>{{ $selectedDate['formatted'] }}</span>
+                                <span>{{ $selectedDate['formatted'] ?? '' }}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="font-medium">Patient:</span>
-                                <span>{{ $patientType === 'self' ? 'Yourself' : $dependentName }}</span>
+                                <span>
+                                    @if($patientType === 'self')
+                                        Yourself
+                                    @else
+                                        {{ trim($patientFirstName . ' ' . ($patientMiddleName ? $patientMiddleName . ' ' : '') . $patientLastName) }}
+                                    @endif
+                                </span>
                             </div>
                         </div>
                     </div>

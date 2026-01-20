@@ -4,35 +4,48 @@ namespace App\Livewire\Patient;
 
 use App\Models\Appointment;
 use App\Models\ConsultationType;
+use App\Models\MedicalRecord;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Livewire\Component;
 
 class BookAppointment extends Component
 {
-    public $currentStep = 1;
+    public int $currentStep = 1;
+
+    public int $maxStep = 1;
 
     // Step 1: Consultation Type
-    public $consultationTypeId;
+    public ?int $consultationTypeId = null;
 
     // Step 2: Date Selection
-    public $appointmentDate;
-    public $availableDates = [];
+    public ?string $appointmentDate = null;
+
+    public array $availableDates = [];
 
     // Step 3: Patient Details
-    public $patientType = 'self'; // self or dependent
-    public $dependentName;
-    public $dependentBirthDate;
-    public $dependentGender;
+    public string $patientType = 'self'; // self or dependent
+
+    public string $patientFirstName = '';
+
+    public string $patientMiddleName = '';
+
+    public string $patientLastName = '';
+
+    public ?string $patientDateOfBirth = null;
+
+    public ?string $patientGender = null;
 
     // Step 4: Chief Complaints
-    public $chiefComplaints;
+    public string $chiefComplaints = '';
 
     // Review data
-    public $consultationType;
-    public $selectedDate;
+    public ?ConsultationType $consultationType = null;
+
+    public ?array $selectedDate = null;
 
     protected function rules(): array
     {
@@ -41,9 +54,11 @@ class BookAppointment extends Component
             'appointmentDate' => 'required|date|after_or_equal:today',
             'patientType' => ['required', Rule::in(['self', 'dependent'])],
             'chiefComplaints' => 'required|string|min:10|max:1000',
-            'dependentName' => 'required_if:patientType,dependent|string|max:255',
-            'dependentBirthDate' => 'required_if:patientType,dependent|date|before:today',
-            'dependentGender' => 'required_if:patientType,dependent|in:male,female,other',
+            'patientFirstName' => 'required_if:patientType,dependent|nullable|string|max:255',
+            'patientMiddleName' => 'nullable|string|max:255',
+            'patientLastName' => 'required_if:patientType,dependent|nullable|string|max:255',
+            'patientDateOfBirth' => 'required_if:patientType,dependent|nullable|date|before:today',
+            'patientGender' => ['required_if:patientType,dependent', 'nullable', Rule::in(['male', 'female'])],
         ];
     }
 
@@ -92,7 +107,7 @@ class BookAppointment extends Component
 
     private function getDayCapacity(Carbon $date): int
     {
-        if (!$this->consultationTypeId) {
+        if (! $this->consultationTypeId) {
             return 0;
         }
 
@@ -109,6 +124,7 @@ class BookAppointment extends Component
         $this->consultationType = ConsultationType::find($typeId);
         $this->generateAvailableDates();
         $this->currentStep = 2;
+        $this->maxStep = max($this->maxStep, 2);
     }
 
     public function selectDate(string $date): void
@@ -116,22 +132,24 @@ class BookAppointment extends Component
         $this->appointmentDate = $date;
         $this->selectedDate = collect($this->availableDates)->firstWhere('date', $date);
         $this->currentStep = 3;
+        $this->maxStep = max($this->maxStep, 3);
     }
 
     public function nextStep(): void
     {
         $this->validateStep($this->currentStep);
         $this->currentStep++;
+        $this->maxStep = max($this->maxStep, $this->currentStep);
     }
 
     public function previousStep(): void
     {
-        $this->currentStep--;
+        $this->currentStep = max($this->currentStep - 1, 1);
     }
 
     public function goToStep(int $step): void
     {
-        if ($step < 1 || $step > $this->currentStep) {
+        if ($step < 1 || $step > $this->maxStep) {
             return;
         }
 
@@ -150,9 +168,11 @@ class BookAppointment extends Component
             case 3:
                 $this->validate([
                     'patientType' => ['required', Rule::in(['self', 'dependent'])],
-                    'dependentName' => 'required_if:patientType,dependent|string|max:255',
-                    'dependentBirthDate' => 'required_if:patientType,dependent|date|before:today',
-                    'dependentGender' => 'required_if:patientType,dependent|in:male,female,other',
+                    'patientFirstName' => 'required_if:patientType,dependent|nullable|string|max:255',
+                    'patientMiddleName' => 'nullable|string|max:255',
+                    'patientLastName' => 'required_if:patientType,dependent|nullable|string|max:255',
+                    'patientDateOfBirth' => 'required_if:patientType,dependent|nullable|date|before:today',
+                    'patientGender' => ['required_if:patientType,dependent', 'nullable', Rule::in(['male', 'female'])],
                 ]);
                 break;
             case 4:
@@ -165,21 +185,73 @@ class BookAppointment extends Component
     {
         $this->validate();
 
-        Appointment::create([
-            'user_id' => Auth::id(),
-            'consultation_type_id' => $this->consultationTypeId,
-            'appointment_date' => $this->appointmentDate,
-            'status' => 'pending',
-            'chief_complaints' => $this->chiefComplaints,
-        ]);
+        $user = Auth::user();
+        $personalInfo = $user->personalInformation;
+
+        // Determine patient info based on patient type
+        if ($this->patientType === 'self') {
+            $patientFirstName = $personalInfo?->first_name ?? '';
+            $patientMiddleName = $personalInfo?->middle_name;
+            $patientLastName = $personalInfo?->last_name ?? '';
+            $patientDateOfBirth = $personalInfo?->date_of_birth;
+            $patientGender = $personalInfo?->gender;
+        } else {
+            $patientFirstName = $this->patientFirstName;
+            $patientMiddleName = $this->patientMiddleName ?: null;
+            $patientLastName = $this->patientLastName;
+            $patientDateOfBirth = $this->patientDateOfBirth;
+            $patientGender = $this->patientGender;
+        }
+
+        DB::transaction(function () use ($user, $personalInfo, $patientFirstName, $patientMiddleName, $patientLastName, $patientDateOfBirth, $patientGender) {
+            // Create the appointment
+            $appointment = Appointment::create([
+                'user_id' => $user->id,
+                'consultation_type_id' => $this->consultationTypeId,
+                'appointment_date' => $this->appointmentDate,
+                'status' => 'pending',
+                'chief_complaints' => $this->chiefComplaints,
+                'patient_type' => $this->patientType,
+                'patient_first_name' => $patientFirstName,
+                'patient_middle_name' => $patientMiddleName,
+                'patient_last_name' => $patientLastName,
+                'patient_date_of_birth' => $patientDateOfBirth,
+                'patient_gender' => $patientGender,
+            ]);
+
+            // Create pre-visit medical record
+            MedicalRecord::create([
+                'user_id' => $user->id,
+                'consultation_type_id' => $this->consultationTypeId,
+                'appointment_id' => $appointment->id,
+                'visit_date' => $this->appointmentDate,
+                'visit_type' => 'new',
+                'service_type' => 'checkup',
+                'status' => 'in_progress',
+                'is_pre_visit' => true,
+                'chief_complaints_initial' => $this->chiefComplaints,
+                // Patient info
+                'patient_first_name' => $patientFirstName,
+                'patient_middle_name' => $patientMiddleName,
+                'patient_last_name' => $patientLastName,
+                'patient_date_of_birth' => $patientDateOfBirth,
+                'patient_gender' => $patientGender,
+                // Copy address from account owner's personal info
+                'patient_province' => $personalInfo?->province,
+                'patient_municipality' => $personalInfo?->municipality,
+                'patient_barangay' => $personalInfo?->barangay,
+                'patient_street' => $personalInfo?->street,
+                'patient_contact_number' => $personalInfo?->phone,
+                'emergency_contact_name' => $personalInfo?->emergency_contact_name,
+                'emergency_contact_phone' => $personalInfo?->emergency_contact_phone,
+            ]);
+        });
 
         // In real app, send SMS notification here
         $this->dispatch('appointmentBooked', 'Appointment submitted successfully! You will receive an SMS confirmation.');
 
-        // Reset form
-        $this->reset();
-        $this->currentStep = 1;
-        $this->generateAvailableDates();
+        // Redirect to appointments list
+        $this->redirect(route('patient.appointments'), navigate: true);
     }
 
     public function render(): View
@@ -188,6 +260,6 @@ class BookAppointment extends Component
 
         return view('livewire.patient.book-appointment', [
             'consultationTypes' => $consultationTypes,
-        ]);
+        ])->layout('layouts.app');
     }
 }
