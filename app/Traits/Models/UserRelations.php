@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Traits\Models;
 
 use App\Models\Admission;
@@ -9,6 +10,7 @@ use App\Models\DoctorSchedule;
 use App\Models\MedicalRecord;
 use App\Models\PersonalInformation;
 use App\Models\Queue;
+use App\Models\UserDevice;
 
 trait UserRelations
 {
@@ -55,5 +57,15 @@ trait UserRelations
     public function admissions()
     {
         return $this->hasMany(Admission::class, 'user_id');
+    }
+
+    public function devices()
+    {
+        return $this->hasMany(UserDevice::class);
+    }
+
+    public function activeDevices()
+    {
+        return $this->devices()->active()->withFcmToken();
     }
 }
