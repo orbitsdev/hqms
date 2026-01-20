@@ -12,7 +12,10 @@
       "Bash(php artisan:*)",
       "Bash(curl:*)",
       "Bash(php vendor/bin/pint:*)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(taskkill:*)",
+      "Bash(php test_sms.php:*)",
+      "Bash(php dispatch_sms.php:*)"
     ]
   }
 }

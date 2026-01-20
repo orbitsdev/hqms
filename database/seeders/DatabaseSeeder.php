@@ -33,6 +33,10 @@ class DatabaseSeeder extends Seeder
 
             // 7. Queue Displays (depends on consultation types)
             QueueDisplaySeeder::class,
+
+            // 8. Test Data: Appointments and Queues (for nurse/doctor module testing)
+            AppointmentSeeder::class,
+            QueueSeeder::class,
         ]);
     }
 }
