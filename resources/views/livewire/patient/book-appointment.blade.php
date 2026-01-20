@@ -51,17 +51,27 @@
                     $stateClasses = $isComplete
                         ? 'border-zinc-900 bg-zinc-900 text-white hover:bg-zinc-900 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-100'
                         : 'border-zinc-200 bg-white text-zinc-500 hover:bg-white dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900';
-                    $navClasses = $canNavigate ? '' : 'opacity-40 pointer-events-none';
                 @endphp
                 <div class="relative flex flex-col items-center gap-3">
-                    <flux:button
-                        wire:click="goToStep({{ $step }})"
-                        variant="ghost"
-                        size="sm"
-                        class="h-9 w-9 rounded-full border p-0 text-sm font-semibold {{ $stateClasses }} {{ $navClasses }}"
-                    >
-                        {{ $step }}
-                    </flux:button>
+                    @if($canNavigate)
+                        <flux:button
+                            wire:click="goToStep({{ $step }})"
+                            variant="ghost"
+                            size="sm"
+                            class="h-9 w-9 rounded-full border p-0 text-sm font-semibold {{ $stateClasses }}"
+                        >
+                            {{ $step }}
+                        </flux:button>
+                    @else
+                        <flux:button
+                            variant="ghost"
+                            size="sm"
+                            disabled
+                            class="h-9 w-9 rounded-full border p-0 text-sm font-semibold {{ $stateClasses }} opacity-40"
+                        >
+                            {{ $step }}
+                        </flux:button>
+                    @endif
                     <span class="text-xs font-medium {{ $currentStep >= $step ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400' }}">
                         {{ $label }}
                     </span>
@@ -83,26 +93,27 @@
                         <flux:button
                             wire:key="consultation-type-{{ $type->id }}"
                             wire:click="selectConsultationType({{ $type->id }})"
-                            variant="outline"
+                            variant="{{ $consultationTypeId === $type->id ? 'primary' : 'outline' }}"
                             class="h-24 flex flex-col items-center justify-center space-y-2"
                         >
-                            <span aria-hidden="true" class="h-8 w-8 rounded-full bg-zinc-100 dark:bg-zinc-800"></span>
+                            <span aria-hidden="true" class="h-8 w-8 rounded-full {{ $consultationTypeId === $type->id ? 'bg-white/20' : 'bg-zinc-100 dark:bg-zinc-800' }}"></span>
                             <div class="text-center">
                                 <div class="font-medium">{{ $type->name }}</div>
-                                <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ $type->description }}</div>
+                                <div class="text-xs {{ $consultationTypeId === $type->id ? 'text-white/70' : 'text-zinc-500 dark:text-zinc-400' }}">{{ $type->description }}</div>
                             </div>
                         </flux:button>
                     @endforeach
                 </div>
                 <div class="mt-4 flex justify-end">
-                    <flux:button
-                        type="button"
-                        wire:click="nextStep"
-                        variant="primary"
-                        :disabled="!$consultationTypeId"
-                    >
-                        Continue
-                    </flux:button>
+                    @if($consultationTypeId)
+                        <flux:button type="button" wire:click="nextStep" variant="primary">
+                            Continue
+                        </flux:button>
+                    @else
+                        <flux:button type="button" variant="primary" disabled>
+                            Continue
+                        </flux:button>
+                    @endif
                 </div>
             </div>
         </div>
@@ -152,14 +163,15 @@
                     <flux:button type="button" wire:click="previousStep" variant="outline">
                         Previous
                     </flux:button>
-                    <flux:button
-                        type="button"
-                        wire:click="nextStep"
-                        variant="primary"
-                        :disabled="!$appointmentDate"
-                    >
-                        Next
-                    </flux:button>
+                    @if($appointmentDate)
+                        <flux:button type="button" wire:click="nextStep" variant="primary">
+                            Next
+                        </flux:button>
+                    @else
+                        <flux:button type="button" variant="primary" disabled>
+                            Next
+                        </flux:button>
+                    @endif
                 </div>
             </div>
         </div>
