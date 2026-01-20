@@ -92,6 +92,6 @@ class ActiveQueue extends Component
     public function render(): View
     {
         return view('livewire.patient.active-queue')
-            ->layout('layouts.patient');
+            ->layout('layouts.app');
     }
 }

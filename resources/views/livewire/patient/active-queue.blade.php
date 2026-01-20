@@ -2,32 +2,32 @@
     <h1 class="text-2xl font-bold">Queue Status</h1>
 
     @if($activeQueue)
-        <flux:card class="border-2 border-blue-200 dark:border-blue-800">
-            <flux:card.content>
+        <div class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <div class="p-4">
                 <div class="text-center space-y-6">
                     <!-- Queue Number Display -->
-                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
+                    <div class="bg-gradient-to-r from-zinc-900 to-zinc-800 rounded-lg p-6 text-white dark:from-zinc-100 dark:to-zinc-200 dark:text-zinc-900">
                         <p class="text-lg font-medium mb-2">Your Queue Number</p>
                         <p class="text-4xl font-bold">{{ $activeQueue->formatted_number }}</p>
-                        <p class="text-blue-100 mt-2">{{ $consultationType->name }}</p>
+                        <p class="text-zinc-200 dark:text-zinc-600 mt-2">{{ $consultationType->name }}</p>
                     </div>
 
                     <!-- Queue Status Information -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="text-center p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg">
-                            <flux:icon name="clock" class="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                            <span aria-hidden="true" class="mx-auto mb-2 block h-8 w-8 rounded-full bg-zinc-100 dark:bg-zinc-800"></span>
                             <p class="text-sm text-zinc-600 dark:text-zinc-400">Estimated Time</p>
                             <p class="font-medium">{{ $estimatedTime->format('h:i A') }}</p>
                         </div>
                         
                         <div class="text-center p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg">
-                            <flux:icon name="users" class="w-8 h-8 mx-auto mb-2 text-orange-600" />
+                            <span aria-hidden="true" class="mx-auto mb-2 block h-8 w-8 rounded-full bg-zinc-100 dark:bg-zinc-800"></span>
                             <p class="text-sm text-zinc-600 dark:text-zinc-400">Ahead of You</p>
                             <p class="font-medium">{{ $patientsAhead }} patients</p>
                         </div>
                         
                         <div class="text-center p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg">
-                            <flux:icon name="hashtag" class="w-8 h-8 mx-auto mb-2 text-green-600" />
+                            <span aria-hidden="true" class="mx-auto mb-2 block h-8 w-8 rounded-full bg-zinc-100 dark:bg-zinc-800"></span>
                             <p class="text-sm text-zinc-600 dark:text-zinc-400">Your Position</p>
                             <p class="font-medium">#{{ $this->getQueuePosition() }}</p>
                         </div>
@@ -35,37 +35,37 @@
 
                     <!-- Current Serving -->
                     @if($currentServing)
-                        <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                            <p class="text-sm text-green-800 dark:text-green-200 font-medium">
+                        <div class="bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
+                            <p class="text-sm text-zinc-900 dark:text-zinc-100 font-medium">
                                 Now Serving: {{ $currentServing->formatted_number }}
                             </p>
                         </div>
                     @endif
 
                     <!-- Status Alert -->
-                    <div class="bg-{{ $statusColor }}-50 dark:bg-{{ $statusColor }}-900/20 border border-{{ $statusColor }}-200 dark:border-{{ $statusColor }}-800 rounded-lg p-4">
+                    <div class="bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
                         @if($patientsAhead <= 2)
-                            <div class="flex items-center gap-2 text-red-800 dark:text-red-200">
-                                <flux:icon name="exclamation-triangle" class="w-5 h-5" />
+                            <div class="flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+                                <span aria-hidden="true" class="h-3 w-3 rounded-full bg-zinc-400"></span>
                                 <span class="font-medium">Get Ready!</span>
                             </div>
-                            <p class="text-sm text-red-700 dark:text-red-300 mt-1">
+                            <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
                                 Your turn is coming up soon. Please wait in the designated area.
                             </p>
                         @elseif($patientsAhead <= 5)
-                            <div class="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
-                                <flux:icon name="clock" class="w-5 h-5" />
+                            <div class="flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+                                <span aria-hidden="true" class="h-3 w-3 rounded-full bg-zinc-400"></span>
                                 <span class="font-medium">Getting Close</span>
                             </div>
-                            <p class="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
+                            <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
                                 You're in the next group. Stay nearby and listen for your number.
                             </p>
                         @else
-                            <div class="flex items-center gap-2 text-blue-800 dark:text-blue-200">
-                                <flux:icon name="information-circle" class="w-5 h-5" />
+                            <div class="flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+                                <span aria-hidden="true" class="h-3 w-3 rounded-full bg-zinc-400"></span>
                                 <span class="font-medium">Waiting</span>
                             </div>
-                            <p class="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                            <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
                                 Please wait comfortably. We'll send you SMS updates when you're getting closer.
                             </p>
                         @endif
@@ -73,16 +73,20 @@
 
                     <!-- SMS Notification Status -->
                     <div class="flex items-center justify-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                        <flux:icon name="bell" class="w-4 h-4" />
+                        <span aria-hidden="true" class="h-2 w-2 rounded-full bg-zinc-400"></span>
                         <span>SMS alerts enabled</span>
                     </div>
                 </div>
-            </flux:card.content>
-        </flux:card>
+            </div>
+        </div>
     @else
-        <flux:card>
-            <flux:card.content class="text-center py-8">
-                <flux:icon name="queue" class="w-12 h-12 mx-auto text-zinc-400 mb-4" />
+        <div class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <div class="px-4 py-8 text-center">
+                <img
+                    src="{{ asset('images/undraw_wait-in-line_fbdq.svg') }}"
+                    alt="Waiting in line"
+                    class="mx-auto mb-4 h-28 w-auto opacity-80"
+                />
                 <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-2">No Active Queue</h3>
                 <p class="text-zinc-600 dark:text-zinc-400 mb-4">
                     You don't have an active queue ticket. Book an appointment or check in at the hospital.
@@ -95,8 +99,8 @@
                         My Appointments
                     </flux:button>
                 </div>
-            </flux:card.content>
-        </flux:card>
+            </div>
+        </div>
     @endif
 
     <!-- Auto-refresh notice -->

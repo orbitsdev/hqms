@@ -13,23 +13,23 @@ use Livewire\Component;
 class BookAppointment extends Component
 {
     public $currentStep = 1;
-    
+
     // Step 1: Consultation Type
     public $consultationTypeId;
-    
+
     // Step 2: Date Selection
     public $appointmentDate;
     public $availableDates = [];
-    
+
     // Step 3: Patient Details
     public $patientType = 'self'; // self or dependent
     public $dependentName;
     public $dependentBirthDate;
     public $dependentGender;
-    
+
     // Step 4: Chief Complaints
     public $chiefComplaints;
-    
+
     // Review data
     public $consultationType;
     public $selectedDate;
@@ -57,25 +57,35 @@ class BookAppointment extends Component
         $this->availableDates = [];
         $startDate = Carbon::today();
         $maxDailyPatients = $this->consultationType?->max_daily_patients ?? 50;
-        
+
         // Generate dates for the next 30 days
         for ($i = 0; $i < 30; $i++) {
             $date = $startDate->copy()->addDays($i);
-            
+
             // Skip weekends (Saturday, Sunday)
             if ($date->isWeekend()) {
                 continue;
             }
-            
+
             $dayCapacity = $this->getDayCapacity($date);
-            
+
+            $slotsLeft = max($maxDailyPatients - $dayCapacity, 0);
+            $isAvailable = $dayCapacity < $maxDailyPatients;
+
             $this->availableDates[] = [
                 'date' => $date->format('Y-m-d'),
                 'day_name' => $date->format('l'),
                 'formatted' => $date->format('M d, Y'),
                 'capacity' => $dayCapacity,
                 'max' => $maxDailyPatients,
-                'available' => $dayCapacity < $maxDailyPatients,
+                'available' => $isAvailable,
+                'slots_left' => $slotsLeft,
+                'status_text' => $isAvailable ? $slotsLeft.' slots left' : 'Fully booked',
+                'status_class' => $isAvailable
+                    ? 'text-zinc-600 dark:text-zinc-300'
+                    : 'text-zinc-500 dark:text-zinc-400',
+                'button_class' => $isAvailable ? '' : 'opacity-50 cursor-not-allowed',
+                'button_disabled' => $isAvailable ? '' : 'disabled',
             ];
         }
     }
@@ -156,7 +166,7 @@ class BookAppointment extends Component
 
         // In real app, send SMS notification here
         $this->dispatch('appointmentBooked', 'Appointment submitted successfully! You will receive an SMS confirmation.');
-        
+
         // Reset form
         $this->reset();
         $this->currentStep = 1;
@@ -169,6 +179,6 @@ class BookAppointment extends Component
 
         return view('livewire.patient.book-appointment', [
             'consultationTypes' => $consultationTypes,
-        ])->layout('layouts.patient');
+        ]);
     }
 }

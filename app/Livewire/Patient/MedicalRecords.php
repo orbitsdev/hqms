@@ -58,6 +58,6 @@ class MedicalRecords extends Component
     {
         return view('livewire.patient.medical-records', [
             'records' => $this->getRecords(),
-        ])->layout('layouts.patient');
+        ])->layout('layouts.app');
     }
 }

@@ -1,11 +1,22 @@
 <div class="space-y-6">
     <h1 class="text-2xl font-bold">My Profile</h1>
 
-    <flux:card>
-        <flux:card.header>
+    <div class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <div class="border-b border-zinc-200/70 px-4 py-3 dark:border-zinc-800">
             <flux:heading>Personal Information</flux:heading>
-        </flux:card.header>
-        <flux:card.content>
+        </div>
+        <div class="p-4">
+            <div class="mb-6 flex flex-col gap-4 rounded-lg border border-zinc-200/70 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/60 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100">Keep your profile details up to date.</p>
+                    <p class="text-sm text-zinc-600 dark:text-zinc-400">We use this to match appointments and contact you quickly.</p>
+                </div>
+                <img
+                    src="{{ asset('images/undraw_personal-information_h7kf.svg') }}"
+                    alt="Personal information"
+                    class="h-20 w-auto opacity-80"
+                />
+            </div>
             <form wire:submit.prevent="savePersonalInfo" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <flux:field label="First Name">
@@ -81,6 +92,6 @@
 
                 <flux:button type="submit" variant="primary">Save Profile</flux:button>
             </form>
-        </flux:card.content>
-    </flux:card>
+        </div>
+    </div>
 </div>

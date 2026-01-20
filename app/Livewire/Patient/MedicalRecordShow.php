@@ -52,6 +52,6 @@ class MedicalRecordShow extends Component
     public function render(): View
     {
         return view('livewire.patient.medical-record-show')
-            ->layout('layouts.patient');
+            ->layout('layouts.app');
     }
 }

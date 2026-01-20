@@ -20,7 +20,7 @@ This project follows a **documentation-first, structured development** methodolo
 ### ✅ SMS Notifications (Primary)
 - **SMS System Implemented** - Using Semaphore as SMS provider
 - SMS notifications for: appointment approval, queue alerts, reminders
-- No need for push notifications (FCM) initially
+- Firebase Cloud Messaging is optional for a future mobile app (not used in web portal)
 - Reliable delivery without requiring app installation
 
 ### ✅ Responsive Web Portal for Patients (Instead of Native Mobile App)
@@ -36,7 +36,7 @@ This project follows a **documentation-first, structured development** methodolo
 | Requires app download | Works instantly in browser |
 | App store approval needed | No approval process |
 | Separate codebase (Flutter) | Single Laravel codebase |
-| Push notifications (FCM setup) | SMS notifications (already working) |
+| Push notifications (FCM optional) | SMS notifications (already working) |
 | 4 weeks development | 1-2 weeks development |
 
 ---
@@ -1028,6 +1028,7 @@ Day 7: Post-Launch Review
 - **SMS via Semaphore** (primary notification method)
 - Queued SMS via Laravel Jobs
 - SMS logging and analytics
+- Firebase Cloud Messaging optional (future mobile app)
 
 ### ✅ Patient Access
 - **Responsive Web Portal** (mobile-first design)
@@ -1041,7 +1042,7 @@ Day 7: Post-Launch Review
 
 ### ❌ Not Using (Deferred)
 - ~~Flutter mobile app~~ → Responsive web instead
-- ~~Firebase Cloud Messaging~~ → SMS notifications instead
+- ~~Firebase Cloud Messaging (web)~~ → Optional for future mobile app only
 - ~~Flux Pro components~~ → Free components only
 
 ---

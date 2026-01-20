@@ -2,9 +2,8 @@
     <h1 class="text-2xl font-bold">Appointment Details</h1>
 
     @if($appointment)
-        <flux:card>
-            <flux:card.content>
-                <div class="space-y-6">
+        <div class="rounded-lg border border-zinc-200/70 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <div class="space-y-6">
                     <!-- Status Badge -->
                     <div class="flex items-center justify-between">
                         <flux:badge variant="{{ $statusColor }}" size="lg">
@@ -80,8 +79,8 @@
                         </div>
                     </div>
                 </div>
-            </flux:card.content>
-        </flux:card>
+            </div>
+        </div>
 
         <!-- Action Buttons -->
         <div class="flex gap-4">
@@ -96,15 +95,15 @@
             @endif
         </div>
     @else
-        <flux:card>
-            <flux:card.content class="text-center py-8">
-                <flux:icon name="exclamation-triangle" class="w-12 h-12 mx-auto text-zinc-400 mb-4" />
+        <div class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <div class="px-4 py-8 text-center">
+                <span aria-hidden="true" class="mx-auto mb-4 block h-12 w-12 rounded-full bg-zinc-200 dark:bg-zinc-700"></span>
                 <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-2">Appointment Not Found</h3>
                 <p class="text-zinc-600 dark:text-zinc-400 mb-4">The appointment you're looking for doesn't exist or you don't have access to it.</p>
                 <flux:button href="{{ route('patient.appointments') }}" variant="primary" wire:navigate>
                     Back to Appointments
                 </flux:button>
-            </flux:card.content>
-        </flux:card>
+            </div>
+        </div>
     @endif
 </div>

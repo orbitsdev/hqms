@@ -19,6 +19,11 @@
         </div>
         <flux:menu.separator />
         <flux:menu.radio.group>
+            @if(auth()->user()->isPatient())
+                <flux:menu.item :href="route('patient.profile')" icon="user" wire:navigate>
+                    {{ __('Profile') }}
+                </flux:menu.item>
+            @endif
             <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
                 {{ __('Settings') }}
             </flux:menu.item>

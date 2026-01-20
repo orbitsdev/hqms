@@ -25,9 +25,8 @@
     @if($records->count() > 0)
         <div class="space-y-4">
             @foreach($records as $record)
-                <flux:card>
-                    <flux:card.content>
-                        <div class="flex items-start justify-between">
+                <div class="rounded-lg border border-zinc-200/70 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                    <div class="flex items-start justify-between">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-2">
                                     <h3 class="font-medium">{{ $record->consultationType->name }} Consultation</h3>
@@ -59,7 +58,7 @@
                                 
                                 @if($record->prescriptions && $record->prescriptions->count() > 0)
                                     <div class="flex items-center gap-1 text-sm text-zinc-600 dark:text-zinc-400">
-                                        <flux:icon name="prescription-bottle" class="w-4 h-4" />
+                                        <span aria-hidden="true" class="h-2 w-2 rounded-full bg-zinc-400"></span>
                                         <span>{{ $record->prescriptions->count() }} prescription(s)</span>
                                     </div>
                                 @endif
@@ -76,17 +75,21 @@
                                 </flux:button>
                             </div>
                         </div>
-                    </flux:card.content>
-                </flux:card>
+                    </div>
+                </div>
             @endforeach
         </div>
 
         <!-- Pagination -->
         {{ $records->links() }}
     @else
-        <flux:card>
-            <flux:card.content class="text-center py-8">
-                <flux:icon name="document-text" class="w-12 h-12 mx-auto text-zinc-400 mb-4" />
+        <div class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <div class="px-4 py-8 text-center">
+                <img
+                    src="{{ asset('images/undraw_my-documents_ltqk.svg') }}"
+                    alt="Medical records"
+                    class="mx-auto mb-4 h-28 w-auto opacity-80"
+                />
                 <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-2">No medical records found</h3>
                 <p class="text-zinc-600 dark:text-zinc-400 mb-4">
                     @if($search || $dateFilter) 
@@ -100,7 +103,7 @@
                         Book Appointment
                     </flux:button>
                 @endif
-            </flux:card.content>
-        </flux:card>
+            </div>
+        </div>
     @endif
 </div>

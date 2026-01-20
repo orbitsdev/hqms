@@ -83,6 +83,6 @@ class Appointments extends Component
     {
         return view('livewire.patient.appointments', [
             'appointments' => $this->getAppointments(),
-        ])->layout('layouts.patient');
+        ])->layout('layouts.app');
     }
 }
