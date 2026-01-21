@@ -41,6 +41,96 @@ This project follows a **documentation-first, structured development** methodolo
 
 ---
 
+## Doctor Schedule Management
+
+### How It Works
+Doctors set their **regular weekly schedule** (one-time setup), then mark **exceptions** as needed (leave, half-day, extra clinic day).
+
+### 1. Setup Regular Schedule (Admin/Nurse - One-time)
+```
+┌─────────────────────────────────────────────────┐
+│ Doctor Schedule Setup                           │
+├─────────────────────────────────────────────────┤
+│ Doctor: [Dr. Maria Santos ▼]                    │
+│ Consultation Type: [Obstetrics (OB) ▼]          │
+│                                                 │
+│ Working Days:                                   │
+│ ☐ Sun  ☑ Mon  ☐ Tue  ☑ Wed  ☐ Thu  ☑ Fri  ☐ Sat│
+│                                                 │
+│                            [Save Schedule]      │
+└─────────────────────────────────────────────────┘
+```
+**Result:** Dr. Santos works Mon/Wed/Fri for OB consultations.
+
+### 2. Mark Exception (Doctor/Nurse - As Needed)
+
+**View Calendar:**
+```
+┌─────────────────────────────────────────────────┐
+│ My Schedule - Dr. Santos (OB)      January 2026 │
+├─────────────────────────────────────────────────┤
+│  Sun   Mon   Tue   Wed   Thu   Fri   Sat        │
+│                     1     2    [3]    4         │
+│   5    [6]    7    [8]    9   [10]   11         │
+│  12   [13]   14   [15]   16   [17]   18         │
+│  19   [20]   21   [22]   23   [24]   25         │
+│                                                 │
+│ [  ] = Working days (from regular schedule)     │
+│ Click any date to mark leave/exception          │
+└─────────────────────────────────────────────────┘
+```
+
+**Mark Single Date Unavailable:**
+```
+┌─────────────────────────────────────────────────┐
+│ Friday, January 24, 2026                        │
+├─────────────────────────────────────────────────┤
+│ ○ Available (normal working day)                │
+│ ● Unavailable (leave/day off)                   │
+│ ○ Partial Day: [08:00] to [12:00]               │
+│                                                 │
+│ Reason: [Personal emergency___________]         │
+│                                                 │
+│              [Cancel]    [Save]                 │
+└─────────────────────────────────────────────────┘
+```
+
+**Mark Date Range (Multiple Days):**
+```
+┌─────────────────────────────────────────────────┐
+│ Mark Leave                                      │
+├─────────────────────────────────────────────────┤
+│ ○ Single Date                                   │
+│ ● Date Range: [Jan 24, 2026] to [Jan 27, 2026]  │
+│                                                 │
+│ Reason: [Family vacation______________]         │
+│                                                 │
+│              [Cancel]    [Save]                 │
+└─────────────────────────────────────────────────┘
+```
+**Result:** System creates exception entries for Jan 24, 25, 27 (skips 26 since not a working day).
+
+### 3. Patient Sees Availability
+```
+Book OB Appointment - January 2026
+
+        22    23    [24]   [25]    26    [27]
+        Wed   Thu    Fri    Sat    Sun    Mon
+         ✓     -      ✗      -      -      ✗
+
+✓ = Available    ✗ = No doctor    - = Not a working day
+```
+
+### Schedule Types Summary
+| Type | Purpose | Example |
+|------|---------|---------|
+| `regular` | Weekly recurring schedule | Dr. Santos works Mon, Wed, Fri |
+| `exception` (unavailable) | Day off/leave | Dr. Santos on leave Jan 24-27 |
+| `exception` (partial) | Half-day | Dr. Santos morning only Jan 28 |
+| `exception` (available) | Extra clinic day | Dr. Santos adds Saturday clinic |
+
+---
+
 ## Development Process
 
 ### Local Development (Laravel Herd)
