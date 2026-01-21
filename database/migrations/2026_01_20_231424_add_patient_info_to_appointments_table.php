@@ -15,7 +15,7 @@ return new class extends Migration
             // Patient type: 'self' or 'dependent'
             $table->enum('patient_type', ['self', 'dependent'])->default('self')->after('chief_complaints');
 
-            // Dependent/Patient info (nullable for 'self' type)
+            /// Dependent/Patient info (nullable for 'self'  type)
             $table->string('patient_first_name')->nullable()->after('patient_type');
             $table->string('patient_middle_name')->nullable()->after('patient_first_name');
             $table->string('patient_last_name')->nullable()->after('patient_middle_name');
