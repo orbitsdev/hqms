@@ -14,14 +14,11 @@ class ConsultationTypeResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
             'code' => $this->code,
+            'name' => $this->name,
+            'short_name' => $this->short_name,
             'description' => $this->description,
-            'operating_hours' => [
-                'start' => $this->start_time?->format('H:i'),
-                'end' => $this->end_time?->format('H:i'),
-            ],
-            'average_duration_minutes' => $this->avg_duration,
+            'avg_duration' => $this->avg_duration,
             'max_daily_patients' => $this->max_daily_patients,
 
             // Availability info (when loaded)

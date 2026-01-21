@@ -38,10 +38,10 @@ describe('GET /api/v1/consultation-types', function () {
                 'consultation_types' => [
                     '*' => [
                         'id',
-                        'name',
                         'code',
-                        'operating_hours' => ['start', 'end'],
-                        'average_duration_minutes',
+                        'name',
+                        'short_name',
+                        'avg_duration',
                         'max_daily_patients',
                         'available_slots',
                         'is_available',

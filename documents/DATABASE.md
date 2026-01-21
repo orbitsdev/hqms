@@ -265,28 +265,16 @@ $nurse->personalInformation->full_name; // "Nurse Ana Cruz"
 ```php
 Schema::create('consultation_types', function (Blueprint $table) {
     $table->id();
-    
-    // Identification
     $table->string('code', 10)->unique(); // 'ob', 'pedia', 'general'
     $table->string('name'); // 'Obstetrics', 'Pediatrics', 'General Medicine'
     $table->string('short_name', 5); // 'O', 'P', 'G' (for queue display)
     $table->text('description')->nullable();
-    
-    // Operating Hours
-    $table->time('start_time'); // 08:00
-    $table->time('end_time'); // 17:00
-    
+
     // Queue Settings
     $table->integer('avg_duration')->default(30); // Average minutes per patient
     $table->integer('max_daily_patients')->default(50); // Max appointments per day
-    
-    // Display
-    $table->string('color_code', 7)->nullable(); // #FF5733 for UI
-    $table->integer('display_order')->default(0); // Sort order in lists
-    
-    // Status
+
     $table->boolean('is_active')->default(true);
-    
     $table->timestamps();
 });
 ```
@@ -302,38 +290,26 @@ class ConsultationTypeSeeder extends Seeder
             'name' => 'Obstetrics',
             'short_name' => 'O',
             'description' => 'Pregnancy and maternal care',
-            'start_time' => '08:00',
-            'end_time' => '17:00',
             'avg_duration' => 30,
             'max_daily_patients' => 40,
-            'color_code' => '#FF6B9D',
-            'display_order' => 1,
         ]);
-        
+
         ConsultationType::create([
             'code' => 'pedia',
             'name' => 'Pediatrics',
             'short_name' => 'P',
             'description' => 'Children healthcare',
-            'start_time' => '08:00',
-            'end_time' => '15:00',
             'avg_duration' => 25,
             'max_daily_patients' => 35,
-            'color_code' => '#4ECDC4',
-            'display_order' => 2,
         ]);
-        
+
         ConsultationType::create([
             'code' => 'general',
             'name' => 'General Medicine',
             'short_name' => 'G',
             'description' => 'General medical consultation',
-            'start_time' => '09:00',
-            'end_time' => '18:00',
             'avg_duration' => 20,
             'max_daily_patients' => 50,
-            'color_code' => '#95E1D3',
-            'display_order' => 3,
         ]);
     }
 }

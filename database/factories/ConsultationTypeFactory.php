@@ -29,8 +29,6 @@ class ConsultationTypeFactory extends Factory
             'name' => $type['name'],
             'short_name' => $type['short_name'],
             'description' => fake()->sentence(),
-            'start_time' => '08:00',
-            'end_time' => '17:00',
             'avg_duration' => 30,
             'max_daily_patients' => 50,
             'is_active' => true,
