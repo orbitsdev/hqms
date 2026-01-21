@@ -26,7 +26,7 @@ class MedicalRecordShow extends Component
             abort(403);
         }
 
-        if ($this->medicalRecord->is_pre_visit) {
+        if ($this->medicalRecord->status !== 'completed') {
             abort(404);
         }
 

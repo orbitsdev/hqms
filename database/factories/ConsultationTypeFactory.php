@@ -30,7 +30,6 @@ class ConsultationTypeFactory extends Factory
             'short_name' => $type['short_name'],
             'description' => fake()->sentence(),
             'avg_duration' => 30,
-            'max_daily_patients' => 50,
             'is_active' => true,
         ];
     }

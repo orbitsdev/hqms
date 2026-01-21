@@ -18,9 +18,8 @@ return new class extends Migration
             $table->string('short_name', 5); // 'O', 'P', 'G' (for queue display)
             $table->text('description')->nullable();
 
-            // Queue Settings
+            // For estimating queue wait times
             $table->integer('avg_duration')->default(30); // Average minutes per patient
-            $table->integer('max_daily_patients')->default(50); // Max appointments per day
 
             $table->boolean('is_active')->default(true);
             $table->timestamps();

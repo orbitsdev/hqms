@@ -30,6 +30,11 @@ This project follows a **documentation-first, structured development** methodolo
 - Uses **free Flux components only**
 - Faster development, easier maintenance, single codebase
 
+### ✅ Appointments vs Medical Records (Separated)
+- `appointments` handle booking, queue, and visit status (pending → approved → checked_in → in_progress → completed)
+- `medical_records` are created only when vitals are recorded (no pre-visit records)
+- Medical record status uses enum: `in_progress`, `for_billing`, `for_admission`, `completed`
+
 ### Why This Approach?
 | Native App | Responsive Web |
 |------------|----------------|
@@ -473,6 +478,7 @@ Day 6-7: Billing & Discharge Decision
 - Final decision:
   • Button: "Forward to Billing" (outpatient)
   • Button: "Forward to Admission" (needs admission)
+  • Update medical record status: `for_billing` or `for_admission`
 
 Testing Scenario:
 1. Doctor sees next patient (Maria, O-5)

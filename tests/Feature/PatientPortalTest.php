@@ -49,7 +49,7 @@ it('renders patient portal pages', function () {
 it('renders appointment and record detail pages', function () {
     $user = User::factory()->create();
     $appointment = Appointment::factory()->create(['user_id' => $user->id]);
-    $record = MedicalRecord::factory()->create(['user_id' => $user->id]);
+    $record = MedicalRecord::factory()->completed()->create(['user_id' => $user->id]);
 
     $this->actingAs($user)
         ->get(route('patient.appointments.show', $appointment))

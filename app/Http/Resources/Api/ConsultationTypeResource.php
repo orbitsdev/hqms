@@ -19,11 +19,9 @@ class ConsultationTypeResource extends JsonResource
             'short_name' => $this->short_name,
             'description' => $this->description,
             'avg_duration' => $this->avg_duration,
-            'max_daily_patients' => $this->max_daily_patients,
 
             // Availability info (when loaded)
             'booked_count' => $this->when(isset($this->booked_count), $this->booked_count),
-            'available_slots' => $this->when(isset($this->available_slots), $this->available_slots),
             'is_available' => $this->when(isset($this->is_available), $this->is_available),
             'query_date' => $this->when(isset($this->query_date), $this->query_date),
 

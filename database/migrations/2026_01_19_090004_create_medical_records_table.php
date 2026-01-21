@@ -87,7 +87,7 @@ return new class extends Migration
             $table->enum('examination_time', ['am', 'pm'])->nullable();
 
             // Status
-            $table->enum('status', ['in_progress', 'completed'])->default('in_progress');
+            $table->enum('status', ['in_progress', 'for_billing', 'for_admission', 'completed'])->default('in_progress');
 
             $table->text('notes')->nullable();
 

@@ -3,7 +3,6 @@
 use App\Livewire\Patient\BookAppointment;
 use App\Models\Appointment;
 use App\Models\ConsultationType;
-use App\Models\MedicalRecord;
 use App\Models\PersonalInformation;
 use App\Models\User;
 use Livewire\Livewire;
@@ -70,7 +69,7 @@ it('can submit appointment for self', function () {
         ->assertRedirect(route('patient.appointments'));
 
     // Verify appointment was created
-    $appointment = \App\Models\Appointment::where('user_id', $this->user->id)->first();
+    $appointment = Appointment::where('user_id', $this->user->id)->first();
     expect($appointment)->not->toBeNull();
     expect($appointment->consultation_type_id)->toBe($this->consultationType->id);
     expect($appointment->appointment_date->format('Y-m-d'))->toBe($futureDate);
@@ -79,13 +78,8 @@ it('can submit appointment for self', function () {
     expect($appointment->patient_last_name)->toBe($this->personalInfo->last_name);
     expect($appointment->status)->toBe('pending');
 
-    // Verify medical record was created
-    $this->assertDatabaseHas('medical_records', [
-        'user_id' => $this->user->id,
-        'consultation_type_id' => $this->consultationType->id,
-        'is_pre_visit' => true,
-        'patient_first_name' => $this->personalInfo->first_name,
-        'patient_last_name' => $this->personalInfo->last_name,
+    $this->assertDatabaseMissing('medical_records', [
+        'appointment_id' => $appointment->id,
     ]);
 });
 
@@ -118,7 +112,7 @@ it('can submit appointment for dependent', function () {
         ->assertRedirect(route('patient.appointments'));
 
     // Verify appointment was created with dependent info
-    $appointment = \App\Models\Appointment::where('user_id', $this->user->id)->first();
+    $appointment = Appointment::where('user_id', $this->user->id)->first();
     expect($appointment)->not->toBeNull();
     expect($appointment->consultation_type_id)->toBe($this->consultationType->id);
     expect($appointment->appointment_date->format('Y-m-d'))->toBe($futureDate);
@@ -129,16 +123,9 @@ it('can submit appointment for dependent', function () {
     expect($appointment->patient_gender)->toBe('female');
     expect($appointment->status)->toBe('pending');
 
-    // Verify medical record was created with dependent info
-    $medicalRecord = \App\Models\MedicalRecord::where('appointment_id', $appointment->id)->first();
-    expect($medicalRecord)->not->toBeNull();
-    expect($medicalRecord->user_id)->toBe($this->user->id);
-    expect($medicalRecord->consultation_type_id)->toBe($this->consultationType->id);
-    expect($medicalRecord->is_pre_visit)->toBeTrue();
-    expect($medicalRecord->patient_first_name)->toBe($dependentFirstName);
-    expect($medicalRecord->patient_last_name)->toBe($dependentLastName);
-    expect($medicalRecord->patient_date_of_birth->format('Y-m-d'))->toBe($dependentBirthDate);
-    expect($medicalRecord->patient_gender)->toBe('female');
+    $this->assertDatabaseMissing('medical_records', [
+        'appointment_id' => $appointment->id,
+    ]);
 });
 
 it('validates required fields for dependent', function () {
@@ -177,29 +164,4 @@ it('validates chief complaints minimum length', function () {
         ->set('chiefComplaints', 'Short')
         ->call('submitAppointment')
         ->assertHasErrors(['chiefComplaints']);
-});
-
-it('links medical record to appointment', function () {
-    $futureDate = now()->addDays(1)->format('Y-m-d');
-
-    while (now()->parse($futureDate)->isWeekend()) {
-        $futureDate = now()->parse($futureDate)->addDay()->format('Y-m-d');
-    }
-
-    Livewire::actingAs($this->user)
-        ->test(BookAppointment::class)
-        ->call('selectConsultationType', $this->consultationType->id)
-        ->call('selectDate', $futureDate)
-        ->set('patientType', 'self')
-        ->call('nextStep')
-        ->set('chiefComplaints', 'Testing that medical record is linked to appointment.')
-        ->call('submitAppointment');
-
-    $appointment = Appointment::where('user_id', $this->user->id)->first();
-    $medicalRecord = MedicalRecord::where('appointment_id', $appointment->id)->first();
-
-    expect($appointment)->not->toBeNull();
-    expect($medicalRecord)->not->toBeNull();
-    expect($medicalRecord->appointment_id)->toBe($appointment->id);
-    expect($medicalRecord->is_pre_visit)->toBeTrue();
 });

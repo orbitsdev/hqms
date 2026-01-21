@@ -26,6 +26,27 @@ beforeEach(function () {
     // Get consultation types
     $this->obType = ConsultationType::where('code', 'ob')->first();
     $this->pediaType = ConsultationType::where('code', 'pedia')->first();
+
+    // Create a doctor with schedules for testing availability
+    $this->doctor = User::factory()->create(['is_active' => true]);
+    $this->doctor->assignRole('doctor');
+    $this->doctor->consultationTypes()->attach([$this->obType->id, $this->pediaType->id]);
+
+    // Create regular schedules for all days of the week (Mon-Sat)
+    foreach ([1, 2, 3, 4, 5, 6] as $dayOfWeek) {
+        \App\Models\DoctorSchedule::create([
+            'user_id' => $this->doctor->id,
+            'consultation_type_id' => $this->obType->id,
+            'schedule_type' => 'regular',
+            'day_of_week' => $dayOfWeek,
+        ]);
+        \App\Models\DoctorSchedule::create([
+            'user_id' => $this->doctor->id,
+            'consultation_type_id' => $this->pediaType->id,
+            'schedule_type' => 'regular',
+            'day_of_week' => $dayOfWeek,
+        ]);
+    }
 });
 
 describe('GET /api/v1/consultation-types', function () {
@@ -42,8 +63,6 @@ describe('GET /api/v1/consultation-types', function () {
                         'name',
                         'short_name',
                         'avg_duration',
-                        'max_daily_patients',
-                        'available_slots',
                         'is_available',
                         'is_active',
                     ],
@@ -89,7 +108,7 @@ describe('GET /api/v1/consultation-types', function () {
             ->firstWhere('code', 'ob');
 
         expect($obType['booked_count'])->toBe(5);
-        expect($obType['available_slots'])->toBe($this->obType->max_daily_patients - 5);
+        expect($obType['is_available'])->toBeTrue(); // No limit - availability based on doctor schedule
     });
 
     it('requires authentication', function () {
@@ -108,8 +127,12 @@ describe('GET /api/v1/doctors/availability', function () {
             ->assertJsonStructure([
                 'consultation_type' => ['id', 'name', 'code'],
                 'date',
-                'operating_hours' => ['start', 'end'],
+                'is_available',
+                'doctors',
             ]);
+
+        expect($response->json('is_available'))->toBeTrue();
+        expect($response->json('doctors'))->toBeArray();
     });
 
     it('requires consultation_type_id parameter', function () {

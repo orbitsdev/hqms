@@ -270,14 +270,15 @@ Schema::create('consultation_types', function (Blueprint $table) {
     $table->string('short_name', 5); // 'O', 'P', 'G' (for queue display)
     $table->text('description')->nullable();
 
-    // Queue Settings
+    // For estimating queue wait times
     $table->integer('avg_duration')->default(30); // Average minutes per patient
-    $table->integer('max_daily_patients')->default(50); // Max appointments per day
 
     $table->boolean('is_active')->default(true);
     $table->timestamps();
 });
 ```
+
+**Note:** No `max_daily_patients` limit - the clinic serves all patients who come. Availability is determined by doctor schedules, not capacity limits.
 
 **Seeder:**
 ```php
@@ -291,7 +292,6 @@ class ConsultationTypeSeeder extends Seeder
             'short_name' => 'O',
             'description' => 'Pregnancy and maternal care',
             'avg_duration' => 30,
-            'max_daily_patients' => 40,
         ]);
 
         ConsultationType::create([
@@ -300,7 +300,6 @@ class ConsultationTypeSeeder extends Seeder
             'short_name' => 'P',
             'description' => 'Children healthcare',
             'avg_duration' => 25,
-            'max_daily_patients' => 35,
         ]);
 
         ConsultationType::create([
@@ -309,7 +308,6 @@ class ConsultationTypeSeeder extends Seeder
             'short_name' => 'G',
             'description' => 'General medical consultation',
             'avg_duration' => 20,
-            'max_daily_patients' => 50,
         ]);
     }
 }
@@ -774,6 +772,7 @@ $queue->estimated_time = $estimatedTime;
 - Each medical record contains the PATIENT's info (not account owner)
 - Parent (Maria) books for child (Juan) → Juan's info stored here
 - Patient info captured AT TIME OF VISIT (historical accuracy)
+- Medical records are created when vital signs are recorded (appointments stay separate)
 - Self-contained = no need to join with user's personal_information
 
 **Laravel Migration:**
@@ -859,8 +858,7 @@ Schema::create('medical_records', function (Blueprint $table) {
     $table->enum('examination_time', ['am', 'pm'])->nullable();
 
     // Status
-    $table->enum('status', ['in_progress', 'completed'])->default('in_progress');
-    $table->boolean('is_pre_visit')->default(false); // True when created at booking
+    $table->enum('status', ['in_progress', 'for_billing', 'for_admission', 'completed'])->default('in_progress');
 
     $table->text('notes')->nullable();
 

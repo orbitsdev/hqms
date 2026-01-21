@@ -18,7 +18,6 @@ class ConsultationTypeSeeder extends Seeder
             'short_name' => 'O',
             'description' => 'Pregnancy and maternal care',
             'avg_duration' => 30,
-            'max_daily_patients' => 40,
         ]);
 
         ConsultationType::create([
@@ -27,7 +26,6 @@ class ConsultationTypeSeeder extends Seeder
             'short_name' => 'P',
             'description' => 'Children healthcare',
             'avg_duration' => 25,
-            'max_daily_patients' => 35,
         ]);
 
         ConsultationType::create([
@@ -36,7 +34,6 @@ class ConsultationTypeSeeder extends Seeder
             'short_name' => 'G',
             'description' => 'General medical consultation',
             'avg_duration' => 20,
-            'max_daily_patients' => 50,
         ]);
     }
 }

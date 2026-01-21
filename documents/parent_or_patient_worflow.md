@@ -27,10 +27,9 @@ Define a clear, separate workflow for account owners (parents or guardians) and 
 
 ## Backend Data Creation Rules
 - No database writes while the stepper is in progress (only Livewire state).
-- Create `appointments` and `medical_records` only on final submit.
-- `medical_records` created at booking are marked `is_pre_visit = true` and hidden from history.
-- When nurse checks in / records vitals, set `is_pre_visit = false` and continue normal workflow.
-- If appointment is cancelled or declined, remove or archive the pre-visit record.
+- Create `appointments` only on final submit.
+- Create `medical_records` when nurse records vital signs.
+- If appointment is cancelled or declined, no medical record is created.
 
 ---
 
@@ -89,6 +88,4 @@ Alternate: `declined`, `cancelled`, `no_show`.
 ---
 
 ## Open Decisions (For Discussion)
-- When to create the medical record: booking time vs nurse check-in.
-- How to flag "pre-visit" records so they are hidden from history.
-- How to handle dependent updates when appointment is edited or cancelled.
+- None for this workflow right now.

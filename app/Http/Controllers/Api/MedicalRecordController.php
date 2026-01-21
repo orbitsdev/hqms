@@ -25,7 +25,6 @@ class MedicalRecordController extends Controller
                 'prescriptions.doctor.personalInformation',
             ])
             ->where('status', 'completed')
-            ->where('is_pre_visit', false)
             ->orderBy('visit_date', 'desc')
             ->orderBy('created_at', 'desc');
 
@@ -68,6 +67,12 @@ class MedicalRecordController extends Controller
             ], 403);
         }
 
+        if ($medicalRecord->status !== 'completed') {
+            return response()->json([
+                'message' => 'Medical record is not available yet.',
+            ], 404);
+        }
+
         $medicalRecord->load([
             'consultationType',
             'doctor.personalInformation',
@@ -91,7 +96,6 @@ class MedicalRecordController extends Controller
         // Get prescriptions from completed medical records
         $prescriptions = $user->medicalRecords()
             ->where('status', 'completed')
-            ->where('is_pre_visit', false)
             ->with(['prescriptions.doctor.personalInformation', 'prescriptions.medicalRecord'])
             ->get()
             ->pluck('prescriptions')

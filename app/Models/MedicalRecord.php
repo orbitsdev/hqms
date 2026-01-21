@@ -18,6 +18,5 @@ class MedicalRecord extends Model
         'last_menstrual_period' => 'date',
         'vital_signs_recorded_at' => 'datetime',
         'examined_at' => 'datetime',
-        'is_pre_visit' => 'boolean',
     ];
 }

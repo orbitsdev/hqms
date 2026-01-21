@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Traits\Models;
 
 use App\Models\Appointment;
@@ -43,11 +44,22 @@ trait ConsultationTypeRelations
 
     public function isAcceptingAppointments($date): bool
     {
-        $count = $this->appointments()
-            ->whereDate('appointment_date', $date)
-            ->whereIn('status', ['pending', 'approved'])
-            ->count();
+        $dayOfWeek = \Carbon\Carbon::parse($date)->dayOfWeek;
 
-        return $count < $this->max_daily_patients;
+        // Check for exception on this specific date
+        $exception = $this->doctorSchedules()
+            ->where('schedule_type', 'exception')
+            ->where('date', $date)
+            ->first();
+
+        if ($exception) {
+            return $exception->is_available;
+        }
+
+        // Check regular schedule for this day of week
+        return $this->doctorSchedules()
+            ->where('schedule_type', 'regular')
+            ->where('day_of_week', $dayOfWeek)
+            ->exists();
     }
 }

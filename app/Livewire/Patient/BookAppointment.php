@@ -4,10 +4,8 @@ namespace App\Livewire\Patient;
 
 use App\Models\Appointment;
 use App\Models\ConsultationType;
-use App\Models\MedicalRecord;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Livewire\Component;
@@ -71,31 +69,21 @@ class BookAppointment extends Component
     {
         $this->availableDates = [];
         $startDate = Carbon::today();
-        $maxDailyPatients = $this->consultationType?->max_daily_patients ?? 50;
 
         // Generate dates for the next 30 days
         for ($i = 0; $i < 30; $i++) {
             $date = $startDate->copy()->addDays($i);
 
-            // Skip weekends (Saturday, Sunday)
-            if ($date->isWeekend()) {
-                continue;
-            }
-
-            $dayCapacity = $this->getDayCapacity($date);
-
-            $slotsLeft = max($maxDailyPatients - $dayCapacity, 0);
-            $isAvailable = $dayCapacity < $maxDailyPatients;
+            $isAvailable = $this->isDoctorAvailable($date);
+            $bookedCount = $this->getDayCapacity($date);
 
             $this->availableDates[] = [
                 'date' => $date->format('Y-m-d'),
                 'day_name' => $date->format('l'),
                 'formatted' => $date->format('M d, Y'),
-                'capacity' => $dayCapacity,
-                'max' => $maxDailyPatients,
+                'booked_count' => $bookedCount,
                 'available' => $isAvailable,
-                'slots_left' => $slotsLeft,
-                'status_text' => $isAvailable ? $slotsLeft.' slots left' : 'Fully booked',
+                'status_text' => $isAvailable ? ($bookedCount > 0 ? $bookedCount.' booked' : 'Available') : 'No doctor',
                 'status_class' => $isAvailable
                     ? 'text-zinc-600 dark:text-zinc-300'
                     : 'text-zinc-500 dark:text-zinc-400',
@@ -103,6 +91,31 @@ class BookAppointment extends Component
                 'button_disabled' => $isAvailable ? '' : 'disabled',
             ];
         }
+    }
+
+    private function isDoctorAvailable(Carbon $date): bool
+    {
+        if (! $this->consultationTypeId) {
+            return false;
+        }
+
+        $dayOfWeek = $date->dayOfWeek;
+
+        // Check for exception on this specific date
+        $exception = \App\Models\DoctorSchedule::where('consultation_type_id', $this->consultationTypeId)
+            ->where('schedule_type', 'exception')
+            ->where('date', $date->toDateString())
+            ->first();
+
+        if ($exception) {
+            return $exception->is_available;
+        }
+
+        // Check regular schedule for this day of week
+        return \App\Models\DoctorSchedule::where('consultation_type_id', $this->consultationTypeId)
+            ->where('schedule_type', 'regular')
+            ->where('day_of_week', $dayOfWeek)
+            ->exists();
     }
 
     private function getDayCapacity(Carbon $date): int
@@ -203,49 +216,19 @@ class BookAppointment extends Component
             $patientGender = $this->patientGender;
         }
 
-        DB::transaction(function () use ($user, $personalInfo, $patientFirstName, $patientMiddleName, $patientLastName, $patientDateOfBirth, $patientGender) {
-            // Create the appointment
-            $appointment = Appointment::create([
-                'user_id' => $user->id,
-                'consultation_type_id' => $this->consultationTypeId,
-                'appointment_date' => $this->appointmentDate,
-                'status' => 'pending',
-                'chief_complaints' => $this->chiefComplaints,
-                'patient_type' => $this->patientType,
-                'patient_first_name' => $patientFirstName,
-                'patient_middle_name' => $patientMiddleName,
-                'patient_last_name' => $patientLastName,
-                'patient_date_of_birth' => $patientDateOfBirth,
-                'patient_gender' => $patientGender,
-            ]);
-
-            // Create pre-visit medical record
-            MedicalRecord::create([
-                'user_id' => $user->id,
-                'consultation_type_id' => $this->consultationTypeId,
-                'appointment_id' => $appointment->id,
-                'visit_date' => $this->appointmentDate,
-                'visit_type' => 'new',
-                'service_type' => 'checkup',
-                'status' => 'in_progress',
-                'is_pre_visit' => true,
-                'chief_complaints_initial' => $this->chiefComplaints,
-                // Patient info
-                'patient_first_name' => $patientFirstName,
-                'patient_middle_name' => $patientMiddleName,
-                'patient_last_name' => $patientLastName,
-                'patient_date_of_birth' => $patientDateOfBirth,
-                'patient_gender' => $patientGender,
-                // Copy address from account owner's personal info
-                'patient_province' => $personalInfo?->province,
-                'patient_municipality' => $personalInfo?->municipality,
-                'patient_barangay' => $personalInfo?->barangay,
-                'patient_street' => $personalInfo?->street,
-                'patient_contact_number' => $personalInfo?->phone,
-                'emergency_contact_name' => $personalInfo?->emergency_contact_name,
-                'emergency_contact_phone' => $personalInfo?->emergency_contact_phone,
-            ]);
-        });
+        Appointment::create([
+            'user_id' => $user->id,
+            'consultation_type_id' => $this->consultationTypeId,
+            'appointment_date' => $this->appointmentDate,
+            'status' => 'pending',
+            'chief_complaints' => $this->chiefComplaints,
+            'patient_type' => $this->patientType,
+            'patient_first_name' => $patientFirstName,
+            'patient_middle_name' => $patientMiddleName,
+            'patient_last_name' => $patientLastName,
+            'patient_date_of_birth' => $patientDateOfBirth,
+            'patient_gender' => $patientGender,
+        ]);
 
         // In real app, send SMS notification here
         $this->dispatch('appointmentBooked', 'Appointment submitted successfully! You will receive an SMS confirmation.');

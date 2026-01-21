@@ -17,6 +17,7 @@ class ConsultationTypeController extends Controller
     public function index(Request $request): JsonResponse
     {
         $date = $request->query('date', today()->toDateString());
+        $dayOfWeek = \Carbon\Carbon::parse($date)->dayOfWeek;
 
         $types = ConsultationType::where('is_active', true)
             ->withCount([
@@ -26,9 +27,23 @@ class ConsultationTypeController extends Controller
                 },
             ])
             ->get()
-            ->map(function ($type) use ($date) {
-                $type->available_slots = max(0, $type->max_daily_patients - $type->booked_count);
-                $type->is_available = $type->available_slots > 0;
+            ->map(function ($type) use ($date, $dayOfWeek) {
+                // Check if any doctor is available for this type on this date
+                $hasException = DoctorSchedule::where('consultation_type_id', $type->id)
+                    ->where('schedule_type', 'exception')
+                    ->where('date', $date)
+                    ->first();
+
+                if ($hasException) {
+                    $type->is_available = $hasException->is_available;
+                } else {
+                    // Check regular schedule
+                    $type->is_available = DoctorSchedule::where('consultation_type_id', $type->id)
+                        ->where('schedule_type', 'regular')
+                        ->where('day_of_week', $dayOfWeek)
+                        ->exists();
+                }
+
                 $type->query_date = $date;
 
                 return $type;
@@ -40,7 +55,7 @@ class ConsultationTypeController extends Controller
     }
 
     /**
-     * Get doctors' availability for a consultation type.
+     * Get doctors' availability for a consultation type on a specific date.
      */
     public function doctorAvailability(Request $request): JsonResponse
     {
@@ -51,41 +66,65 @@ class ConsultationTypeController extends Controller
 
         $consultationTypeId = $request->query('consultation_type_id');
         $date = $request->query('date', today()->toDateString());
+        $dayOfWeek = \Carbon\Carbon::parse($date)->dayOfWeek;
 
         $consultationType = ConsultationType::findOrFail($consultationTypeId);
 
-        // Get schedules for the given date
-        $schedules = DoctorSchedule::with(['doctor.personalInformation'])
+        // Check for exceptions on this specific date
+        $exceptions = DoctorSchedule::with(['doctor.personalInformation'])
             ->where('consultation_type_id', $consultationTypeId)
+            ->where('schedule_type', 'exception')
             ->where('date', $date)
-            ->where('is_available', true)
             ->get();
 
-        // If no specific schedules, check for recurring availability
-        if ($schedules->isEmpty()) {
-            // Get doctors assigned to this consultation type
-            $doctors = $consultationType->doctors()
-                ->with('personalInformation')
-                ->get();
+        // Check regular schedules for this day of week
+        $regularSchedules = DoctorSchedule::with(['doctor.personalInformation'])
+            ->where('consultation_type_id', $consultationTypeId)
+            ->where('schedule_type', 'regular')
+            ->where('day_of_week', $dayOfWeek)
+            ->get();
 
-            return response()->json([
-                'consultation_type' => [
-                    'id' => $consultationType->id,
-                    'name' => $consultationType->name,
-                    'code' => $consultationType->code,
-                ],
-                'date' => $date,
-                'operating_hours' => [
-                    'start' => $consultationType->start_time?->format('H:i'),
-                    'end' => $consultationType->end_time?->format('H:i'),
-                ],
-                'doctors' => $doctors->map(fn ($doctor) => [
-                    'id' => $doctor->id,
-                    'name' => $doctor->personalInformation?->full_name ?? 'Dr. '.$doctor->email,
-                ]),
-                'schedules' => [],
-                'message' => 'No specific schedules found. General operating hours apply.',
-            ]);
+        // Determine availability
+        $availableDoctors = collect();
+
+        foreach ($regularSchedules as $regular) {
+            // Check if this doctor has an exception for this date
+            $exception = $exceptions->where('user_id', $regular->user_id)->first();
+
+            if ($exception) {
+                if ($exception->is_available) {
+                    $availableDoctors->push([
+                        'id' => $regular->doctor->id,
+                        'name' => $regular->doctor->personalInformation?->full_name ?? 'Dr. '.$regular->doctor->email,
+                        'start_time' => $exception->start_time?->format('H:i'),
+                        'end_time' => $exception->end_time?->format('H:i'),
+                        'note' => $exception->reason,
+                    ]);
+                }
+                // If exception is_available=false, doctor is not available (skip)
+            } else {
+                // No exception, use regular schedule
+                $availableDoctors->push([
+                    'id' => $regular->doctor->id,
+                    'name' => $regular->doctor->personalInformation?->full_name ?? 'Dr. '.$regular->doctor->email,
+                    'start_time' => $regular->start_time?->format('H:i'),
+                    'end_time' => $regular->end_time?->format('H:i'),
+                    'note' => null,
+                ]);
+            }
+        }
+
+        // Check for extra clinic days (exception with is_available=true for doctors not in regular schedule)
+        foreach ($exceptions->where('is_available', true) as $exception) {
+            if (! $regularSchedules->contains('user_id', $exception->user_id)) {
+                $availableDoctors->push([
+                    'id' => $exception->doctor->id,
+                    'name' => $exception->doctor->personalInformation?->full_name ?? 'Dr. '.$exception->doctor->email,
+                    'start_time' => $exception->start_time?->format('H:i'),
+                    'end_time' => $exception->end_time?->format('H:i'),
+                    'note' => $exception->reason,
+                ]);
+            }
         }
 
         return response()->json([
@@ -95,20 +134,8 @@ class ConsultationTypeController extends Controller
                 'code' => $consultationType->code,
             ],
             'date' => $date,
-            'operating_hours' => [
-                'start' => $consultationType->start_time?->format('H:i'),
-                'end' => $consultationType->end_time?->format('H:i'),
-            ],
-            'schedules' => $schedules->map(fn ($schedule) => [
-                'id' => $schedule->id,
-                'doctor' => [
-                    'id' => $schedule->doctor->id,
-                    'name' => $schedule->doctor->personalInformation?->full_name ?? 'Dr. '.$schedule->doctor->email,
-                ],
-                'start_time' => $schedule->start_time?->format('H:i'),
-                'end_time' => $schedule->end_time?->format('H:i'),
-                'max_patients' => $schedule->max_patients,
-            ]),
+            'is_available' => $availableDoctors->isNotEmpty(),
+            'doctors' => $availableDoctors,
         ]);
     }
 }
