@@ -394,39 +394,103 @@ if ($doctor->consultationTypes->contains('code', 'ob')) {
 
 ## 5. doctor_schedules (Doctor Availability)
 
-**Purpose:** Track when doctors are available
+**Purpose:** Track when doctors are available for consultations
 
 **Laravel Migration:**
 ```php
 Schema::create('doctor_schedules', function (Blueprint $table) {
     $table->id();
-    
-    $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Doctor
+    $table->foreignId('user_id')->constrained()->onDelete('cascade');
     $table->foreignId('consultation_type_id')->constrained()->onDelete('cascade');
-    
-    // Schedule Type
-    $table->enum('schedule_type', ['regular', 'specific_date', 'leave']);
-    
-    // For Regular Schedule (weekly)
-    $table->tinyInteger('day_of_week')->nullable(); // 0=Sun, 1=Mon, ... 6=Sat
-    
-    // For Specific Date or Leave
+
+    // 'regular' = weekly schedule, 'exception' = specific date override
+    $table->enum('schedule_type', ['regular', 'exception']);
+
+    // For regular weekly schedule (0=Sun, 1=Mon, ... 6=Sat)
+    $table->tinyInteger('day_of_week')->nullable();
+
+    // For exception (leave, half-day, extra clinic day)
     $table->date('date')->nullable();
-    
-    // Time Slots
+    $table->boolean('is_available')->default(true);
+
+    // Time range (null = full day from system settings)
     $table->time('start_time')->nullable();
     $table->time('end_time')->nullable();
-    
-    // Capacity
-    $table->integer('max_patients')->default(20);
-    
-    // Status
-    $table->boolean('is_available')->default(true);
-    $table->text('notes')->nullable();
-    
+
+    $table->string('reason')->nullable();
     $table->timestamps();
-    $table->softDeletes();
 });
+```
+
+**Schedule Types:**
+| Type | Purpose | Example |
+|------|---------|---------|
+| `regular` | Weekly recurring schedule | Dr. Santos works Mon, Wed, Fri |
+| `exception` | Specific date override | Dr. Santos on leave Jan 24 |
+
+**Example Data:**
+```php
+// Regular schedule: Dr. Santos works Mon, Wed, Fri for OB
+DoctorSchedule::create(['user_id' => 3, 'consultation_type_id' => 1, 'schedule_type' => 'regular', 'day_of_week' => 1]); // Monday
+DoctorSchedule::create(['user_id' => 3, 'consultation_type_id' => 1, 'schedule_type' => 'regular', 'day_of_week' => 3]); // Wednesday
+DoctorSchedule::create(['user_id' => 3, 'consultation_type_id' => 1, 'schedule_type' => 'regular', 'day_of_week' => 5]); // Friday
+
+// Exception: Dr. Santos on leave Jan 24
+DoctorSchedule::create([
+    'user_id' => 3,
+    'consultation_type_id' => 1,
+    'schedule_type' => 'exception',
+    'date' => '2026-01-24',
+    'is_available' => false,
+    'reason' => 'Personal emergency',
+]);
+
+// Exception: Dr. Santos half-day Jan 25 (morning only)
+DoctorSchedule::create([
+    'user_id' => 3,
+    'consultation_type_id' => 1,
+    'schedule_type' => 'exception',
+    'date' => '2026-01-25',
+    'is_available' => true,
+    'start_time' => '08:00',
+    'end_time' => '12:00',
+    'reason' => 'Afternoon conference',
+]);
+
+// Exception: Dr. Santos adds extra Saturday clinic
+DoctorSchedule::create([
+    'user_id' => 3,
+    'consultation_type_id' => 1,
+    'schedule_type' => 'exception',
+    'date' => '2026-01-26',
+    'is_available' => true,
+    'reason' => 'Special Saturday clinic',
+]);
+```
+
+**Availability Check Logic:**
+```php
+// Check if OB is available on a specific date
+public function isAvailable(int $consultationTypeId, Carbon $date): bool
+{
+    $dayOfWeek = $date->dayOfWeek;
+
+    // Check for exception on this specific date
+    $exception = DoctorSchedule::where('consultation_type_id', $consultationTypeId)
+        ->where('schedule_type', 'exception')
+        ->where('date', $date->toDateString())
+        ->first();
+
+    if ($exception) {
+        return $exception->is_available;
+    }
+
+    // Check regular schedule
+    return DoctorSchedule::where('consultation_type_id', $consultationTypeId)
+        ->where('schedule_type', 'regular')
+        ->where('day_of_week', $dayOfWeek)
+        ->exists();
+}
 ```
 
 **Model:**
@@ -436,7 +500,7 @@ class DoctorSchedule extends Model
     public function doctor() {
         return $this->belongsTo(User::class, 'user_id');
     }
-    
+
     public function consultationType() {
         return $this->belongsTo(ConsultationType::class);
     }
@@ -2016,45 +2080,33 @@ class DoctorScheduleSeeder extends Seeder
         $pedType = ConsultationType::where('code', 'pedia')->first();
         $genType = ConsultationType::where('code', 'general')->first();
 
-        // OB Doctor: Mon-Fri 8am-5pm
-        foreach ([1, 2, 3, 4, 5] as $dayOfWeek) { // Mon=1, Fri=5
+        // OB Doctor: Mon, Wed, Fri (full day - uses system hours)
+        foreach ([1, 3, 5] as $dayOfWeek) {
             DoctorSchedule::create([
                 'user_id' => $obDoctor->id,
                 'consultation_type_id' => $obType->id,
                 'schedule_type' => 'regular',
                 'day_of_week' => $dayOfWeek,
-                'start_time' => '08:00',
-                'end_time' => '17:00',
-                'max_patients' => 30,
-                'is_available' => true,
             ]);
         }
 
-        // PEDIA Doctor: Mon-Sat 8am-3pm
-        foreach ([1, 2, 3, 4, 5, 6] as $dayOfWeek) { // Mon=1, Sat=6
+        // PEDIA Doctor: Tue, Thu, Sat (full day - uses system hours)
+        foreach ([2, 4, 6] as $dayOfWeek) {
             DoctorSchedule::create([
                 'user_id' => $pedDoctor->id,
                 'consultation_type_id' => $pedType->id,
                 'schedule_type' => 'regular',
                 'day_of_week' => $dayOfWeek,
-                'start_time' => '08:00',
-                'end_time' => '15:00',
-                'max_patients' => 25,
-                'is_available' => true,
             ]);
         }
 
-        // General Doctor: Mon-Fri 9am-6pm
+        // General Doctor: Mon-Fri (full day - uses system hours)
         foreach ([1, 2, 3, 4, 5] as $dayOfWeek) {
             DoctorSchedule::create([
                 'user_id' => $genDoctor->id,
                 'consultation_type_id' => $genType->id,
                 'schedule_type' => 'regular',
                 'day_of_week' => $dayOfWeek,
-                'start_time' => '09:00',
-                'end_time' => '18:00',
-                'max_patients' => 40,
-                'is_available' => true,
             ]);
         }
     }

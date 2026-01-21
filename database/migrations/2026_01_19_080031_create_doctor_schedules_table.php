@@ -13,28 +13,24 @@ return new class extends Migration
     {
         Schema::create('doctor_schedules', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Doctor
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('consultation_type_id')->constrained()->onDelete('cascade');
 
-            // Schedule Type
-            $table->enum('schedule_type', ['regular', 'specific_date', 'leave']);
+            // 'regular' = weekly schedule, 'exception' = specific date override
+            $table->enum('schedule_type', ['regular', 'exception']);
 
-            // For Regular Schedule (weekly)
-            $table->tinyInteger('day_of_week')->nullable(); // 0=Sun, 1=Mon, ... 6=Sat
+            // For regular weekly schedule (0=Sun, 1=Mon, ... 6=Sat)
+            $table->tinyInteger('day_of_week')->nullable();
 
-            // For Specific Date or Leave
+            // For exception (leave, half-day, extra clinic day)
             $table->date('date')->nullable();
+            $table->boolean('is_available')->default(true);
 
-            // Time Slots
+            // Time range (null = full day from system settings)
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
 
-            // Capacity
-            $table->integer('max_patients')->default(20);
-
-            // Status
-            $table->boolean('is_available')->default(true);
-            $table->text('notes')->nullable();
+            $table->string('reason')->nullable();
             $table->timestamps();
         });
     }
