@@ -1,11 +1,13 @@
 <?php
+
 namespace App\Traits\Models;
 
 use App\Models\BillingItem;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 trait ServiceRelations
 {
-    public function billingItems()
+    public function billingItems(): HasMany
     {
         return $this->hasMany(BillingItem::class);
     }

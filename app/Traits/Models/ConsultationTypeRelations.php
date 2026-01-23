@@ -7,30 +7,33 @@ use App\Models\DoctorSchedule;
 use App\Models\Queue;
 use App\Models\QueueDisplay;
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 trait ConsultationTypeRelations
 {
-    public function doctors()
+    public function doctors(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'doctor_consultation_types');
     }
 
-    public function appointments()
+    public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class);
     }
 
-    public function queues()
+    public function queues(): HasMany
     {
         return $this->hasMany(Queue::class);
     }
 
-    public function doctorSchedules()
+    public function doctorSchedules(): HasMany
     {
         return $this->hasMany(DoctorSchedule::class);
     }
 
-    public function queueDisplays()
+    public function queueDisplays(): HasMany
     {
         return $this->hasMany(QueueDisplay::class);
     }
@@ -42,9 +45,9 @@ trait ConsultationTypeRelations
             ->count();
     }
 
-    public function isAcceptingAppointments($date): bool
+    public function isAcceptingAppointments(string $date): bool
     {
-        $dayOfWeek = \Carbon\Carbon::parse($date)->dayOfWeek;
+        $dayOfWeek = Carbon::parse($date)->dayOfWeek;
 
         // Check for exception on this specific date
         $exception = $this->doctorSchedules()

@@ -1,33 +1,37 @@
 <?php
+
 namespace App\Traits\Models;
 
 use App\Models\BillingItem;
 use App\Models\MedicalRecord;
 use App\Models\User;
+use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 trait BillingTransactionRelations
 {
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function medicalRecord()
+    public function medicalRecord(): BelongsTo
     {
         return $this->belongsTo(MedicalRecord::class);
     }
 
-    public function billingItems()
+    public function billingItems(): HasMany
     {
         return $this->hasMany(BillingItem::class);
     }
 
-    public function processedBy()
+    public function processedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'processed_by');
     }
 
-    public function discountApprovedBy()
+    public function discountApprovedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'discount_approved_by');
     }
@@ -40,11 +44,10 @@ trait BillingTransactionRelations
         $this->save();
     }
 
-    public static function shouldApplyEmergencyFee($dateTime = null): bool
+    public static function shouldApplyEmergencyFee(?CarbonInterface $dateTime = null): bool
     {
         $dateTime = $dateTime ?? now();
 
-        return $dateTime->hour >= 17 ||
-               $dateTime->isSunday();
+        return $dateTime->hour >= 17 || $dateTime->isSunday();
     }
 }

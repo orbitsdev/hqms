@@ -131,6 +131,12 @@ users (auth + identity)
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
+**Active Queue Guard (no duplicate live rows)**
+- Computed column `is_active_queue` is true when status ∈ {waiting, called, serving, skipped}.
+- Unique index `(appointment_id, is_active_queue)` blocks two simultaneous “in-play” rows for the same appointment, even if two terminals double-click, a request retries, or two staff approve at the same time.
+- When status becomes `completed` or `cancelled`, `is_active_queue` flips false; the same appointment can be requeued later if needed.
+- Ordering per consultation type/doctor stays the same; nurses can still skip #1 and call #2 if #1 is a no-show. The guard only stops duplicate live tickets, it does not force call order.
+
 **Queue Number Logic:**
 ```sql
 SELECT COUNT(*) + 1 FROM queues
@@ -340,6 +346,11 @@ Since patient is already at clinic:
 │ - appointment.status → 'completed'                                          │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
+
+**Admission vs Outpatient Billing**
+- If `medical_records.service_type = 'admission'`: the flow hands off to the hospital’s existing admission system. We keep the visit start (`visit_date`, `time_in`) as the admission start marker; no outpatient billing is generated here.
+- If `service_type = 'checkup'` (non-admission): the visit ends in billing—create `billing_transactions` + `billing_items` to settle charges.
+- Optional admission timing (for reference only if we mirror it): capture admission start (`visit_date` + `time_in`) and, when available, an `admission_ended_at`/discharge timestamp from the hospital system to align visit history.
 
 ### Post-Visit
 

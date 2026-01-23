@@ -1,27 +1,31 @@
 <?php
+
 namespace App\Traits\Models;
 
 use App\Models\ConsultationType;
 use App\Models\Queue;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Collection;
 
 trait QueueDisplayRelations
 {
-    public function consultationType()
+    public function consultationType(): BelongsTo
     {
         return $this->belongsTo(ConsultationType::class);
     }
 
     protected static function bootQueueDisplayRelations(): void
     {
-        static::creating(function ($display) {
+        static::creating(function (self $display): void {
             $display->access_token = bin2hex(random_bytes(32));
         });
     }
 
     public function isOnline(): bool
     {
-        if (!$this->last_heartbeat) return false;
+        if (!$this->last_heartbeat) {
+            return false;
+        }
 
         return $this->last_heartbeat->gt(now()->subMinutes(5));
     }

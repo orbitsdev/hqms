@@ -1,15 +1,18 @@
 <?php
+
 namespace App\Traits\Models;
 
 trait SystemSettingMethods
 {
-    public static function get(string $key, $default = null)
+    public static function get(string $key, mixed $default = null): mixed
     {
         $setting = self::where('setting_key', $key)->first();
 
-        if (!$setting) return $default;
+        if (!$setting) {
+            return $default;
+        }
 
-        return match($setting->setting_type) {
+        return match ($setting->setting_type) {
             'integer' => (int) $setting->setting_value,
             'boolean' => $setting->setting_value === 'true',
             'json' => json_decode($setting->setting_value, true),
@@ -17,7 +20,7 @@ trait SystemSettingMethods
         };
     }
 
-    public static function set(string $key, $value): ?self
+    public static function set(string $key, mixed $value): ?self
     {
         $setting = self::where('setting_key', $key)->first();
 
