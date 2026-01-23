@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Http\Responses;
+namespace App\Http\Middleware;
 
-use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
-class LoginResponse implements LoginResponseContract
+class EnsurePersonalInformationIsComplete
 {
-    public function toResponse($request)
+    public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
 
-        if ($user?->isPatient()) {
-            if (! $this->hasCompletePersonalInfo($user)) {
+        if ($user && method_exists($user, 'isPatient') && $user->isPatient() && ! $this->hasCompletePersonalInfo($user)) {
+            if (! $request->routeIs('patient.profile')) {
                 return redirect()->route('patient.profile');
             }
-
-            return redirect()->intended(route('patient.dashboard'));
         }
 
-        return redirect()->intended(route('dashboard'));
+        return $next($request);
     }
 
     private function hasCompletePersonalInfo($user): bool

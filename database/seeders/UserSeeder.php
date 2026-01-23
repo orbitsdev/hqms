@@ -295,5 +295,17 @@ class UserSeeder extends Seeder
             'emergency_contact_name' => 'Maria Dela Cruz',
             'emergency_contact_phone' => '09173333334',
         ]);
+
+        // Patient 4: Incomplete profile (to test personal-info guard)
+        $patient4 = User::create([
+            'first_name' => 'Test',
+            'last_name' => 'Incomplete',
+            'email' => 'incomplete@hqms.test',
+            'password' => Hash::make('password'),
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+        $patient4->assignRole('patient');
+        // No PersonalInformation created on purpose
     }
 }
