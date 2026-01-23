@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Appointment;
 use App\Models\ConsultationType;
+use App\Models\MedicalRecord;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -20,8 +21,10 @@ class MedicalRecordFactory extends Factory
     public function definition(): array
     {
         $gender = fake()->randomElement(['male', 'female']);
+        $timeIn = now();
 
         return [
+            'record_number' => MedicalRecord::generateRecordNumber(),
             'user_id' => User::factory(),
             'consultation_type_id' => ConsultationType::factory(),
             'appointment_id' => null,
@@ -58,8 +61,11 @@ class MedicalRecordFactory extends Factory
 
             // Visit Information
             'visit_date' => fake()->dateTimeBetween('-30 days', 'now')->format('Y-m-d'),
+            'time_in' => $timeIn,
+            'time_in_period' => $timeIn->format('a') === 'am' ? 'am' : 'pm',
             'visit_type' => fake()->randomElement(['new', 'old', 'revisit']),
             'service_type' => 'checkup',
+            'service_category' => fake()->randomElement(['surgical', 'non-surgical']),
 
             // Chief Complaints
             'chief_complaints_initial' => fake()->sentence(),
@@ -75,6 +81,9 @@ class MedicalRecordFactory extends Factory
 
             'vital_signs_recorded_at' => now(),
 
+            // Doctor Recommendations
+            'suggested_discount_type' => 'none',
+
             // Status
             'status' => 'in_progress',
         ];
@@ -88,6 +97,7 @@ class MedicalRecordFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'patient_gender' => 'female',
             'patient_marital_status' => 'married',
+            'ob_type' => fake()->randomElement(['prenatal', 'post-natal']),
             'fetal_heart_tone' => fake()->numberBetween(120, 160),
             'fundal_height' => fake()->randomFloat(2, 20.0, 40.0),
             'last_menstrual_period' => fake()->dateTimeBetween('-40 weeks', '-4 weeks')->format('Y-m-d'),
@@ -119,6 +129,7 @@ class MedicalRecordFactory extends Factory
             'procedures_done' => fake()->optional()->sentence(),
             'prescription_notes' => fake()->optional()->sentence(),
             'examined_at' => now(),
+            'examination_ended_at' => now()->addMinutes(20),
             'examination_time' => fake()->randomElement(['am', 'pm']),
         ]);
     }

@@ -30,6 +30,8 @@ class MedicalRecordSeeder extends Seeder
         $pedType = ConsultationType::where('code', 'pedia')->first();
         $genType = ConsultationType::where('code', 'general')->first();
 
+        $recordNumber = static fn (int $sequence): string => sprintf('MR-%d-%05d', now()->year, $sequence);
+
         if (! $patient1 || ! $obDoctor || ! $nurse) {
             $this->command->warn('Required users not found. Run UserSeeder first.');
 
@@ -38,7 +40,11 @@ class MedicalRecordSeeder extends Seeder
 
         // === PATIENT 1 (Maria Gonzales) - OB Records ===
         // Record 1: Completed OB visit (2 weeks ago)
+        $record1TimeIn = now()->subDays(14)->setTime(9, 0);
+        $record1ExamStart = now()->subDays(14)->setTime(9, 30);
+
         $record1 = MedicalRecord::create([
+            'record_number' => $recordNumber(1),
             'user_id' => $patient1->id,
             'consultation_type_id' => $obType->id,
             'doctor_id' => $obDoctor->id,
@@ -60,9 +66,13 @@ class MedicalRecordSeeder extends Seeder
             'emergency_contact_name' => 'Jose Gonzales',
             'emergency_contact_phone' => '09171111112',
 
-            'visit_date' => now()->subDays(14)->format('Y-m-d'),
+            'visit_date' => $record1TimeIn->toDateString(),
+            'time_in' => $record1TimeIn,
+            'time_in_period' => $record1TimeIn->format('a') === 'am' ? 'am' : 'pm',
             'visit_type' => 'old',
             'service_type' => 'checkup',
+            'ob_type' => 'prenatal',
+            'service_category' => 'non-surgical',
 
             'chief_complaints_initial' => 'Prenatal checkup, 28 weeks pregnant',
             'chief_complaints_updated' => 'Prenatal checkup, 28 weeks AOG. No complaints.',
@@ -76,12 +86,13 @@ class MedicalRecordSeeder extends Seeder
             'fetal_heart_tone' => 145,
             'fundal_height' => 28.0,
             'last_menstrual_period' => now()->subWeeks(28)->format('Y-m-d'),
-            'vital_signs_recorded_at' => now()->subDays(14),
+            'vital_signs_recorded_at' => $record1TimeIn->copy()->addMinutes(15),
 
             'pertinent_hpi_pe' => 'G2P1 (1001), 28 weeks AOG. No vaginal bleeding, no abdominal pain, good fetal movement. BP stable, no edema.',
             'diagnosis' => 'Pregnancy Uterine 28 weeks AOG, G2P1',
             'plan' => 'Continue prenatal vitamins. Return in 2 weeks. Advice on danger signs.',
-            'examined_at' => now()->subDays(14),
+            'examined_at' => $record1ExamStart,
+            'examination_ended_at' => $record1ExamStart->copy()->addMinutes(25),
             'examination_time' => 'am',
 
             'status' => 'completed',
@@ -113,7 +124,11 @@ class MedicalRecordSeeder extends Seeder
         ]);
 
         // Record 2: Completed OB visit (4 weeks ago)
+        $record2TimeIn = now()->subDays(28)->setTime(10, 30);
+        $record2ExamStart = now()->subDays(28)->setTime(11, 0);
+
         $record2 = MedicalRecord::create([
+            'record_number' => $recordNumber(2),
             'user_id' => $patient1->id,
             'consultation_type_id' => $obType->id,
             'doctor_id' => $obDoctor->id,
@@ -135,9 +150,13 @@ class MedicalRecordSeeder extends Seeder
             'emergency_contact_name' => 'Jose Gonzales',
             'emergency_contact_phone' => '09171111112',
 
-            'visit_date' => now()->subDays(28)->format('Y-m-d'),
+            'visit_date' => $record2TimeIn->toDateString(),
+            'time_in' => $record2TimeIn,
+            'time_in_period' => $record2TimeIn->format('a') === 'am' ? 'am' : 'pm',
             'visit_type' => 'old',
             'service_type' => 'checkup',
+            'ob_type' => 'prenatal',
+            'service_category' => 'non-surgical',
 
             'chief_complaints_initial' => 'Prenatal checkup, 26 weeks pregnant',
 
@@ -150,12 +169,13 @@ class MedicalRecordSeeder extends Seeder
             'fetal_heart_tone' => 142,
             'fundal_height' => 26.0,
             'last_menstrual_period' => now()->subWeeks(30)->format('Y-m-d'),
-            'vital_signs_recorded_at' => now()->subDays(28),
+            'vital_signs_recorded_at' => $record2TimeIn->copy()->addMinutes(10),
 
             'pertinent_hpi_pe' => 'G2P1 (1001), 26 weeks AOG. Normal prenatal course.',
             'diagnosis' => 'Pregnancy Uterine 26 weeks AOG',
             'plan' => 'Continue prenatal vitamins. Ultrasound scheduled.',
-            'examined_at' => now()->subDays(28),
+            'examined_at' => $record2ExamStart,
+            'examination_ended_at' => $record2ExamStart->copy()->addMinutes(20),
             'examination_time' => 'am',
 
             'status' => 'completed',
@@ -163,7 +183,11 @@ class MedicalRecordSeeder extends Seeder
 
         // === PATIENT 2 (Ana Reyes) - PEDIA Records for her child ===
         if ($patient2 && $pedDoctor && $pedType) {
+            $record3TimeIn = now()->subDays(7)->setTime(14, 15);
+            $record3ExamStart = now()->subDays(7)->setTime(14, 40);
+
             $record3 = MedicalRecord::create([
+                'record_number' => $recordNumber(3),
                 'user_id' => $patient2->id,
                 'consultation_type_id' => $pedType->id,
                 'doctor_id' => $pedDoctor->id,
@@ -182,9 +206,12 @@ class MedicalRecordSeeder extends Seeder
                 'emergency_contact_name' => 'Ana Reyes',
                 'emergency_contact_phone' => '09172222222',
 
-                'visit_date' => now()->subDays(7)->format('Y-m-d'),
+                'visit_date' => $record3TimeIn->toDateString(),
+                'time_in' => $record3TimeIn,
+                'time_in_period' => $record3TimeIn->format('a') === 'am' ? 'am' : 'pm',
                 'visit_type' => 'new',
                 'service_type' => 'checkup',
+                'service_category' => 'non-surgical',
 
                 'chief_complaints_initial' => 'Fever and cough for 2 days',
                 'chief_complaints_updated' => 'Fever (38.5C) and productive cough for 2 days. No difficulty breathing.',
@@ -197,12 +224,13 @@ class MedicalRecordSeeder extends Seeder
                 'height' => 92.0,
                 'head_circumference' => 49.0,
                 'chest_circumference' => 52.0,
-                'vital_signs_recorded_at' => now()->subDays(7),
+                'vital_signs_recorded_at' => $record3TimeIn->copy()->addMinutes(10),
 
                 'pertinent_hpi_pe' => '4-year-old male with 2-day history of fever and cough. Throat: pharyngeal congestion. Lungs: clear breath sounds bilaterally.',
                 'diagnosis' => 'Upper Respiratory Tract Infection (URTI)',
                 'plan' => 'Symptomatic treatment. Increase fluid intake. Return if fever persists beyond 3 days.',
-                'examined_at' => now()->subDays(7),
+                'examined_at' => $record3ExamStart,
+                'examination_ended_at' => $record3ExamStart->copy()->addMinutes(15),
                 'examination_time' => 'pm',
 
                 'status' => 'completed',
@@ -235,7 +263,11 @@ class MedicalRecordSeeder extends Seeder
 
         // === PATIENT 3 (Juan Dela Cruz) - General Medicine ===
         if ($patient3 && $genDoctor && $genType) {
+            $record4TimeIn = now()->subDays(3)->setTime(8, 45);
+            $record4ExamStart = now()->subDays(3)->setTime(9, 15);
+
             $record4 = MedicalRecord::create([
+                'record_number' => $recordNumber(4),
                 'user_id' => $patient3->id,
                 'consultation_type_id' => $genType->id,
                 'doctor_id' => $genDoctor->id,
@@ -257,9 +289,12 @@ class MedicalRecordSeeder extends Seeder
                 'emergency_contact_name' => 'Maria Dela Cruz',
                 'emergency_contact_phone' => '09173333334',
 
-                'visit_date' => now()->subDays(3)->format('Y-m-d'),
+                'visit_date' => $record4TimeIn->toDateString(),
+                'time_in' => $record4TimeIn,
+                'time_in_period' => $record4TimeIn->format('a') === 'am' ? 'am' : 'pm',
                 'visit_type' => 'old',
                 'service_type' => 'checkup',
+                'service_category' => 'non-surgical',
 
                 'chief_complaints_initial' => 'Follow-up for hypertension',
                 'chief_complaints_updated' => 'Hypertension follow-up. Compliant with medications.',
@@ -270,12 +305,13 @@ class MedicalRecordSeeder extends Seeder
                 'respiratory_rate' => 16,
                 'weight' => 75.0,
                 'height' => 168.0,
-                'vital_signs_recorded_at' => now()->subDays(3),
+                'vital_signs_recorded_at' => $record4TimeIn->copy()->addMinutes(10),
 
                 'pertinent_hpi_pe' => '54-year-old male, known hypertensive for 5 years. Compliant with medications. No chest pain, no headache, no blurring of vision.',
                 'diagnosis' => 'Essential Hypertension, controlled',
                 'plan' => 'Continue current medications. Lifestyle modification. Return in 1 month.',
-                'examined_at' => now()->subDays(3),
+                'examined_at' => $record4ExamStart,
+                'examination_ended_at' => $record4ExamStart->copy()->addMinutes(15),
                 'examination_time' => 'am',
 
                 'status' => 'completed',
