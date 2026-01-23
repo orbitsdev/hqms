@@ -17,6 +17,8 @@ class UserSeeder extends Seeder
     {
         // === ADMIN USER ===
         $admin = User::create([
+            'first_name' => 'System',
+            'last_name' => 'Administrator',
             'email' => 'admin@hqms.test',
             'password' => Hash::make('password'),
             'is_active' => true,
@@ -34,6 +36,9 @@ class UserSeeder extends Seeder
         // === DOCTORS ===
         // OB Doctor
         $obDoctor = User::create([
+            'first_name' => 'Maria',
+            'middle_name' => 'Cruz',
+            'last_name' => 'Santos',
             'email' => 'dr.santos@hqms.test',
             'password' => Hash::make('password'),
             'is_active' => true,
@@ -60,6 +65,9 @@ class UserSeeder extends Seeder
 
         // PEDIA Doctor
         $pedDoctor = User::create([
+            'first_name' => 'Juan',
+            'middle_name' => 'Dela',
+            'last_name' => 'Reyes',
             'email' => 'dr.reyes@hqms.test',
             'password' => Hash::make('password'),
             'is_active' => true,
@@ -86,6 +94,8 @@ class UserSeeder extends Seeder
 
         // General Medicine Doctor
         $genDoctor = User::create([
+            'first_name' => 'Ana',
+            'last_name' => 'Garcia',
             'email' => 'dr.garcia@hqms.test',
             'password' => Hash::make('password'),
             'is_active' => true,
@@ -111,6 +121,9 @@ class UserSeeder extends Seeder
 
         // Single email doctor (backward compatible with old seeder)
         $doctor = User::create([
+            'first_name' => 'Carlos',
+            'middle_name' => 'Antonio',
+            'last_name' => 'Mendoza',
             'email' => 'doctor@hqms.test',
             'password' => Hash::make('password'),
             'is_active' => true,
@@ -142,6 +155,8 @@ class UserSeeder extends Seeder
 
         // === NURSES ===
         $nurse1 = User::create([
+            'first_name' => 'Rosa',
+            'last_name' => 'Cruz',
             'email' => 'nurse@hqms.test',
             'password' => Hash::make('password'),
             'is_active' => true,
@@ -159,6 +174,8 @@ class UserSeeder extends Seeder
         ]);
 
         $nurse2 = User::create([
+            'first_name' => 'Carmen',
+            'last_name' => 'Lopez',
             'email' => 'nurse.lopez@hqms.test',
             'password' => Hash::make('password'),
             'is_active' => true,
@@ -177,6 +194,8 @@ class UserSeeder extends Seeder
 
         // === CASHIER ===
         $cashier = User::create([
+            'first_name' => 'Pedro',
+            'last_name' => 'Mendoza',
             'email' => 'cashier@hqms.test',
             'password' => Hash::make('password'),
             'is_active' => true,
@@ -196,6 +215,9 @@ class UserSeeder extends Seeder
         // === SAMPLE PATIENTS ===
         // Patient 1: Adult female (for OB)
         $patient1 = User::create([
+            'first_name' => 'Maria',
+            'middle_name' => 'Isabel',
+            'last_name' => 'Gonzales',
             'email' => 'patient@hqms.test',
             'password' => Hash::make('password'),
             'is_active' => true,
@@ -222,6 +244,8 @@ class UserSeeder extends Seeder
 
         // Patient 2: Parent with children (for PEDIA bookings)
         $patient2 = User::create([
+            'first_name' => 'Ana',
+            'last_name' => 'Reyes',
             'email' => 'ana.parent@hqms.test',
             'password' => Hash::make('password'),
             'is_active' => true,
@@ -247,6 +271,8 @@ class UserSeeder extends Seeder
 
         // Patient 3: Adult male (for General)
         $patient3 = User::create([
+            'first_name' => 'Juan',
+            'last_name' => 'Dela Cruz',
             'email' => 'juan.patient@hqms.test',
             'password' => Hash::make('password'),
             'is_active' => true,

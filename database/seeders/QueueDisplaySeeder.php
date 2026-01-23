@@ -17,6 +17,12 @@ class QueueDisplaySeeder extends Seeder
         $pedType = ConsultationType::where('code', 'pedia')->first();
         $genType = ConsultationType::where('code', 'general')->first();
 
+        if (!$obType || !$pedType || !$genType) {
+            $this->command->warn('Consultation types missing; run ConsultationTypeSeeder before QueueDisplaySeeder.');
+
+            return;
+        }
+
         // OB Display
         QueueDisplay::create([
             'name' => 'OB Queue Display',
@@ -31,7 +37,6 @@ class QueueDisplaySeeder extends Seeder
                 'volume' => 80,
             ],
             'is_active' => true,
-            'access_token' => bin2hex(random_bytes(32)),
         ]);
 
         // PEDIA Display
@@ -48,7 +53,6 @@ class QueueDisplaySeeder extends Seeder
                 'volume' => 70,
             ],
             'is_active' => true,
-            'access_token' => bin2hex(random_bytes(32)),
         ]);
 
         // General Display
@@ -65,7 +69,6 @@ class QueueDisplaySeeder extends Seeder
                 'volume' => 75,
             ],
             'is_active' => true,
-            'access_token' => bin2hex(random_bytes(32)),
         ]);
     }
 }

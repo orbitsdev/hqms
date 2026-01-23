@@ -46,10 +46,17 @@ class QueueSeeder extends Seeder
             ->where('status', 'approved')
             ->get();
 
-        $queueNumber = 1;
+        // Track queue numbers per consultation type for uniqueness and realistic numbering
+        $queueNumbers = [
+            $obType?->id => 1,
+            $pedType?->id => 1,
+            $genType?->id => 1,
+        ];
 
         // === CREATE QUEUES FROM TODAY'S APPROVED APPOINTMENTS ===
         foreach ($todayApprovedAppointments as $appointment) {
+            $queueNumber = $queueNumbers[$appointment->consultation_type_id] ?? 1;
+
             Queue::create([
                 'appointment_id' => $appointment->id,
                 'user_id' => $appointment->user_id,
@@ -62,7 +69,8 @@ class QueueSeeder extends Seeder
                 'status' => 'waiting',
                 'source' => $appointment->source,
             ]);
-            $queueNumber++;
+
+            $queueNumbers[$appointment->consultation_type_id] = $queueNumber + 1;
         }
 
         // === ADD WALK-IN QUEUES FOR MORE TESTING ===
@@ -71,7 +79,7 @@ class QueueSeeder extends Seeder
             'user_id' => $patient1->id,
             'consultation_type_id' => $obType->id,
             'doctor_id' => $obDoctor?->id,
-            'queue_number' => $queueNumber++,
+            'queue_number' => $queueNumbers[$obType->id]++,
             'queue_date' => today(),
             'estimated_time' => now()->addHours(1)->format('H:i'),
             'priority' => 'normal',
@@ -85,7 +93,7 @@ class QueueSeeder extends Seeder
                 'user_id' => $patient2->id,
                 'consultation_type_id' => $pedType->id,
                 'doctor_id' => $pedDoctor?->id,
-                'queue_number' => $queueNumber++,
+                'queue_number' => $queueNumbers[$pedType->id]++,
                 'queue_date' => today(),
                 'estimated_time' => now()->addMinutes(30)->format('H:i'),
                 'priority' => 'urgent',
