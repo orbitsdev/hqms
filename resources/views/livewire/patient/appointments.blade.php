@@ -61,8 +61,8 @@
                     $timeLabel = $appointment->appointment_time?->format('h:i A');
                 @endphp
 
-                <article
-                    class="rounded-xl border border-zinc-200/70 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+                <div
+                    class="rounded-xl border border-zinc-200/70 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 space-y-4"
                     wire:key="appointment-{{ $appointment->id }}"
                 >
                     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -128,22 +128,59 @@
                             >
                                 {{ __('View details') }}
                             </flux:button>
+                            @if($appointment->status === 'pending')
+                                <flux:modal.trigger name="cancel-appointment-{{ $appointment->id }}">
+                                    <flux:button
+                                        variant="danger"
+                                        size="sm"
+                                        x-data=""
+                                        x-on:click.prevent="$dispatch('open-modal', 'cancel-appointment-{{ $appointment->id }}')"
+                                    >
+                                        {{ __('Cancel') }}
+                                    </flux:button>
+                                </flux:modal.trigger>
+                            @endif
                         </div>
                     </div>
-                </article>
+                    @if($appointment->status === 'pending')
+                        <flux:modal name="cancel-appointment-{{ $appointment->id }}" focusable class="max-w-md">
+                            <div class="space-y-4">
+                                <div class="space-y-1">
+                                    <flux:heading size="lg">{{ __('Cancel this appointment?') }}</flux:heading>
+                                    <flux:text variant="subtle" class="text-sm">
+                                        {{ __('You can book a new appointment any time. This will mark the request as cancelled.') }}
+                                    </flux:text>
+                                </div>
+                                <div class="flex items-center justify-end gap-2">
+                                    <flux:modal.close>
+                                        <flux:button variant="ghost">{{ __('Keep appointment') }}</flux:button>
+                                    </flux:modal.close>
+                                    <flux:modal.close>
+                                        <flux:button
+                                            variant="danger"
+                                            wire:click="cancelAppointment({{ $appointment->id }})"
+                                        >
+                                            {{ __('Confirm cancel') }}
+                                        </flux:button>
+                                    </flux:modal.close>
+                                </div>
+                            </div>
+                        </flux:modal>
+                    @endif
+                </div>
             @endforeach
         </div>
 
         {{ $appointments->links() }}
     @else
-        <div class="rounded-xl border border-zinc-200/70 bg-white p-8 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <div class="rounded-xl border border-zinc-200/70 bg-white p-8 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900 space-y-4">
             <img
                 src="{{ asset('images/undraw_booked_bb22.svg') }}"
                 alt="{{ __('Appointments') }}"
                 class="mx-auto mb-4 h-28 w-auto opacity-80"
             />
             <flux:heading size="lg" level="2">{{ __('No appointments found') }}</flux:heading>
-            <flux:text variant="subtle" class="mt-2 text-sm">
+            <flux:text variant="subtle" class="text-sm">
                 @if($search)
                     {{ __('Try adjusting your search terms or filters.') }}
                 @elseif($filter === 'upcoming')
@@ -156,11 +193,9 @@
             </flux:text>
 
             @if(! $search)
-                <div class="mt-4">
-                    <flux:button :href="route('patient.appointments.book')" variant="primary" wire:navigate>
-                        {{ __('Book appointment') }}
-                    </flux:button>
-                </div>
+                <flux:button :href="route('patient.appointments.book')" variant="primary" wire:navigate>
+                    {{ __('Book appointment') }}
+                </flux:button>
             @endif
         </div>
     @endif
