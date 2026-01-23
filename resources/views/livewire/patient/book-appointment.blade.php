@@ -75,6 +75,59 @@
     </div>
 
     @if($currentStep === 1)
+        @if($selectedConsultation)
+            <div class="grid gap-4 md:grid-cols-2">
+                <div class="rounded-lg border border-zinc-200/70 bg-zinc-50 p-4 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
+                    <div class="font-medium">{{ __('Available doctors') }}</div>
+                    <div class="mt-2 flex flex-wrap gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                        @forelse($availableDoctors as $doctor)
+                            <span class="rounded-full bg-white px-2 py-1 text-xs text-zinc-700 shadow-sm dark:bg-zinc-800 dark:text-zinc-200">
+                                {{ $doctor->name }}
+                            </span>
+                        @empty
+                            <span>{{ __('No doctors assigned yet.') }}</span>
+                        @endforelse
+                    </div>
+                </div>
+
+                @if(! empty($doctorAvailability))
+                    <div class="rounded-lg border border-zinc-200/70 bg-white p-4 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900">
+                        <div class="font-medium">{{ __('Doctor availability') }}</div>
+                        <div class="mt-3 grid gap-3">
+                            @foreach($doctorAvailability as $availability)
+                                <div class="rounded-md border border-zinc-200/70 bg-zinc-50 p-3 text-xs text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-300">
+                                    <div class="text-sm font-medium text-zinc-800 dark:text-zinc-100">
+                                        {{ $availability['name'] }}
+                                    </div>
+                                    <div class="mt-2 space-y-1">
+                                        <div>
+                                            <span class="text-zinc-500">{{ __('Clinic days') }}:</span>
+                                            {{ empty($availability['days']) ? __('To be announced') : implode(', ', $availability['days']) }}
+                                        </div>
+                                        @if(! empty($availability['hours']))
+                                            <div>
+                                                <span class="text-zinc-500">{{ __('Hours') }}:</span> {{ $availability['hours'] }}
+                                            </div>
+                                        @endif
+                                        @if(! empty($availability['unavailable']))
+                                            <div>
+                                                <span class="text-zinc-500">{{ __('Unavailable') }}:</span> {{ implode(', ', $availability['unavailable']) }}
+                                            </div>
+                                        @endif
+                                        @if(! empty($availability['extra']))
+                                            <div>
+                                                <span class="text-zinc-500">{{ __('Extra clinic day') }}:</span> {{ implode(', ', $availability['extra']) }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            </div>
+        @endif
+
         <div class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
             <div class="border-b border-zinc-200/70 px-4 py-3 dark:border-zinc-800">
                 <flux:heading>{{ __('Select Consultation Type') }}</flux:heading>
@@ -102,21 +155,6 @@
                         </flux:button>
                     @endforeach
                 </div>
-
-                @if($selectedConsultation)
-                    <div class="rounded-lg border border-zinc-200/70 bg-zinc-50 p-4 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
-                        <div class="font-medium">{{ __('Available doctors') }}</div>
-                        <div class="mt-2 flex flex-wrap gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                            @forelse($availableDoctors as $doctor)
-                                <span class="rounded-full bg-white px-2 py-1 text-xs text-zinc-700 shadow-sm dark:bg-zinc-800 dark:text-zinc-200">
-                                    {{ $doctor->name }}
-                                </span>
-                            @empty
-                                <span>{{ __('No doctors assigned yet.') }}</span>
-                            @endforelse
-                        </div>
-                    </div>
-                @endif
 
                 <div class="flex justify-end">
                     <flux:button type="button" wire:click="nextStep" variant="primary" :disabled="! $consultationTypeId">

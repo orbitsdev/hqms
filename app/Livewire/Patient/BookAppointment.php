@@ -264,6 +264,94 @@ class BookAppointment extends Component
         return $dates;
     }
 
+    /** @return array<int, array<string, mixed>> */
+    protected function buildDoctorAvailability(?ConsultationType $consultationType): array
+    {
+        if (! $consultationType) {
+            return [];
+        }
+
+        $schedules = $consultationType->doctorSchedules()
+            ->with('doctor')
+            ->get();
+
+        if ($schedules->isEmpty()) {
+            return [];
+        }
+
+        $dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+        return $schedules
+            ->groupBy('user_id')
+            ->map(function ($items) use ($dayNames): array {
+                $doctor = $items->first()?->doctor;
+                $regularDays = $items
+                    ->where('schedule_type', 'regular')
+                    ->pluck('day_of_week')
+                    ->filter()
+                    ->unique()
+                    ->sort()
+                    ->values();
+
+                $dayLabels = $regularDays
+                    ->map(fn (int $day) => $dayNames[$day] ?? null)
+                    ->filter()
+                    ->values()
+                    ->all();
+
+                $timeRanges = $items
+                    ->where('schedule_type', 'regular')
+                    ->map(function ($schedule): ?string {
+                        $start = $schedule->start_time?->format('H:i');
+                        $end = $schedule->end_time?->format('H:i');
+
+                        if (! $start && ! $end) {
+                            return null;
+                        }
+
+                        return trim(($start ?? '') . ' - ' . ($end ?? ''));
+                    })
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                $hoursLabel = null;
+                if ($timeRanges->count() === 1) {
+                    $hoursLabel = $timeRanges->first();
+                } elseif ($timeRanges->count() > 1) {
+                    $hoursLabel = 'Varies by day';
+                }
+
+                $unavailableDates = $items
+                    ->where('schedule_type', 'exception')
+                    ->where('is_available', false)
+                    ->pluck('date')
+                    ->filter()
+                    ->map(fn ($date) => Carbon::parse($date)->format('M d'))
+                    ->values()
+                    ->all();
+
+                $extraDates = $items
+                    ->where('schedule_type', 'exception')
+                    ->where('is_available', true)
+                    ->pluck('date')
+                    ->filter()
+                    ->map(fn ($date) => Carbon::parse($date)->format('M d'))
+                    ->values()
+                    ->all();
+
+                return [
+                    'name' => $doctor?->name ?? __('Doctor'),
+                    'days' => $dayLabels,
+                    'hours' => $hoursLabel,
+                    'unavailable' => $unavailableDates,
+                    'extra' => $extraDates,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
     protected function fillSelfPatientDetails(): void
     {
         $info = Auth::user()?->personalInformation;
@@ -288,10 +376,12 @@ class BookAppointment extends Component
 
         $selectedConsultation = null;
         $availableDoctors = collect();
+        $doctorAvailability = [];
 
         if ($this->consultationTypeId) {
             $selectedConsultation = ConsultationType::with('doctors')->find($this->consultationTypeId);
             $availableDoctors = $selectedConsultation?->doctors ?? collect();
+            $doctorAvailability = $this->buildDoctorAvailability($selectedConsultation);
 
             if (! $this->availableDates) {
                 $this->availableDates = $this->buildAvailableDates();
@@ -304,6 +394,7 @@ class BookAppointment extends Component
             'consultationTypes' => $consultationTypes,
             'selectedConsultation' => $selectedConsultation,
             'availableDoctors' => $availableDoctors,
+            'doctorAvailability' => $doctorAvailability,
             'availableDates' => $this->availableDates,
             'selectedDate' => $selectedDate,
         ])
