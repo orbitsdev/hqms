@@ -20,12 +20,6 @@
         </flux:callout>
     @endif
 
-    @if(session('status') === 'profile-saved')
-        <flux:callout variant="success" icon="check-circle" :heading="__('Profile updated')">
-            <flux:text>{{ session('profile_message') }}</flux:text>
-        </flux:callout>
-    @endif
-
     <form wire:submit.prevent="save" class="space-y-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm">
         <div class="grid gap-4 md:grid-cols-3">
             <flux:input wire:model.defer="first_name" :label="__('First name')" type="text" required autocomplete="given-name" />

@@ -5,6 +5,7 @@ namespace App\Livewire\Patient;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Masmerise\Toaster\Toaster;
 use Livewire\Component;
 
 class Profile extends Component
@@ -78,8 +79,7 @@ class Profile extends Component
 
         $this->showCompletionNotice = ! $user->fresh()->hasCompletePersonalInformation();
 
-        session()->flash('status', 'profile-saved');
-        session()->flash('profile_message', __('Profile saved. You can continue to the patient dashboard.'));
+        Toaster::success(__('Profile saved. You can continue to the patient dashboard.'));
     }
 
     protected function rules(): array
