@@ -1,5 +1,8 @@
 <?php
 
+use App\Livewire\Patient\AppointmentShow;
+use App\Livewire\Patient\Appointments;
+use App\Livewire\Patient\BookAppointment;
 use App\Livewire\Patient\Dashboard;
 use App\Livewire\Patient\Profile;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +22,9 @@ Route::prefix('patient')->name('patient.')->middleware(['auth', 'verified'])->gr
     Route::middleware('personal-info-complete')->group(function () {
         Route::get('/', Dashboard::class)->name('dashboard');
         Route::redirect('/dashboard', '/patient')->name('dashboard.redirect');
+        Route::get('/appointments', Appointments::class)->name('appointments');
+        Route::get('/appointments/book', BookAppointment::class)->name('appointments.book');
+        Route::get('/appointments/{appointment}', AppointmentShow::class)->name('appointments.show');
     });
 });
 

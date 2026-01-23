@@ -44,6 +44,9 @@
                         <flux:sidebar.item icon="user" :href="route('patient.profile')" :current="request()->routeIs('patient.profile')" wire:navigate>
                             {{ __('Profile') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="calendar-days" :href="route('patient.appointments')" :current="request()->routeIs('patient.appointments*')" wire:navigate>
+                            {{ __('Appointments') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="cog" :href="route('profile.edit')" :current="request()->routeIs('profile.edit')" wire:navigate>
                             {{ __('Settings') }}
                         </flux:sidebar.item>
@@ -79,12 +82,18 @@
 
         @if($isPatient)
             <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-zinc-900/95 border-t border-zinc-200 dark:border-zinc-700 z-50 backdrop-blur">
-                <nav class="grid grid-cols-2 h-16">
+                <nav class="grid grid-cols-3 h-16">
                     <a href="{{ route('patient.dashboard') }}"
                        class="flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.dashboard') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
                        wire:navigate>
                         <flux:icon name="home" class="w-5 h-5" />
                         <span class="text-xs mt-1">Home</span>
+                    </a>
+                    <a href="{{ route('patient.appointments') }}"
+                       class="flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.appointments*') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
+                       wire:navigate>
+                        <flux:icon name="calendar-days" class="w-5 h-5" />
+                        <span class="text-xs mt-1">Appointments</span>
                     </a>
                     <a href="{{ route('patient.profile') }}"
                        class="flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.profile') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
