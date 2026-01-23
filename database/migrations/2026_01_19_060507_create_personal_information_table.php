@@ -14,13 +14,6 @@ return new class extends Migration
         Schema::create('personal_information', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            // Personal Information
-            $table->string('first_name');
-            $table->string('middle_name')->nullable();
-            $table->string('last_name');
-            $table->string('phone')->nullable();
-
-
 
             // Demographics
             $table->date('date_of_birth')->nullable();
@@ -37,8 +30,6 @@ return new class extends Migration
             $table->string('occupation')->nullable();
             $table->string('emergency_contact_name')->nullable();
             $table->string('emergency_contact_phone', 20)->nullable();
-
-
 
             $table->timestamps();
         });

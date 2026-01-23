@@ -11,10 +11,23 @@ return new class extends Migration
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
 
-            // Relations
+            // Relations (user_id = account owner for notifications)
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('consultation_type_id')->constrained()->onDelete('cascade');
             $table->foreignId('doctor_id')->nullable()->constrained('users')->onDelete('set null');
+
+            // Patient Information (actual patient - may differ from account owner)
+            $table->string('patient_first_name');
+            $table->string('patient_middle_name')->nullable();
+            $table->string('patient_last_name');
+            $table->date('patient_date_of_birth');
+            $table->enum('patient_gender', ['male', 'female']);
+            $table->string('patient_phone', 20)->nullable();
+            $table->string('patient_province')->nullable();
+            $table->string('patient_municipality')->nullable();
+            $table->string('patient_barangay')->nullable();
+            $table->text('patient_street')->nullable();
+            $table->enum('relationship_to_account', ['self', 'child', 'spouse', 'parent', 'sibling', 'other'])->default('self');
 
             // Appointment Details
             $table->date('appointment_date');
@@ -31,7 +44,7 @@ return new class extends Migration
                 'in_progress',
                 'completed',
                 'cancelled',
-                'no_show'
+                'no_show',
             ])->default('pending');
 
             // Tracking

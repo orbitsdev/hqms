@@ -11,6 +11,9 @@ return new class extends Migration
         Schema::create('medical_records', function (Blueprint $table) {
             $table->id();
 
+            // Record Identification (auto-generated: MR-2026-00001)
+            $table->string('record_number', 20)->unique();
+
             // Relations
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('consultation_type_id')->constrained()->onDelete('cascade');
@@ -33,9 +36,15 @@ return new class extends Migration
             $table->string('patient_barangay')->nullable();
             $table->text('patient_street')->nullable();
 
-            // Patient Contact
+            // Patient Contact & Additional
             $table->string('patient_contact_number', 20)->nullable();
             $table->string('patient_occupation')->nullable();
+            $table->string('patient_religion')->nullable();
+
+            // Companion/Watcher (for minors or assisted patients)
+            $table->string('companion_name')->nullable();
+            $table->string('companion_contact', 20)->nullable();
+            $table->string('companion_relationship')->nullable();
 
             // Patient Medical Background
             $table->enum('patient_blood_type', ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])->nullable();
@@ -48,8 +57,14 @@ return new class extends Migration
 
             // Visit Information
             $table->date('visit_date');
+            $table->timestamp('time_in')->nullable();
+            $table->enum('time_in_period', ['am', 'pm'])->nullable();
             $table->enum('visit_type', ['new', 'old', 'revisit']);
             $table->enum('service_type', ['checkup', 'admission']);
+
+            // Service Sub-types
+            $table->enum('ob_type', ['prenatal', 'post-natal'])->nullable();
+            $table->enum('service_category', ['surgical', 'non-surgical'])->nullable();
 
             // Chief Complaints
             $table->text('chief_complaints_initial')->nullable();
@@ -84,7 +99,12 @@ return new class extends Migration
 
             // Examination Timing
             $table->timestamp('examined_at')->nullable();
+            $table->timestamp('examination_ended_at')->nullable();
             $table->enum('examination_time', ['am', 'pm'])->nullable();
+
+            // Doctor's Recommendations (for billing reference)
+            $table->enum('suggested_discount_type', ['none', 'family', 'senior', 'pwd', 'employee', 'other'])->default('none');
+            $table->text('suggested_discount_reason')->nullable();
 
             // Status
             $table->enum('status', ['in_progress', 'for_billing', 'for_admission', 'completed'])->default('in_progress');
