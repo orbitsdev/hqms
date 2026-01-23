@@ -41,18 +41,6 @@
                         <flux:sidebar.item icon="home" :href="route('patient.dashboard')" :current="request()->routeIs('patient.dashboard')" wire:navigate>
                             {{ __('Dashboard') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="calendar" :href="route('patient.appointments')" :current="request()->routeIs('patient.appointments*')" wire:navigate>
-                            {{ __('My Appointments') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="plus-circle" :href="route('patient.appointments.book')" :current="request()->routeIs('patient.appointments.book')" wire:navigate>
-                            {{ __('Book Appointment') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="queue-list" :href="route('patient.queue')" :current="request()->routeIs('patient.queue')" wire:navigate>
-                            {{ __('Queue Status') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="document-text" :href="route('patient.records')" :current="request()->routeIs('patient.records*')" wire:navigate>
-                            {{ __('Medical Records') }}
-                        </flux:sidebar.item>
                         <flux:sidebar.item icon="user" :href="route('patient.profile')" :current="request()->routeIs('patient.profile')" wire:navigate>
                             {{ __('Profile') }}
                         </flux:sidebar.item>
@@ -91,36 +79,18 @@
 
         @if($isPatient)
             <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-zinc-900/95 border-t border-zinc-200 dark:border-zinc-700 z-50 backdrop-blur">
-                <nav class="grid grid-cols-5 h-16">
+                <nav class="grid grid-cols-2 h-16">
                     <a href="{{ route('patient.dashboard') }}"
                        class="flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.dashboard') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
                        wire:navigate>
                         <flux:icon name="home" class="w-5 h-5" />
                         <span class="text-xs mt-1">Home</span>
                     </a>
-                    <a href="{{ route('patient.appointments') }}"
-                       class="flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.appointments*') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
+                    <a href="{{ route('patient.profile') }}"
+                       class="flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.profile') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
                        wire:navigate>
-                        <flux:icon name="calendar" class="w-5 h-5" />
-                        <span class="text-xs mt-1">Visits</span>
-                    </a>
-                    <a href="{{ route('patient.appointments.book') }}"
-                       class="flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.appointments.book') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
-                       wire:navigate>
-                        <flux:icon name="plus-circle" class="w-5 h-5" />
-                        <span class="text-xs mt-1">Book</span>
-                    </a>
-                    <a href="{{ route('patient.queue') }}"
-                       class="flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.queue') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
-                       wire:navigate>
-                        <flux:icon name="queue-list" class="w-5 h-5" />
-                        <span class="text-xs mt-1">Queue</span>
-                    </a>
-                    <a href="{{ route('patient.records') }}"
-                       class="flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.records*') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
-                       wire:navigate>
-                        <flux:icon name="document-text" class="w-5 h-5" />
-                        <span class="text-xs mt-1">Records</span>
+                        <flux:icon name="user" class="w-5 h-5" />
+                        <span class="text-xs mt-1">Profile</span>
                     </a>
                 </nav>
             </div>

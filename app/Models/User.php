@@ -106,4 +106,35 @@ class User extends Authenticatable
     {
         return $this->hasRole('cashier');
     }
+
+    public function hasCompletePersonalInformation(): bool
+    {
+        $info = $this->personalInformation;
+
+        if (! $info) {
+            return false;
+        }
+
+        $required = [
+            $info->first_name,
+            $info->last_name,
+            $info->phone,
+            $info->date_of_birth,
+            $info->gender,
+            $info->province,
+            $info->municipality,
+            $info->barangay,
+            $info->street,
+            $info->emergency_contact_name,
+            $info->emergency_contact_phone,
+        ];
+
+        foreach ($required as $value) {
+            if (! filled($value)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

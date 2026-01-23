@@ -12,26 +12,15 @@ class EnsurePersonalInformationIsComplete
     {
         $user = $request->user();
 
-        if ($user && method_exists($user, 'isPatient') && $user->isPatient() && ! $this->hasCompletePersonalInfo($user)) {
+        if ($user && method_exists($user, 'isPatient') && $user->isPatient() && ! $user->hasCompletePersonalInformation()) {
             if (! $request->routeIs('patient.profile')) {
-                return redirect()->route('patient.profile');
+                return redirect()
+                    ->route('patient.profile')
+                    ->with('profile_incomplete', __('Please complete your profile to continue.'));
             }
         }
 
         return $next($request);
     }
 
-    private function hasCompletePersonalInfo($user): bool
-    {
-        $info = $user->personalInformation;
-
-        if (! $info) {
-            return false;
-        }
-
-        return filled($info->first_name)
-            && filled($info->last_name)
-            && filled($info->date_of_birth)
-            && filled($info->gender);
-    }
 }
