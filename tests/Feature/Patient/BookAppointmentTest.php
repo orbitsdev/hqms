@@ -33,7 +33,16 @@ it('can select consultation type and move to step 2', function () {
         ->assertSet('consultationTypeId', $this->consultationType->id);
 });
 
-it('can select date and move to step 3', function () {
+it('can complete patient info and move to step 3', function () {
+    Livewire::actingAs($this->user)
+        ->test(BookAppointment::class)
+        ->call('selectConsultationType', $this->consultationType->id)
+        ->set('patientType', 'self')
+        ->call('nextStep')
+        ->assertSet('currentStep', 3);
+});
+
+it('can select date and move to step 4', function () {
     $futureDate = now()->addDays(1)->format('Y-m-d');
 
     // Skip if the date is a weekend
@@ -44,8 +53,11 @@ it('can select date and move to step 3', function () {
     Livewire::actingAs($this->user)
         ->test(BookAppointment::class)
         ->call('selectConsultationType', $this->consultationType->id)
+        ->set('patientType', 'self')
+        ->call('nextStep')
         ->call('selectDate', $futureDate)
-        ->assertSet('currentStep', 3)
+        ->call('nextStep')
+        ->assertSet('currentStep', 4)
         ->assertSet('appointmentDate', $futureDate);
 });
 
@@ -60,8 +72,9 @@ it('can submit appointment for self', function () {
     Livewire::actingAs($this->user)
         ->test(BookAppointment::class)
         ->call('selectConsultationType', $this->consultationType->id)
-        ->call('selectDate', $futureDate)
         ->set('patientType', 'self')
+        ->call('nextStep')
+        ->call('selectDate', $futureDate)
         ->call('nextStep')
         ->assertSet('currentStep', 4)
         ->set('chiefComplaints', 'I have been experiencing severe headaches for the past week.')
@@ -73,7 +86,7 @@ it('can submit appointment for self', function () {
     expect($appointment)->not->toBeNull();
     expect($appointment->consultation_type_id)->toBe($this->consultationType->id);
     expect($appointment->appointment_date->format('Y-m-d'))->toBe($futureDate);
-    expect($appointment->patient_type)->toBe('self');
+    expect($appointment->relationship_to_account)->toBe('self');
     expect($appointment->patient_first_name)->toBe($this->personalInfo->first_name);
     expect($appointment->patient_last_name)->toBe($this->personalInfo->last_name);
     expect($appointment->status)->toBe('pending');
@@ -98,13 +111,15 @@ it('can submit appointment for dependent', function () {
     Livewire::actingAs($this->user)
         ->test(BookAppointment::class)
         ->call('selectConsultationType', $this->consultationType->id)
-        ->call('selectDate', $futureDate)
         ->set('patientType', 'dependent')
         ->set('patientFirstName', $dependentFirstName)
         ->set('patientMiddleName', 'Cruz')
         ->set('patientLastName', $dependentLastName)
         ->set('patientDateOfBirth', $dependentBirthDate)
         ->set('patientGender', 'female')
+        ->set('patientRelationship', 'child')
+        ->call('nextStep')
+        ->call('selectDate', $futureDate)
         ->call('nextStep')
         ->assertSet('currentStep', 4)
         ->set('chiefComplaints', 'My child has a fever and cough for 3 days.')
@@ -116,7 +131,7 @@ it('can submit appointment for dependent', function () {
     expect($appointment)->not->toBeNull();
     expect($appointment->consultation_type_id)->toBe($this->consultationType->id);
     expect($appointment->appointment_date->format('Y-m-d'))->toBe($futureDate);
-    expect($appointment->patient_type)->toBe('dependent');
+    expect($appointment->relationship_to_account)->toBe('child');
     expect($appointment->patient_first_name)->toBe($dependentFirstName);
     expect($appointment->patient_last_name)->toBe($dependentLastName);
     expect((string) $appointment->patient_date_of_birth)->toContain('2020-05-15');
@@ -138,14 +153,13 @@ it('validates required fields for dependent', function () {
     Livewire::actingAs($this->user)
         ->test(BookAppointment::class)
         ->call('selectConsultationType', $this->consultationType->id)
-        ->call('selectDate', $futureDate)
         ->set('patientType', 'dependent')
         ->set('patientFirstName', '')
         ->set('patientLastName', '')
         ->set('patientDateOfBirth', null)
         ->set('patientGender', null)
         ->call('nextStep')
-        ->assertHasErrors(['patientFirstName', 'patientLastName', 'patientDateOfBirth', 'patientGender']);
+        ->assertHasErrors(['patientFirstName', 'patientLastName', 'patientDateOfBirth', 'patientGender', 'patientRelationship']);
 });
 
 it('validates chief complaints minimum length', function () {
@@ -158,8 +172,9 @@ it('validates chief complaints minimum length', function () {
     Livewire::actingAs($this->user)
         ->test(BookAppointment::class)
         ->call('selectConsultationType', $this->consultationType->id)
-        ->call('selectDate', $futureDate)
         ->set('patientType', 'self')
+        ->call('nextStep')
+        ->call('selectDate', $futureDate)
         ->call('nextStep')
         ->set('chiefComplaints', 'Short')
         ->call('submitAppointment')

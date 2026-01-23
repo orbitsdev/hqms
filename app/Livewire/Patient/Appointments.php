@@ -67,7 +67,7 @@ class Appointments extends Component
 
     public function render(): View
     {
-        $direction = $this->filter === 'past' ? 'desc' : 'asc';
+        $direction = 'desc';
         $search = trim($this->search);
         $userId = Auth::id() ?? 0;
 
