@@ -20,6 +20,7 @@ return new class extends Migration
             // Queue Information
             $table->integer('queue_number');
             $table->date('queue_date');
+            $table->unsignedTinyInteger('session_number')->default(1);
 
             // Timing
             $table->time('estimated_time')->nullable();
@@ -34,7 +35,7 @@ return new class extends Migration
                 'serving',
                 'completed',
                 'skipped',
-                'cancelled'
+                'cancelled',
             ])->default('waiting');
 
             // Tracking
@@ -50,8 +51,8 @@ return new class extends Migration
 
             $table->timestamps();
 
-            // Unique constraint per type per day
-            $table->unique(['queue_number', 'queue_date', 'consultation_type_id'], 'unique_queue_per_type_date');
+            // Unique constraint per type per day per session
+            $table->unique(['queue_number', 'queue_date', 'consultation_type_id', 'session_number'], 'unique_queue_per_type_date_session');
         });
     }
 
