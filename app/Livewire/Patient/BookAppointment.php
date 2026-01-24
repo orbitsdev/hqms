@@ -53,8 +53,8 @@ class BookAppointment extends Component
 
         $this->availableDates = $this->buildAvailableDates();
 
-        $this->currentStep = 2;
-        $this->maxStep = 2;
+        // $this->currentStep = 2;
+        // $this->maxStep = 2;
     }
 
     public function updatedPatientType(string $value): void
@@ -271,9 +271,11 @@ class BookAppointment extends Component
             return [];
         }
 
-        $schedules = $consultationType->doctorSchedules()
-            ->with('doctor')
-            ->get();
+        $schedules = $consultationType->doctorSchedules;
+
+        if ($schedules->isNotEmpty()) {
+            $schedules->loadMissing('doctor');
+        }
 
         if ($schedules->isEmpty()) {
             return [];
@@ -372,20 +374,22 @@ class BookAppointment extends Component
         $consultationTypes = ConsultationType::query()
             ->where('is_active', true)
             ->withCount('doctors')
+            ->with(['doctors', 'doctorSchedules.doctor'])
             ->get();
 
-        $selectedConsultation = null;
-        $availableDoctors = collect();
-        $doctorAvailability = [];
+        $selectedConsultation = $consultationTypes->firstWhere('id', $this->consultationTypeId);
+        $availableDoctors = $selectedConsultation?->doctors ?? collect();
+        $doctorAvailability = $this->buildDoctorAvailability($selectedConsultation);
+        $doctorAvailabilityByType = $consultationTypes
+            ->map(fn (ConsultationType $type) => [
+                'type' => $type,
+                'availability' => $this->buildDoctorAvailability($type),
+            ])
+            ->values()
+            ->all();
 
-        if ($this->consultationTypeId) {
-            $selectedConsultation = ConsultationType::with('doctors')->find($this->consultationTypeId);
-            $availableDoctors = $selectedConsultation?->doctors ?? collect();
-            $doctorAvailability = $this->buildDoctorAvailability($selectedConsultation);
-
-            if (! $this->availableDates) {
-                $this->availableDates = $this->buildAvailableDates();
-            }
+        if ($this->consultationTypeId && ! $this->availableDates) {
+            $this->availableDates = $this->buildAvailableDates();
         }
 
         $selectedDate = collect($this->availableDates)->firstWhere('date', $this->appointmentDate);
@@ -395,6 +399,7 @@ class BookAppointment extends Component
             'selectedConsultation' => $selectedConsultation,
             'availableDoctors' => $availableDoctors,
             'doctorAvailability' => $doctorAvailability,
+            'doctorAvailabilityByType' => $doctorAvailabilityByType,
             'availableDates' => $this->availableDates,
             'selectedDate' => $selectedDate,
         ])
