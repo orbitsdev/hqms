@@ -488,15 +488,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="mt-2 flex flex-wrap gap-2 text-xs">
-                                        @forelse($entry['type']->doctors as $doctor)
-                                            <span class="rounded-full bg-white px-2 py-1 text-xs text-zinc-700 shadow-sm dark:bg-zinc-800 dark:text-zinc-200">
-                                                {{ $doctor->name }}
-                                            </span>
-                                        @empty
-                                            <span class="text-zinc-500 dark:text-zinc-400">{{ __('No doctors assigned yet.') }}</span>
-                                        @endforelse
-                                    </div>
+
 
                                     @if (($entry['type']->doctors_count ?? 0) > 0 && empty($entry['availability']))
                                         <div class="mt-2 text-xs text-amber-600">
@@ -565,15 +557,7 @@
                             </div>
                         </div>
 
-                        <div class="mt-3 flex flex-wrap gap-2 text-xs">
-                            @forelse($entry['type']->doctors as $doctor)
-                                <span class="rounded-full bg-zinc-50 px-2 py-1 text-xs text-zinc-700 dark:bg-zinc-950/40 dark:text-zinc-200">
-                                    {{ $doctor->name }}
-                                </span>
-                            @empty
-                                <span class="text-zinc-500 dark:text-zinc-400">{{ __('No doctors assigned yet.') }}</span>
-                            @endforelse
-                        </div>
+                        
 
                         @if (($entry['type']->doctors_count ?? 0) > 0 && empty($entry['availability']))
                             <div class="mt-3 text-xs text-amber-600">
