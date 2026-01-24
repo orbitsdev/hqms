@@ -1,18 +1,22 @@
 <?php
 
-use App\Livewire\Patient\Profile;
-use App\Livewire\Patient\Dashboard;
-use Illuminate\Support\Facades\Route;
+use App\Livewire\Nurse\Appointments as NurseAppointments;
+use App\Livewire\Nurse\AppointmentShow as NurseAppointmentShow;
+use App\Livewire\Nurse\Dashboard as NurseDashboard;
+use App\Livewire\Nurse\TodayQueue as NurseTodayQueue;
+use App\Livewire\Nurse\WalkInRegistration as NurseWalkIn;
 use App\Livewire\Patient\Appointments;
 use App\Livewire\Patient\AppointmentShow;
 use App\Livewire\Patient\BookAppointment;
-use App\Livewire\Nurse\Dashboard as NurseDashboard;
+use App\Livewire\Patient\Dashboard;
+use App\Livewire\Patient\Profile;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-Route::get('dashboard', function(){
+Route::get('dashboard', function () {
     // redire base on role
     if (auth()->user()->isPatient()) {
         return redirect()->route('patient.dashboard');
@@ -41,8 +45,12 @@ Route::prefix('patient')->name('patient.')->middleware(['auth', 'role:patient'])
 });
 // nurse portal routes
 Route::prefix('nurse')->name('nurse.')->middleware(['auth', 'role:nurse'])->group(function () {
- Route::get('/', NurseDashboard::class)->name('dashboard');
- Route::redirect('/dashboard', '/nurse')->name('dashboard.redirect');
+    Route::get('/', NurseDashboard::class)->name('dashboard');
+    Route::redirect('/dashboard', '/nurse')->name('dashboard.redirect');
+    Route::get('/appointments', NurseAppointments::class)->name('appointments');
+    Route::get('/appointments/{appointment}', NurseAppointmentShow::class)->name('appointments.show');
+    Route::get('/queue', NurseTodayQueue::class)->name('queue');
+    Route::get('/walk-in', NurseWalkIn::class)->name('walk-in');
 });
 
 require __DIR__.'/settings.php';
