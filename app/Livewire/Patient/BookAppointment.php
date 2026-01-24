@@ -11,6 +11,9 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Masmerise\Toaster\Toaster;
 use Livewire\Component;
+use App\Models\User;
+use App\Notifications\GenericNotification;
+use Illuminate\Support\Facades\Notification;
 
 class BookAppointment extends Component
 {
@@ -43,15 +46,15 @@ class BookAppointment extends Component
 
     public bool $showAvailabilityModal = false;
 
-public function openAvailabilityModal(): void
-{
-    $this->showAvailabilityModal = true;
-}
+    public function openAvailabilityModal(): void
+    {
+        $this->showAvailabilityModal = true;
+    }
 
-public function closeAvailabilityModal(): void
-{
-    $this->showAvailabilityModal = false;
-}
+    public function closeAvailabilityModal(): void
+    {
+        $this->showAvailabilityModal = false;
+    }
     public function mount(): void
     {
         $this->fillSelfPatientDetails();
@@ -84,10 +87,10 @@ public function closeAvailabilityModal(): void
         $this->patientRelationship = 'child';
     }
 
-  public function selectDate(string $date): void
-{
-    $this->appointmentDate = $date;
-}
+    public function selectDate(string $date): void
+    {
+        $this->appointmentDate = $date;
+    }
 
 
 
@@ -127,24 +130,23 @@ public function closeAvailabilityModal(): void
             return;
         }
 
-       if ($this->currentStep === 3) {
-    $this->validate([
-        'appointmentDate' => [
-            'required',
-            'date',
-            'after_or_equal:today',
-            function ($attribute, $value, $fail) {
-                if (! $this->isDateAvailable((string) $value)) {
-                    $fail(__('Selected date is not available. Please choose another date.'));
-                }
-            },
-        ],
-    ]);
+        if ($this->currentStep === 3) {
+            $this->validate([
+                'appointmentDate' => [
+                    'required',
+                    'date',
+                    'after_or_equal:today',
+                    function ($attribute, $value, $fail) {
+                        if (! $this->isDateAvailable((string) $value)) {
+                            $fail(__('Selected date is not available. Please choose another date.'));
+                        }
+                    },
+                ],
+            ]);
 
-    $this->currentStep = 4;
-    $this->maxStep = max($this->maxStep, 4);
-}
-
+            $this->currentStep = 4;
+            $this->maxStep = max($this->maxStep, 4);
+        }
     }
 
     public function submitAppointment(): void
@@ -152,10 +154,10 @@ public function closeAvailabilityModal(): void
         $this->validate(array_merge([
             'consultationTypeId' => ['required', 'exists:consultation_types,id'],
             'appointmentDate' => ['required', 'date', 'after_or_equal:today', function ($attribute, $value, $fail) {
-            if (! $this->isDateAvailable((string) $value)) {
-                $fail(__('Selected date is not available.'));
-            }
-        },],
+                if (! $this->isDateAvailable((string) $value)) {
+                    $fail(__('Selected date is not available.'));
+                }
+            },],
             'chiefComplaints' => ['required', 'string', 'min:10', 'max:2000'],
         ], $this->patientRules()));
 
@@ -169,7 +171,7 @@ public function closeAvailabilityModal(): void
 
         // dd($patient, $user, $this->consultationTypeId, $this->appointmentDate, $this->chiefComplaints);
 
-        Appointment::create([
+        $appointment =   Appointment::create([
             'user_id' => $user->id,
             'consultation_type_id' => $this->consultationTypeId,
             'doctor_id' => null,
@@ -190,6 +192,19 @@ public function closeAvailabilityModal(): void
             'status' => 'pending',
             'source' => 'online',
         ]);
+        $nurses = User::role('nurse')->get();
+
+Notification::send($nurses, new GenericNotification([
+    'type' => 'appointment.requested',
+    'title' => 'New Appointment Request',
+    'message' => "{$patient['first_name']} {$patient['last_name']} requested an appointment.",
+    'appointment_id' => $appointment->id,
+    'consultation_type_id' => $appointment->consultation_type_id,
+    'appointment_date' => $appointment->appointment_date,
+    'sender_id' => $user->id,
+    'sender_role' => 'patient',
+    'url' => '#',
+]));
 
         Toaster::success(__('Appointment request submitted. We will confirm your schedule soon.'));
 
@@ -256,45 +271,45 @@ public function closeAvailabilityModal(): void
 
     /** @return array<int, array<string, mixed>> */
     protected function buildAvailableDates(): array
-{
-    if (! $this->consultationTypeId) return [];
+    {
+        if (! $this->consultationTypeId) return [];
 
-    $type = ConsultationType::find($this->consultationTypeId);
-    if (! $type) return [];
+        $type = ConsultationType::find($this->consultationTypeId);
+        if (! $type) return [];
 
-    $maxAdvanceDays = (int) SystemSetting::get('max_advance_booking_days', 30);
-    $allowSameDay = (bool) SystemSetting::get('allow_same_day_booking', true);
-    $daysToShow = min($maxAdvanceDays, 14);
+        $maxAdvanceDays = (int) SystemSetting::get('max_advance_booking_days', 30);
+        $allowSameDay = (bool) SystemSetting::get('allow_same_day_booking', true);
+        $daysToShow = min($maxAdvanceDays, 14);
 
-    // IMPORTANT: force timezone consistency
-    $tz = config('app.timezone', 'Asia/Manila');
+        // IMPORTANT: force timezone consistency
+        $tz = config('app.timezone', 'Asia/Manila');
 
-    $today = Carbon::now($tz)->startOfDay();
-    $startDate = $allowSameDay ? $today->copy() : $today->copy()->addDay();
+        $today = Carbon::now($tz)->startOfDay();
+        $startDate = $allowSameDay ? $today->copy() : $today->copy()->addDay();
 
-    $dates = [];
+        $dates = [];
 
-    for ($i = 0; $i < $daysToShow; $i++) {
-        $date = $startDate->copy()->addDays($i);
-        $dateString = $date->toDateString();
+        for ($i = 0; $i < $daysToShow; $i++) {
+            $date = $startDate->copy()->addDays($i);
+            $dateString = $date->toDateString();
 
-        $available = $type->isAcceptingAppointments($dateString);
+            $available = $type->isAcceptingAppointments($dateString);
 
-        $dates[] = [
-            'date' => $dateString,
-            'month' => $date->format('M'),
-            'day' => $date->format('d'),
-            'day_name' => $date->format('D'),
-            'formatted' => $date->format('M d, Y'),
-            'available' => $available,
-            'label' => $available ? 'Available' : 'Unavailable',
-            'is_today' => $date->isSameDay($today),
-            'is_selected' => $this->appointmentDate === $dateString,
-        ];
+            $dates[] = [
+                'date' => $dateString,
+                'month' => $date->format('M'),
+                'day' => $date->format('d'),
+                'day_name' => $date->format('D'),
+                'formatted' => $date->format('M d, Y'),
+                'available' => $available,
+                'label' => $available ? 'Available' : 'Unavailable',
+                'is_today' => $date->isSameDay($today),
+                'is_selected' => $this->appointmentDate === $dateString,
+            ];
+        }
+
+        return $dates;
     }
-
-    return $dates;
-}
 
 
     /** @return array<int, array<string, mixed>> */
@@ -329,7 +344,7 @@ public function closeAvailabilityModal(): void
                     ->values();
 
                 $dayLabels = $regularDays
-                    ->map(fn (int $day) => $dayNames[$day] ?? null)
+                    ->map(fn(int $day) => $dayNames[$day] ?? null)
                     ->filter()
                     ->values()
                     ->all();
@@ -362,7 +377,7 @@ public function closeAvailabilityModal(): void
                     ->where('is_available', false)
                     ->pluck('date')
                     ->filter()
-                    ->map(fn ($date) => Carbon::parse($date)->format('M d'))
+                    ->map(fn($date) => Carbon::parse($date)->format('M d'))
                     ->values()
                     ->all();
 
@@ -371,7 +386,7 @@ public function closeAvailabilityModal(): void
                     ->where('is_available', true)
                     ->pluck('date')
                     ->filter()
-                    ->map(fn ($date) => Carbon::parse($date)->format('M d'))
+                    ->map(fn($date) => Carbon::parse($date)->format('M d'))
                     ->values()
                     ->all();
 
@@ -402,11 +417,11 @@ public function closeAvailabilityModal(): void
         $this->patientGender = $info->gender;
     }
 
-  protected function isDateAvailable(string $date): bool
-{
-    return collect($this->availableDates)
-        ->firstWhere('date', $date)['available'] ?? false;
-}
+    protected function isDateAvailable(string $date): bool
+    {
+        return collect($this->availableDates)
+            ->firstWhere('date', $date)['available'] ?? false;
+    }
 
 
     public function render(): View
