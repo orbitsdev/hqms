@@ -293,65 +293,113 @@
             @endif
 
             {{-- STEP 3 --}}
-            @if ($currentStep === 3)
-                <div
-                    class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                    <div class="border-b border-zinc-200/70 px-4 py-3 dark:border-zinc-800">
-                        <flux:heading>{{ __('Select Appointment Date') }}</flux:heading>
-                        <flux:text>{{ __('Choose an available date for your appointment.') }}</flux:text>
-                    </div>
 
-                    <div class="p-4 space-y-4">
-                        @if (empty($availableDates))
-                            <flux:callout variant="warning" icon="exclamation-circle"
-                                :heading="__('No dates available')">
-                                <flux:text class="text-sm">
-                                    {{ __('Please choose another consultation type or check back later.') }}
-                                </flux:text>
-                            </flux:callout>
-                        @else
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4">
-                                @foreach ($availableDates as $date)
-                                    @if ($date['available'])
-                                        <flux:button wire:key="appointment-date-{{ $date['date'] }}"
-                                            wire:click="selectDate('{{ $date['date'] }}')"
-                                            variant="{{ $appointmentDate === $date['date'] ? 'primary' : 'outline' }}">
-                                            <div class="text-center">
-                                                <div class="font-medium">{{ $date['day_name'] }}</div>
-                                                <div class="text-lg font-bold">{{ $date['formatted'] }}</div>
-                                                <div class="text-xs text-zinc-600 dark:text-zinc-300">
-                                                    {{ __('Available') }}</div>
-                                            </div>
-                                        </flux:button>
-                                    @else
-                                        <flux:button variant="outline" disabled class="opacity-50 cursor-not-allowed">
-                                            <div class="text-center space-y-1">
-                                                <div class="font-medium">{{ $date['day_name'] }}</div>
-                                                <div class="text-lg font-bold">{{ $date['formatted'] }}</div>
+                @if ($currentStep === 3)
+<div class="rounded-xl border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <div class="border-b border-zinc-200/70 px-5 py-4 dark:border-zinc-800">
+        <div class="flex items-start justify-between gap-4">
+            <div>
+                <flux:heading>{{ __('Select Appointment Date') }}</flux:heading>
+                <flux:text class="text-sm text-zinc-600 dark:text-zinc-300">
+                    {{ __('Choose a date that is available for your selected consultation type.') }}
+                </flux:text>
+            </div>
 
-                                                <flux:badge color="red" size="xs">
-                                                    {{ __('Unavailable') }}
-                                                </flux:badge>
-                                            </div>
-                                        </flux:button>
-                                    @endif
-                                @endforeach
-                            </div>
-                        @endif
-
-                        <div class="flex flex-wrap gap-3">
-                            <flux:button type="button" wire:click="previousStep" variant="outline">
-                                {{ __('Previous') }}
-                            </flux:button>
-
-                            <flux:button type="button" wire:click="nextStep" variant="primary"
-                                :disabled="!$appointmentDate">
-                                {{ __('Next') }}
-                            </flux:button>
-                        </div>
-                    </div>
+            <div class="text-right">
+                <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Selected') }}</div>
+                <div class="font-semibold">
+                    {{ $selectedDate['formatted'] ?? __('None') }}
                 </div>
-            @endif
+            </div>
+        </div>
+
+        {{-- Legend --}}
+        <div class="mt-3 flex flex-wrap gap-2 text-xs">
+            <span class="inline-flex items-center gap-2 rounded-full border px-3 py-1 dark:border-zinc-700">
+                <span class="h-2 w-2 rounded-full bg-zinc-300"></span> {{ __('Unavailable') }}
+            </span>
+            <span class="inline-flex items-center gap-2 rounded-full border px-3 py-1 dark:border-zinc-700">
+                <span class="h-2 w-2 rounded-full bg-zinc-600"></span> {{ __('Available') }}
+            </span>
+            <span class="inline-flex items-center gap-2 rounded-full border px-3 py-1 dark:border-zinc-700">
+                <span class="h-2 w-2 rounded-full bg-black dark:bg-white"></span> {{ __('Selected') }}
+            </span>
+        </div>
+    </div>
+
+    <div class="p-5 space-y-4">
+        @if (empty($availableDates))
+            <flux:callout variant="warning" icon="exclamation-circle" :heading="__('No dates available')">
+                <flux:text class="text-sm">
+                    {{ __('Please choose another consultation type or check back later.') }}
+                </flux:text>
+            </flux:callout>
+        @else
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+                @foreach ($availableDates as $date)
+                    @php
+                        $isSelected = ($appointmentDate === $date['date']);
+                        $isToday = $date['is_today'] ?? false;
+                        $isAvailable = (bool) $date['available'];
+                    @endphp
+
+                    <button
+                        type="button"
+                        wire:key="appointment-date-{{ $date['date'] }}"
+                        wire:click="{{ $isAvailable ? "selectDate('{$date['date']}')" : '' }}"
+                        @class([
+                            'rounded-xl border px-3 py-3 text-left transition',
+                            'cursor-not-allowed opacity-50' => ! $isAvailable,
+                            'border-zinc-200 hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600' => $isAvailable && ! $isSelected,
+                            'border-black bg-zinc-50 dark:border-white dark:bg-zinc-950' => $isSelected,
+                        ])
+                        @disabled(! $isAvailable)
+                    >
+                        <div class="flex items-center justify-between">
+                            <div class="text-xs text-zinc-500 dark:text-zinc-400">
+                                {{ $date['day_name'] }}
+                                @if($isToday)
+                                    <span class="ml-2 rounded-full border px-2 py-0.5 text-[10px] dark:border-zinc-700">
+                                        {{ __('Today') }}
+                                    </span>
+                                @endif
+                            </div>
+
+                            <div class="text-[10px]">
+                                @if($isAvailable)
+                                    <span class="rounded-full border px-2 py-0.5 dark:border-zinc-700">
+                                        {{ __('Open') }}
+                                    </span>
+                                @else
+                                    <span class="rounded-full border px-2 py-0.5 dark:border-zinc-700">
+                                        {{ __('Closed') }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="mt-2">
+                            <div class="text-2xl font-bold leading-none">{{ $date['day'] }}</div>
+                            <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ $date['month'] }}</div>
+                        </div>
+                    </button>
+                @endforeach
+            </div>
+        @endif
+
+        <div class="flex flex-wrap gap-3 pt-2">
+            <flux:button type="button" wire:click="previousStep" variant="outline">
+                {{ __('Previous') }}
+            </flux:button>
+
+            <flux:button type="button" wire:click="nextStep" variant="primary" :disabled="!$appointmentDate">
+                {{ __('Next') }}
+            </flux:button>
+        </div>
+    </div>
+</div>
+@endif
+
 
             {{-- STEP 4 --}}
             @if ($currentStep === 4)

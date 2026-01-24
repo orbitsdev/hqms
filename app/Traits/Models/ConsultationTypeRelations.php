@@ -18,6 +18,7 @@ trait ConsultationTypeRelations
         return $this->belongsToMany(User::class, 'doctor_consultation_types');
     }
 
+
     public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class);
@@ -45,24 +46,50 @@ trait ConsultationTypeRelations
             ->count();
     }
 
-    public function isAcceptingAppointments(string $date): bool
+
+    public function isAcceptingAppointments(string $dateString): bool
     {
-        $dayOfWeek = Carbon::parse($date)->dayOfWeek;
+        $date = Carbon::parse($dateString);
+        $dayOfWeek = (int) $date->dayOfWeek; // 0 Sun .. 6 Sat
 
-        // Check for exception on this specific date
-        $exception = $this->doctorSchedules()
-            ->where('schedule_type', 'exception')
-            ->where('date', $date)
-            ->first();
+        // Get all schedules for this type
+        $schedules = $this->doctorSchedules()->get();
 
-        if ($exception) {
-            return $exception->is_available;
+        if ($schedules->isEmpty()) {
+            // fallback rule if no schedules configured:
+            return ! $date->isSunday();
         }
 
-        // Check regular schedule for this day of week
-        return $this->doctorSchedules()
+        // Doctors who are explicitly AVAILABLE for this date (extra clinic day)
+        $extraAvailableDoctorIds = $schedules
+            ->where('schedule_type', 'exception')
+            ->where('is_available', true)
+            ->where('date', $date->toDateString())
+            ->pluck('user_id')
+            ->unique();
+
+        // Doctors who are explicitly NOT available for this date (leave)
+        $blockedDoctorIds = $schedules
+            ->where('schedule_type', 'exception')
+            ->where('is_available', false)
+            ->where('date', $date->toDateString())
+            ->pluck('user_id')
+            ->unique();
+
+        // Doctors who have regular schedule on that day of week
+        $regularDoctorIds = $schedules
             ->where('schedule_type', 'regular')
             ->where('day_of_week', $dayOfWeek)
-            ->exists();
+            ->pluck('user_id')
+            ->unique();
+
+        // available doctors = (regular + extra) - blocked
+        $availableDoctorIds = $regularDoctorIds
+            ->merge($extraAvailableDoctorIds)
+            ->unique()
+            ->diff($blockedDoctorIds)
+            ->values();
+
+        return $availableDoctorIds->isNotEmpty();
     }
 }

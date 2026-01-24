@@ -84,10 +84,15 @@ public function closeAvailabilityModal(): void
         $this->patientRelationship = 'child';
     }
 
-    public function selectDate(string $date): void
-    {
-        $this->appointmentDate = $date;
-    }
+/*************  ✨ Windsurf Command ⭐  *************/
+/*******  7d157cc6-a43d-4b94-939f-6cdb12dac05e  *******/
+   public function selectDate(string $date): void
+{
+    $this->appointmentDate = $date;
+    // rebuild so selected state updates
+    $this->availableDates = $this->buildAvailableDates();
+}
+
 
     public function goToStep(int $step): void
     {
@@ -125,21 +130,35 @@ public function closeAvailabilityModal(): void
             return;
         }
 
-        if ($this->currentStep === 3) {
-            $this->validate([
-                'appointmentDate' => ['required', 'date', 'after_or_equal:today'],
-            ]);
+       if ($this->currentStep === 3) {
+    $this->validate([
+        'appointmentDate' => [
+            'required',
+            'date',
+            'after_or_equal:today',
+            function ($attribute, $value, $fail) {
+                if (! $this->isDateAvailable((string) $value)) {
+                    $fail(__('Selected date is not available. Please choose another date.'));
+                }
+            },
+        ],
+    ]);
 
-            $this->currentStep = 4;
-            $this->maxStep = max($this->maxStep, 4);
-        }
+    $this->currentStep = 4;
+    $this->maxStep = max($this->maxStep, 4);
+}
+
     }
 
     public function submitAppointment(): void
     {
         $this->validate(array_merge([
             'consultationTypeId' => ['required', 'exists:consultation_types,id'],
-            'appointmentDate' => ['required', 'date', 'after_or_equal:today'],
+            'appointmentDate' => ['required', 'date', 'after_or_equal:today', function ($attribute, $value, $fail) {
+            if (! $this->isDateAvailable((string) $value)) {
+                $fail(__('Selected date is not available.'));
+            }
+        },],
             'chiefComplaints' => ['required', 'string', 'min:10', 'max:2000'],
         ], $this->patientRules()));
 
@@ -238,42 +257,46 @@ public function closeAvailabilityModal(): void
 
     /** @return array<int, array<string, mixed>> */
     protected function buildAvailableDates(): array
-    {
-        if (! $this->consultationTypeId) {
-            return [];
-        }
+{
+    if (! $this->consultationTypeId) return [];
 
-        $type = ConsultationType::find($this->consultationTypeId);
+    $type = ConsultationType::find($this->consultationTypeId);
+    if (! $type) return [];
 
-        if (! $type) {
-            return [];
-        }
+    $maxAdvanceDays = (int) SystemSetting::get('max_advance_booking_days', 30);
+    $allowSameDay = (bool) SystemSetting::get('allow_same_day_booking', true);
+    $daysToShow = min($maxAdvanceDays, 14);
 
-        $maxAdvanceDays = (int) SystemSetting::get('max_advance_booking_days', 30);
-        $allowSameDay = SystemSetting::get('allow_same_day_booking', true);
-        $daysToShow = min($maxAdvanceDays, 14);
+    // IMPORTANT: force timezone consistency
+    $tz = config('app.timezone', 'Asia/Manila');
 
-        $startDate = $allowSameDay ? Carbon::today() : Carbon::today()->addDay();
-        $hasSchedules = $type->doctorSchedules()->exists();
+    $today = Carbon::now($tz)->startOfDay();
+    $startDate = $allowSameDay ? $today->copy() : $today->copy()->addDay();
 
-        $dates = [];
+    $dates = [];
 
-        for ($i = 0; $i < $daysToShow; $i++) {
-            $date = $startDate->copy()->addDays($i);
-            $dateString = $date->toDateString();
+    for ($i = 0; $i < $daysToShow; $i++) {
+        $date = $startDate->copy()->addDays($i);
+        $dateString = $date->toDateString();
 
-            $available = $hasSchedules ? $type->isAcceptingAppointments($dateString) : ! $date->isSunday();
+        $available = $type->isAcceptingAppointments($dateString);
 
-            $dates[] = [
-                'date' => $dateString,
-                'formatted' => $date->format('M d'),
-                'day_name' => $date->format('D'),
-                'available' => $available,
-            ];
-        }
-
-        return $dates;
+        $dates[] = [
+            'date' => $dateString,
+            'month' => $date->format('M'),
+            'day' => $date->format('d'),
+            'day_name' => $date->format('D'),
+            'formatted' => $date->format('M d, Y'),
+            'available' => $available,
+            'label' => $available ? 'Available' : 'Unavailable',
+            'is_today' => $date->isSameDay($today),
+            'is_selected' => $this->appointmentDate === $dateString,
+        ];
     }
+
+    return $dates;
+}
+
 
     /** @return array<int, array<string, mixed>> */
     protected function buildDoctorAvailability(?ConsultationType $consultationType): array
@@ -379,6 +402,13 @@ public function closeAvailabilityModal(): void
         $this->patientDateOfBirth = $info->date_of_birth?->format('Y-m-d');
         $this->patientGender = $info->gender;
     }
+
+  protected function isDateAvailable(string $date): bool
+{
+    return collect($this->availableDates)
+        ->firstWhere('date', $date)['available'] ?? false;
+}
+
 
     public function render(): View
     {
