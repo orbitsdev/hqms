@@ -12,25 +12,15 @@
         </div>
 
         <div class="flex items-center gap-3 self-start md:self-auto">
-            <flux:button
-                :href="route('patient.appointments')"
-                variant="outline"
-                size="sm"
-                icon:trailing="arrow-left"
-            >
+            <flux:button :href="route('patient.appointments')" variant="outline" size="sm"
+                icon:trailing="arrow-left">
                 {{ __('Back to Appointments') }}
             </flux:button>
 
             {{-- Mobile: open availability modal --}}
             @if (!empty($doctorAvailabilityByType))
-                <flux:button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    class="md:hidden"
-                    icon:trailing="arrow-up-right"
-                    wire:click="openAvailabilityModal"
-                >
+                <flux:button type="button" variant="outline" size="sm" class="md:hidden"
+                    icon:trailing="arrow-up-right" wire:click="openAvailabilityModal">
                     {{ __('View Availability') }}
                 </flux:button>
             @endif
@@ -41,11 +31,8 @@
                 </flux:button>
             @endif
 
-            <img
-                src="{{ asset('images/undraw_schedule_ry1w.svg') }}"
-                alt="{{ __('Schedule appointment') }}"
-                class="h-20 w-auto opacity-80 hidden sm:block"
-            />
+            <img src="{{ asset('images/undraw_schedule_ry1w.svg') }}" alt="{{ __('Schedule appointment') }}"
+                class="h-20 w-auto opacity-80 hidden sm:block" />
         </div>
     </div>
 
@@ -89,24 +76,19 @@
 
                         <div class="relative flex flex-col items-center gap-3">
                             @if ($canNavigate)
-                                <button
-                                    type="button"
-                                    wire:click="goToStep({{ $step }})"
-                                    class="h-9 w-9 rounded-full border text-sm font-semibold transition {{ $stateClasses }}"
-                                >
+                                <button type="button" wire:click="goToStep({{ $step }})"
+                                    class="h-9 w-9 rounded-full border text-sm font-semibold transition {{ $stateClasses }}">
                                     {{ $step }}
                                 </button>
                             @else
-                                <button
-                                    type="button"
-                                    disabled
-                                    class="h-9 w-9 rounded-full border text-sm font-semibold opacity-40 {{ $stateClasses }}"
-                                >
+                                <button type="button" disabled
+                                    class="h-9 w-9 rounded-full border text-sm font-semibold opacity-40 {{ $stateClasses }}">
                                     {{ $step }}
                                 </button>
                             @endif
 
-                            <span class="text-xs font-medium {{ $currentStep >= $step ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400' }}">
+                            <span
+                                class="text-xs font-medium {{ $currentStep >= $step ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400' }}">
                                 {{ $label }}
                             </span>
                         </div>
@@ -116,68 +98,8 @@
 
             {{-- STEP 1 --}}
             @if ($currentStep === 1)
-
-                @if ($selectedConsultation)
-                    <div class="grid gap-4 md:grid-cols-2">
-                        <div class="rounded-lg border border-zinc-200/70 bg-zinc-50 p-4 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
-                            <div class="font-medium">{{ __('Available doctors') }}</div>
-                            <div class="mt-2 flex flex-wrap gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                                @forelse($availableDoctors as $doctor)
-                                    <span class="rounded-full bg-white px-2 py-1 text-xs text-zinc-700 shadow-sm dark:bg-zinc-800 dark:text-zinc-200">
-                                        {{ $doctor->name }}
-                                    </span>
-                                @empty
-                                    <span>{{ __('No doctors assigned yet.') }}</span>
-                                @endforelse
-                            </div>
-                        </div>
-
-                        @if (!empty($doctorAvailability))
-                            <div class="rounded-lg border border-zinc-200/70 bg-white p-4 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900">
-                                <div class="font-medium">{{ __('Doctor availability') }}</div>
-                                <div class="mt-3 grid gap-3">
-                                    @foreach ($doctorAvailability as $availability)
-                                        <div class="rounded-md border border-zinc-200/70 bg-zinc-50 p-3 text-xs text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-300">
-                                            <div class="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-                                                {{ $availability['name'] }}
-                                            </div>
-
-                                            <div class="mt-2 space-y-1">
-                                                <div>
-                                                    <span class="text-zinc-500">{{ __('Clinic days') }}:</span>
-                                                    {{ empty($availability['days']) ? __('To be announced') : implode(', ', $availability['days']) }}
-                                                </div>
-
-                                                @if (!empty($availability['hours']))
-                                                    <div>
-                                                        <span class="text-zinc-500">{{ __('Hours') }}:</span>
-                                                        {{ $availability['hours'] }}
-                                                    </div>
-                                                @endif
-
-                                                @if (!empty($availability['unavailable']))
-                                                    <div>
-                                                        <span class="text-zinc-500">{{ __('Unavailable') }}:</span>
-                                                        {{ implode(', ', $availability['unavailable']) }}
-                                                    </div>
-                                                @endif
-
-                                                @if (!empty($availability['extra']))
-                                                    <div>
-                                                        <span class="text-zinc-500">{{ __('Extra clinic day') }}:</span>
-                                                        {{ implode(', ', $availability['extra']) }}
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-                @endif
-
-                <div class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                <div
+                    class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                     <div class="border-b border-zinc-200/70 px-4 py-3 dark:border-zinc-800">
                         <flux:heading>{{ __('Select Consultation Type') }}</flux:heading>
                         <flux:text>{{ __('Choose the type of consultation you need.') }}</flux:text>
@@ -186,34 +108,70 @@
                     <div class="p-4 space-y-4">
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                             @foreach ($consultationTypes as $type)
-                                <flux:button
-                                    wire:key="consultation-type-{{ $type->id }}"
-                                    wire:click="selectConsultationType({{ $type->id }})"
-                                    variant="{{ $consultationTypeId === $type->id ? 'primary' : 'outline' }}"
-                                    class="h-24 flex flex-col items-center justify-center space-y-2"
-                                >
-                                    <span aria-hidden="true" class="h-8 w-8 rounded-full {{ $consultationTypeId === $type->id ? 'bg-white/20' : 'bg-zinc-100 dark:bg-zinc-800' }}"></span>
+                                @php
+                                    $doctorsCount = (int) ($type->doctors_count ?? 0);
+                                    $hasDoctors = $doctorsCount > 0;
+                                    $isSelected = (int) $consultationTypeId === (int) $type->id;
 
-                                    <div class="text-center">
-                                        <div class="font-medium">{{ $type->name }}</div>
-                                        <div class="text-xs {{ $consultationTypeId === $type->id ? 'text-white/70' : 'text-zinc-500 dark:text-zinc-400' }}">
-                                            {{ $type->description ?? __('General care') }}
+                                    $variant = $isSelected ? 'primary' : 'outline';
+                                    $dotClass = $isSelected ? 'bg-white/20' : 'bg-zinc-100 dark:bg-zinc-800';
+                                    $textClass = $isSelected ? 'text-white/70' : 'text-zinc-500 dark:text-zinc-400';
+                                @endphp
+
+                                @if ($hasDoctors)
+                                    <flux:button wire:key="consultation-type-{{ $type->id }}"
+                                        wire:click="selectConsultationType({{ $type->id }})"
+                                        variant="{{ $variant }}"
+                                        class="h-24 flex flex-col items-center justify-center space-y-2">
+                                        <span aria-hidden="true"
+                                            class="h-8 w-8 rounded-full {{ $dotClass }}"></span>
+
+                                        <div class="text-center">
+                                            <div class="font-medium">{{ $type->name }}</div>
+
+                                            <div class="text-xs {{ $textClass }}">
+                                                {{ $type->description ?? __('General care') }}
+                                            </div>
+
+                                            <div class="text-xs {{ $textClass }}">
+                                                {{ trans_choice(
+                                                    '{0} No doctors available|{1} :count doctor available|[2,*] :count doctors available',
+                                                    $doctorsCount,
+                                                    ['count' => $doctorsCount],
+                                                ) }}
+                                            </div>
                                         </div>
-                                        <div class="text-xs {{ $consultationTypeId === $type->id ? 'text-white/70' : 'text-zinc-500 dark:text-zinc-400' }}">
-                                            {{ trans_choice('{0} No doctors assigned|{1} :count doctor available|[2,*] :count doctors available', $type->doctors_count, ['count' => $type->doctors_count]) }}
+                                    </flux:button>
+                                @else
+                                    <flux:button wire:key="consultation-type-{{ $type->id }}" variant="outline"
+                                        disabled
+                                        class="h-24 flex flex-col items-center justify-center space-y-2 opacity-50 cursor-not-allowed">
+                                        <span aria-hidden="true"
+                                            class="h-8 w-8 rounded-full bg-zinc-100 dark:bg-zinc-800"></span>
+
+                                        <div class="text-center">
+                                            <div class="font-medium">{{ $type->name }}</div>
+
+                                            <div class="text-xs text-zinc-500 dark:text-zinc-400">
+                                                {{ $type->description ?? __('General care') }}
+                                            </div>
+
+                                            <div class="text-xs text-zinc-500 dark:text-zinc-400">
+                                                {{ __('No doctors available') }}
+                                            </div>
+
+                                            <div class="mt-1 text-xs text-amber-600">
+                                                {{ __('No doctors assigned yet.') }}
+                                            </div>
                                         </div>
-                                    </div>
-                                </flux:button>
+                                    </flux:button>
+                                @endif
                             @endforeach
                         </div>
 
                         <div class="flex justify-end">
-                            <flux:button
-                                type="button"
-                                wire:click="nextStep"
-                                variant="primary"
-                                :disabled="!$consultationTypeId"
-                            >
+                            <flux:button type="button" wire:click="nextStep" variant="primary"
+                                :disabled="!$consultationTypeId">
                                 {{ __('Continue') }}
                             </flux:button>
                         </div>
@@ -221,9 +179,11 @@
                 </div>
             @endif
 
+
             {{-- STEP 2 --}}
             @if ($currentStep === 2)
-                <div class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                <div
+                    class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                     <div class="border-b border-zinc-200/70 px-4 py-3 dark:border-zinc-800">
                         <flux:heading>{{ __('Patient Information') }}</flux:heading>
                         <flux:text>{{ __('Tell us who this appointment is for.') }}</flux:text>
@@ -232,13 +192,17 @@
                     <div class="p-4 space-y-6">
                         <form wire:submit.prevent="nextStep" class="space-y-6">
                             <div class="space-y-2">
-                                <label class="flex items-center gap-3 rounded-lg border border-zinc-200/70 px-3 py-2 text-sm dark:border-zinc-800">
-                                    <input type="radio" value="self" wire:model.live="patientType" class="h-4 w-4 text-zinc-900 focus:ring-zinc-900" />
+                                <label
+                                    class="flex items-center gap-3 rounded-lg border border-zinc-200/70 px-3 py-2 text-sm dark:border-zinc-800">
+                                    <input type="radio" value="self" wire:model.live="patientType"
+                                        class="h-4 w-4 text-zinc-900 focus:ring-zinc-900" />
                                     <span class="font-medium">{{ __('Myself') }}</span>
                                 </label>
 
-                                <label class="flex items-center gap-3 rounded-lg border border-zinc-200/70 px-3 py-2 text-sm dark:border-zinc-800">
-                                    <input type="radio" value="dependent" wire:model.live="patientType" class="h-4 w-4 text-zinc-900 focus:ring-zinc-900" />
+                                <label
+                                    class="flex items-center gap-3 rounded-lg border border-zinc-200/70 px-3 py-2 text-sm dark:border-zinc-800">
+                                    <input type="radio" value="dependent" wire:model.live="patientType"
+                                        class="h-4 w-4 text-zinc-900 focus:ring-zinc-900" />
                                     <span class="font-medium">{{ __('Someone else (child/dependent)') }}</span>
                                 </label>
 
@@ -248,7 +212,8 @@
                             </div>
 
                             @if ($patientType === 'self')
-                                <div class="rounded-lg border border-zinc-200/70 bg-zinc-50 p-4 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
+                                <div
+                                    class="rounded-lg border border-zinc-200/70 bg-zinc-50 p-4 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-200">
                                     <div class="font-medium">{{ __('Using your profile details') }}</div>
                                     <div class="mt-2 space-y-1 text-xs text-zinc-500 dark:text-zinc-400">
                                         <div>{{ $patientFirstName }} {{ $patientLastName }}</div>
@@ -261,20 +226,26 @@
                             @if ($patientType === 'dependent')
                                 <div class="space-y-4 border-t border-zinc-200/70 pt-4 dark:border-zinc-800">
                                     <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                        <flux:input wire:model.live="patientFirstName" :label="__('First name')" type="text" />
-                                        <flux:input wire:model.live="patientMiddleName" :label="__('Middle name')" type="text" />
-                                        <flux:input wire:model.live="patientLastName" :label="__('Last name')" type="text" />
+                                        <flux:input wire:model.live="patientFirstName" :label="__('First name')"
+                                            type="text" />
+                                        <flux:input wire:model.live="patientMiddleName" :label="__('Middle name')"
+                                            type="text" />
+                                        <flux:input wire:model.live="patientLastName" :label="__('Last name')"
+                                            type="text" />
                                     </div>
 
                                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                        <flux:input wire:model.live="patientDateOfBirth" :label="__('Birth date')" type="date" />
+                                        <flux:input wire:model.live="patientDateOfBirth" :label="__('Birth date')"
+                                            type="date" />
 
                                         <div>
-                                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">
+                                            <label
+                                                class="block text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">
                                                 {{ __('Gender') }}
                                             </label>
 
-                                            <select wire:model.live="patientGender" class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
+                                            <select wire:model.live="patientGender"
+                                                class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
                                                 <option value="">{{ __('Select') }}</option>
                                                 <option value="male">{{ __('Male') }}</option>
                                                 <option value="female">{{ __('Female') }}</option>
@@ -291,7 +262,8 @@
                                             {{ __('Relationship to account') }}
                                         </label>
 
-                                        <select wire:model.live="patientRelationship" class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
+                                        <select wire:model.live="patientRelationship"
+                                            class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
                                             <option value="child">{{ __('Child') }}</option>
                                             <option value="spouse">{{ __('Spouse') }}</option>
                                             <option value="parent">{{ __('Parent') }}</option>
@@ -322,7 +294,8 @@
 
             {{-- STEP 3 --}}
             @if ($currentStep === 3)
-                <div class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                <div
+                    class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                     <div class="border-b border-zinc-200/70 px-4 py-3 dark:border-zinc-800">
                         <flux:heading>{{ __('Select Appointment Date') }}</flux:heading>
                         <flux:text>{{ __('Choose an available date for your appointment.') }}</flux:text>
@@ -330,7 +303,8 @@
 
                     <div class="p-4 space-y-4">
                         @if (empty($availableDates))
-                            <flux:callout variant="warning" icon="exclamation-circle" :heading="__('No dates available')">
+                            <flux:callout variant="warning" icon="exclamation-circle"
+                                :heading="__('No dates available')">
                                 <flux:text class="text-sm">
                                     {{ __('Please choose another consultation type or check back later.') }}
                                 </flux:text>
@@ -339,28 +313,25 @@
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4">
                                 @foreach ($availableDates as $date)
                                     @if ($date['available'])
-                                        <flux:button
-                                            wire:key="appointment-date-{{ $date['date'] }}"
+                                        <flux:button wire:key="appointment-date-{{ $date['date'] }}"
                                             wire:click="selectDate('{{ $date['date'] }}')"
-                                            variant="{{ $appointmentDate === $date['date'] ? 'primary' : 'outline' }}"
-                                        >
+                                            variant="{{ $appointmentDate === $date['date'] ? 'primary' : 'outline' }}">
                                             <div class="text-center">
                                                 <div class="font-medium">{{ $date['day_name'] }}</div>
                                                 <div class="text-lg font-bold">{{ $date['formatted'] }}</div>
-                                                <div class="text-xs text-zinc-600 dark:text-zinc-300">{{ __('Available') }}</div>
+                                                <div class="text-xs text-zinc-600 dark:text-zinc-300">
+                                                    {{ __('Available') }}</div>
                                             </div>
                                         </flux:button>
                                     @else
-                                        <flux:button
-                                            wire:key="appointment-date-{{ $date['date'] }}"
-                                            variant="outline"
-                                            class="opacity-50 cursor-not-allowed"
-                                            disabled
-                                        >
-                                            <div class="text-center">
+                                        <flux:button variant="outline" disabled class="opacity-50 cursor-not-allowed">
+                                            <div class="text-center space-y-1">
                                                 <div class="font-medium">{{ $date['day_name'] }}</div>
                                                 <div class="text-lg font-bold">{{ $date['formatted'] }}</div>
-                                                <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Unavailable') }}</div>
+
+                                                <flux:badge color="red" size="xs">
+                                                    {{ __('Unavailable') }}
+                                                </flux:badge>
                                             </div>
                                         </flux:button>
                                     @endif
@@ -373,7 +344,8 @@
                                 {{ __('Previous') }}
                             </flux:button>
 
-                            <flux:button type="button" wire:click="nextStep" variant="primary" :disabled="!$appointmentDate">
+                            <flux:button type="button" wire:click="nextStep" variant="primary"
+                                :disabled="!$appointmentDate">
                                 {{ __('Next') }}
                             </flux:button>
                         </div>
@@ -383,10 +355,12 @@
 
             {{-- STEP 4 --}}
             @if ($currentStep === 4)
-                <div class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                <div
+                    class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                     <div class="border-b border-zinc-200/70 px-4 py-3 dark:border-zinc-800">
                         <flux:heading>{{ __('Review & Submit') }}</flux:heading>
-                        <flux:text>{{ __('Confirm your details before submitting your appointment request.') }}</flux:text>
+                        <flux:text>{{ __('Confirm your details before submitting your appointment request.') }}
+                        </flux:text>
                     </div>
 
                     <div class="p-4 space-y-6">
@@ -396,12 +370,9 @@
                                     {{ __('Chief complaints') }}
                                 </label>
 
-                                <textarea
-                                    wire:model.live="chiefComplaints"
-                                    rows="5"
+                                <textarea wire:model.live="chiefComplaints" rows="5"
                                     class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                                    placeholder="{{ __('Describe symptoms or reason for visit...') }}"
-                                ></textarea>
+                                    placeholder="{{ __('Describe symptoms or reason for visit...') }}"></textarea>
 
                                 @error('chiefComplaints')
                                     <span class="text-xs text-red-600">{{ $message }}</span>
@@ -462,7 +433,8 @@
         @if (!empty($doctorAvailabilityByType))
             <aside class="hidden md:block md:col-span-4">
                 <div class="sticky top-6">
-                    <div class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                    <div
+                        class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                         <div class="border-b border-zinc-200/70 px-4 py-3 dark:border-zinc-800">
                             <flux:heading size="sm">{{ __('Doctor availability overview') }}</flux:heading>
                             <flux:text class="text-xs text-zinc-500 dark:text-zinc-400">
@@ -472,7 +444,8 @@
 
                         <div class="p-4 space-y-3 max-h-[70vh] overflow-auto">
                             @foreach ($doctorAvailabilityByType as $entry)
-                                <div class="rounded-md border border-zinc-200/70 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/40">
+                                <div
+                                    class="rounded-md border border-zinc-200/70 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/40">
                                     <div class="flex items-start justify-between gap-3">
                                         <div>
                                             <div class="text-sm font-medium text-zinc-900 dark:text-zinc-100">
@@ -498,8 +471,10 @@
 
                                     <div class="mt-2 space-y-2">
                                         @forelse(($entry['availability'] ?? []) as $availability)
-                                            <div class="rounded-md border border-zinc-200/70 bg-white p-2 text-xs text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
-                                                <div class="font-medium">{{ $availability['name'] ?? __('Doctor') }}</div>
+                                            <div
+                                                class="rounded-md border border-zinc-200/70 bg-white p-2 text-xs text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
+                                                <div class="font-medium">{{ $availability['name'] ?? __('Doctor') }}
+                                                </div>
                                                 <div class="text-zinc-500 dark:text-zinc-400">
                                                     {{ __('Clinic days') }}:
                                                     {{ empty($availability['days']) ? __('To be announced') : implode(', ', $availability['days']) }}
@@ -507,18 +482,21 @@
 
                                                 @if (!empty($availability['unavailable']))
                                                     <div class="text-zinc-500 dark:text-zinc-400">
-                                                        {{ __('Unavailable') }}: {{ implode(', ', $availability['unavailable']) }}
+                                                        {{ __('Unavailable') }}:
+                                                        {{ implode(', ', $availability['unavailable']) }}
                                                     </div>
                                                 @endif
 
                                                 @if (!empty($availability['extra']))
                                                     <div class="text-zinc-500 dark:text-zinc-400">
-                                                        {{ __('Extra clinic day') }}: {{ implode(', ', $availability['extra']) }}
+                                                        {{ __('Extra clinic day') }}:
+                                                        {{ implode(', ', $availability['extra']) }}
                                                     </div>
                                                 @endif
                                             </div>
                                         @empty
-                                            <div class="rounded-md border border-zinc-200/70 bg-white p-2 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+                                            <div
+                                                class="rounded-md border border-zinc-200/70 bg-white p-2 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
                                                 {{ __('No schedules configured yet.') }}
                                             </div>
                                         @endforelse
@@ -543,7 +521,8 @@
 
             <div class="mt-4 space-y-4 max-h-[70vh] overflow-auto">
                 @foreach ($doctorAvailabilityByType as $entry)
-                    <div class="rounded-lg border border-zinc-200/70 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                    <div
+                        class="rounded-lg border border-zinc-200/70 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <div class="font-medium">{{ $entry['type']->name }}</div>
@@ -557,7 +536,7 @@
                             </div>
                         </div>
 
-                        
+
 
                         @if (($entry['type']->doctors_count ?? 0) > 0 && empty($entry['availability']))
                             <div class="mt-3 text-xs text-amber-600">
@@ -567,7 +546,8 @@
 
                         <div class="mt-3 space-y-2">
                             @forelse(($entry['availability'] ?? []) as $availability)
-                                <div class="rounded-md border border-zinc-200/70 bg-zinc-50 p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40">
+                                <div
+                                    class="rounded-md border border-zinc-200/70 bg-zinc-50 p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40">
                                     <div class="font-medium text-zinc-900 dark:text-zinc-100">
                                         {{ $availability['name'] ?? __('Doctor') }}
                                     </div>
@@ -579,18 +559,21 @@
 
                                     @if (!empty($availability['unavailable']))
                                         <div class="text-zinc-500 dark:text-zinc-400">
-                                            {{ __('Unavailable') }}: {{ implode(', ', $availability['unavailable']) }}
+                                            {{ __('Unavailable') }}:
+                                            {{ implode(', ', $availability['unavailable']) }}
                                         </div>
                                     @endif
 
                                     @if (!empty($availability['extra']))
                                         <div class="text-zinc-500 dark:text-zinc-400">
-                                            {{ __('Extra clinic day') }}: {{ implode(', ', $availability['extra']) }}
+                                            {{ __('Extra clinic day') }}:
+                                            {{ implode(', ', $availability['extra']) }}
                                         </div>
                                     @endif
                                 </div>
                             @empty
-                                <div class="rounded-md border border-zinc-200/70 bg-white p-3 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+                                <div
+                                    class="rounded-md border border-zinc-200/70 bg-white p-3 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
                                     {{ __('No schedules configured yet.') }}
                                 </div>
                             @endforelse
