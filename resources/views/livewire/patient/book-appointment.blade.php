@@ -17,7 +17,7 @@
                 {{ __('Back to Appointments') }}
             </flux:button>
 
-          
+
 
             @if ($maxStep >= 4)
                 <flux:button type="button" wire:click="goToStep(4)" variant="outline" size="sm">
@@ -340,7 +340,9 @@
                     <button
                         type="button"
                         wire:key="appointment-date-{{ $date['date'] }}"
-                        wire:click="{{ $isAvailable ? "selectDate('{$date['date']}')" : '' }}"
+                       @if($isAvailable)
+    wire:click="selectDate('{{ $date['date'] }}')"
+@endif
                         @class([
                             'rounded-xl border px-3 py-3 text-left transition',
                             'cursor-not-allowed opacity-50' => ! $isAvailable,

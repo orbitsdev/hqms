@@ -84,12 +84,11 @@ public function closeAvailabilityModal(): void
         $this->patientRelationship = 'child';
     }
 
-   public function selectDate(string $date): void
+  public function selectDate(string $date): void
 {
     $this->appointmentDate = $date;
-    // rebuild so selected state updates
-    $this->availableDates = $this->buildAvailableDates();
 }
+
 
 
     public function goToStep(int $step): void
@@ -419,13 +418,7 @@ public function closeAvailabilityModal(): void
         $selectedConsultation = $consultationTypes->firstWhere('id', $this->consultationTypeId);
         $availableDoctors = $selectedConsultation?->doctors ?? collect();
         $doctorAvailability = $this->buildDoctorAvailability($selectedConsultation);
-        $doctorAvailabilityByType = $consultationTypes
-            ->map(fn (ConsultationType $type) => [
-                'type' => $type,
-                'availability' => $this->buildDoctorAvailability($type),
-            ])
-            ->values()
-            ->all();
+
 
         if ($this->consultationTypeId && ! $this->availableDates) {
             $this->availableDates = $this->buildAvailableDates();
@@ -438,7 +431,7 @@ public function closeAvailabilityModal(): void
             'selectedConsultation' => $selectedConsultation,
             'availableDoctors' => $availableDoctors,
             'doctorAvailability' => $doctorAvailability,
-          
+
             'availableDates' => $this->availableDates,
             'selectedDate' => $selectedDate,
         ])
