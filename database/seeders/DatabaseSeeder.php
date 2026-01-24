@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
+
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -37,6 +38,7 @@ class DatabaseSeeder extends Seeder
             // 8. Test Data: Appointments and Queues (for nurse/doctor module testing)
             AppointmentSeeder::class,
             QueueSeeder::class,
+            CarlosMendozaObPediaScheduleSeeder::class,
         ]);
     }
 }

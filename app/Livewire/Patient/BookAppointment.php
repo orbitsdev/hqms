@@ -41,6 +41,17 @@ class BookAppointment extends Component
     /** @var array<int, array<string, mixed>> */
     public array $availableDates = [];
 
+    public bool $showAvailabilityModal = false;
+
+public function openAvailabilityModal(): void
+{
+    $this->showAvailabilityModal = true;
+}
+
+public function closeAvailabilityModal(): void
+{
+    $this->showAvailabilityModal = false;
+}
     public function mount(): void
     {
         $this->fillSelfPatientDetails();
