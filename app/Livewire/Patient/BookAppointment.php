@@ -84,8 +84,6 @@ public function closeAvailabilityModal(): void
         $this->patientRelationship = 'child';
     }
 
-/*************  ✨ Windsurf Command ⭐  *************/
-/*******  7d157cc6-a43d-4b94-939f-6cdb12dac05e  *******/
    public function selectDate(string $date): void
 {
     $this->appointmentDate = $date;
@@ -440,7 +438,7 @@ public function closeAvailabilityModal(): void
             'selectedConsultation' => $selectedConsultation,
             'availableDoctors' => $availableDoctors,
             'doctorAvailability' => $doctorAvailability,
-            'doctorAvailabilityByType' => $doctorAvailabilityByType,
+          
             'availableDates' => $this->availableDates,
             'selectedDate' => $selectedDate,
         ])

@@ -17,13 +17,7 @@
                 {{ __('Back to Appointments') }}
             </flux:button>
 
-            {{-- Mobile: open availability modal --}}
-            @if (!empty($doctorAvailabilityByType))
-                <flux:button type="button" variant="outline" size="sm" class="md:hidden"
-                    icon:trailing="arrow-up-right" wire:click="openAvailabilityModal">
-                    {{ __('View Availability') }}
-                </flux:button>
-            @endif
+          
 
             @if ($maxStep >= 4)
                 <flux:button type="button" wire:click="goToStep(4)" variant="outline" size="sm">
@@ -40,7 +34,7 @@
     <div class="grid gap-6 md:grid-cols-12">
 
         {{-- LEFT: Booking flow --}}
-        <div class="md:col-span-8 space-y-6">
+        <div class="md:col-span-12 space-y-6">
 
             @php
                 $progressClass =
@@ -478,164 +472,10 @@
         </div>
 
         {{-- RIGHT: Availability sidebar (desktop only) --}}
-        @if (!empty($doctorAvailabilityByType))
-            <aside class="hidden md:block md:col-span-4">
-                <div class="sticky top-6">
-                    <div
-                        class="rounded-lg border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                        <div class="border-b border-zinc-200/70 px-4 py-3 dark:border-zinc-800">
-                            <flux:heading size="sm">{{ __('Doctor availability overview') }}</flux:heading>
-                            <flux:text class="text-xs text-zinc-500 dark:text-zinc-400">
-                                {{ __('Check clinic days first.') }}
-                            </flux:text>
-                        </div>
 
-                        <div class="p-4 space-y-3 max-h-[70vh] overflow-auto">
-                            @foreach ($doctorAvailabilityByType as $entry)
-                                <div
-                                    class="rounded-md border border-zinc-200/70 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/40">
-                                    <div class="flex items-start justify-between gap-3">
-                                        <div>
-                                            <div class="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                                                {{ $entry['type']->name }}
-                                            </div>
-                                            <div class="text-xs text-zinc-500 dark:text-zinc-400">
-                                                {{ $entry['type']->description ?? __('General care') }}
-                                            </div>
-                                        </div>
-
-                                        <div class="text-xs text-zinc-500 dark:text-zinc-400">
-                                            {{ trans_choice('{0} No doctors|{1} :count doctor|[2,*] :count doctors', $entry['type']->doctors_count ?? 0, ['count' => $entry['type']->doctors_count ?? 0]) }}
-                                        </div>
-                                    </div>
-
-
-
-                                    @if (($entry['type']->doctors_count ?? 0) > 0 && empty($entry['availability']))
-                                        <div class="mt-2 text-xs text-amber-600">
-                                            {{ __('Doctors are assigned, but clinic schedule is not configured yet.') }}
-                                        </div>
-                                    @endif
-
-                                    <div class="mt-2 space-y-2">
-                                        @forelse(($entry['availability'] ?? []) as $availability)
-                                            <div
-                                                class="rounded-md border border-zinc-200/70 bg-white p-2 text-xs text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
-                                                <div class="font-medium">{{ $availability['name'] ?? __('Doctor') }}
-                                                </div>
-                                                <div class="text-zinc-500 dark:text-zinc-400">
-                                                    {{ __('Clinic days') }}:
-                                                    {{ empty($availability['days']) ? __('To be announced') : implode(', ', $availability['days']) }}
-                                                </div>
-
-                                                @if (!empty($availability['unavailable']))
-                                                    <div class="text-zinc-500 dark:text-zinc-400">
-                                                        {{ __('Unavailable') }}:
-                                                        {{ implode(', ', $availability['unavailable']) }}
-                                                    </div>
-                                                @endif
-
-                                                @if (!empty($availability['extra']))
-                                                    <div class="text-zinc-500 dark:text-zinc-400">
-                                                        {{ __('Extra clinic day') }}:
-                                                        {{ implode(', ', $availability['extra']) }}
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        @empty
-                                            <div
-                                                class="rounded-md border border-zinc-200/70 bg-white p-2 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
-                                                {{ __('No schedules configured yet.') }}
-                                            </div>
-                                        @endforelse
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-            </aside>
-        @endif
 
     </div>
 
     {{-- MOBILE MODAL --}}
-    @if (!empty($doctorAvailabilityByType))
-        <flux:modal wire:model="showAvailabilityModal" class="md:hidden">
-            <flux:heading>{{ __('Doctor availability overview') }}</flux:heading>
-            <flux:text class="text-sm">
-                {{ __('Check clinic days first so you don’t go to the hospital when doctors are unavailable.') }}
-            </flux:text>
-
-            <div class="mt-4 space-y-4 max-h-[70vh] overflow-auto">
-                @foreach ($doctorAvailabilityByType as $entry)
-                    <div
-                        class="rounded-lg border border-zinc-200/70 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-                        <div class="flex items-start justify-between gap-3">
-                            <div>
-                                <div class="font-medium">{{ $entry['type']->name }}</div>
-                                <div class="text-xs text-zinc-500 dark:text-zinc-400">
-                                    {{ $entry['type']->description ?? __('General care') }}
-                                </div>
-                            </div>
-
-                            <div class="text-xs text-zinc-500 dark:text-zinc-400">
-                                {{ trans_choice('{0} No doctors|{1} :count doctor|[2,*] :count doctors', $entry['type']->doctors_count ?? 0, ['count' => $entry['type']->doctors_count ?? 0]) }}
-                            </div>
-                        </div>
-
-
-
-                        @if (($entry['type']->doctors_count ?? 0) > 0 && empty($entry['availability']))
-                            <div class="mt-3 text-xs text-amber-600">
-                                {{ __('Doctors are assigned, but clinic schedule is not configured yet.') }}
-                            </div>
-                        @endif
-
-                        <div class="mt-3 space-y-2">
-                            @forelse(($entry['availability'] ?? []) as $availability)
-                                <div
-                                    class="rounded-md border border-zinc-200/70 bg-zinc-50 p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40">
-                                    <div class="font-medium text-zinc-900 dark:text-zinc-100">
-                                        {{ $availability['name'] ?? __('Doctor') }}
-                                    </div>
-
-                                    <div class="mt-1 text-zinc-500 dark:text-zinc-400">
-                                        {{ __('Clinic days') }}:
-                                        {{ empty($availability['days']) ? __('To be announced') : implode(', ', $availability['days']) }}
-                                    </div>
-
-                                    @if (!empty($availability['unavailable']))
-                                        <div class="text-zinc-500 dark:text-zinc-400">
-                                            {{ __('Unavailable') }}:
-                                            {{ implode(', ', $availability['unavailable']) }}
-                                        </div>
-                                    @endif
-
-                                    @if (!empty($availability['extra']))
-                                        <div class="text-zinc-500 dark:text-zinc-400">
-                                            {{ __('Extra clinic day') }}:
-                                            {{ implode(', ', $availability['extra']) }}
-                                        </div>
-                                    @endif
-                                </div>
-                            @empty
-                                <div
-                                    class="rounded-md border border-zinc-200/70 bg-white p-3 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
-                                    {{ __('No schedules configured yet.') }}
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-
-            <div class="mt-5 flex justify-end gap-2">
-                <flux:button type="button" variant="primary" wire:click="closeAvailabilityModal">
-                    {{ __('Close') }}
-                </flux:button>
-            </div>
-        </flux:modal>
-    @endif
 
 </section>
