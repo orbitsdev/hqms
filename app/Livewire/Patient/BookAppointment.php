@@ -167,6 +167,8 @@ public function closeAvailabilityModal(): void
 
         $patient = $this->resolvePatientDetails();
 
+        // dd($patient, $user, $this->consultationTypeId, $this->appointmentDate, $this->chiefComplaints);
+
         Appointment::create([
             'user_id' => $user->id,
             'consultation_type_id' => $this->consultationTypeId,
