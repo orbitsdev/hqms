@@ -2,8 +2,8 @@
     <!-- Header -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div class="space-y-1">
-            <flux:heading size="xl" level="1">{{ __('Nurse Dashboard') }}</flux:heading>
-            <flux:text variant="subtle" class="text-sm">
+            <flux:heading size="xl" level="1">{{ __('Dashboard') }}</flux:heading>
+            <flux:text class="text-sm text-zinc-500 dark:text-zinc-400">
                 {{ __('Welcome back! Here\'s what\'s happening today.') }}
             </flux:text>
         </div>
@@ -11,7 +11,7 @@
             <flux:button href="{{ route('nurse.walk-in') }}" wire:navigate variant="primary" icon="plus">
                 {{ __('Walk-in') }}
             </flux:button>
-            <flux:button href="{{ route('nurse.queue') }}" wire:navigate icon="queue-list">
+            <flux:button href="{{ route('nurse.queue') }}" wire:navigate variant="ghost" icon="queue-list">
                 {{ __('Queue') }}
             </flux:button>
         </div>
@@ -19,50 +19,50 @@
 
     <!-- Stats Grid -->
     <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        <a href="{{ route('nurse.appointments', ['status' => 'pending']) }}" wire:navigate class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
-            <div class="text-2xl font-bold text-yellow-600">{{ $stats['pending_appointments'] }}</div>
-            <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Pending Requests') }}</div>
+        <a href="{{ route('nurse.appointments', ['status' => 'pending']) }}" wire:navigate class="rounded-lg border border-zinc-200 bg-white p-4 transition hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600">
+            <div class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $stats['pending_appointments'] }}</div>
+            <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Pending') }}</div>
         </a>
 
-        <a href="{{ route('nurse.appointments', ['status' => 'today']) }}" wire:navigate class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
-            <div class="text-2xl font-bold text-blue-600">{{ $stats['today_appointments'] }}</div>
-            <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Today\'s Appointments') }}</div>
+        <a href="{{ route('nurse.appointments', ['status' => 'today']) }}" wire:navigate class="rounded-lg border border-zinc-200 bg-white p-4 transition hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600">
+            <div class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $stats['today_appointments'] }}</div>
+            <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Today') }}</div>
         </a>
 
-        <a href="{{ route('nurse.queue') }}" wire:navigate class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
-            <div class="text-2xl font-bold text-amber-600">{{ $stats['waiting_checkin'] }}</div>
-            <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Waiting Check-in') }}</div>
+        <a href="{{ route('nurse.queue') }}" wire:navigate class="rounded-lg border border-zinc-200 bg-white p-4 transition hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600">
+            <div class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $stats['waiting_checkin'] }}</div>
+            <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Check-in') }}</div>
         </a>
 
-        <a href="{{ route('nurse.queue', ['status' => 'waiting']) }}" wire:navigate class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
-            <div class="text-2xl font-bold text-zinc-600">{{ $stats['queue_waiting'] }}</div>
+        <a href="{{ route('nurse.queue', ['status' => 'waiting']) }}" wire:navigate class="rounded-lg border border-zinc-200 bg-white p-4 transition hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600">
+            <div class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $stats['queue_waiting'] }}</div>
             <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ __('In Queue') }}</div>
         </a>
 
-        <a href="{{ route('nurse.queue', ['status' => 'serving']) }}" wire:navigate class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
-            <div class="text-2xl font-bold text-indigo-600">{{ $stats['queue_serving'] }}</div>
-            <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Now Serving') }}</div>
+        <a href="{{ route('nurse.queue', ['status' => 'serving']) }}" wire:navigate class="rounded-lg border border-zinc-200 bg-white p-4 transition hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600">
+            <div class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $stats['queue_serving'] }}</div>
+            <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Serving') }}</div>
         </a>
 
-        <a href="{{ route('nurse.queue', ['status' => 'completed']) }}" wire:navigate class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
-            <div class="text-2xl font-bold text-green-600">{{ $stats['queue_completed'] }}</div>
-            <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Completed Today') }}</div>
+        <a href="{{ route('nurse.queue', ['status' => 'completed']) }}" wire:navigate class="rounded-lg border border-zinc-200 bg-white p-4 transition hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600">
+            <div class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $stats['queue_completed'] }}</div>
+            <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Completed') }}</div>
         </a>
     </div>
 
     <div class="grid gap-6 lg:grid-cols-2">
         <!-- Currently Serving -->
-        <div class="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <div class="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-                <flux:heading size="base" level="2">{{ __('Currently Serving') }}</flux:heading>
+        <div class="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
+                <h2 class="text-sm font-medium text-zinc-900 dark:text-white">{{ __('Currently Serving') }}</h2>
             </div>
             <div class="p-4">
                 @if($currentServing->isNotEmpty())
                     <div class="space-y-3">
                         @foreach($currentServing as $queue)
-                            <div class="flex items-center justify-between rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
+                            <div class="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
                                 <div class="flex items-center gap-3">
-                                    <span class="text-xl font-bold text-blue-700 dark:text-blue-300">
+                                    <span class="text-lg font-bold text-zinc-900 dark:text-white">
                                         {{ $queue->formatted_number }}
                                     </span>
                                     <div>
@@ -82,7 +82,7 @@
                     </div>
                 @else
                     <div class="py-8 text-center">
-                        <flux:icon name="user-group" class="mx-auto h-10 w-10 text-zinc-300 dark:text-zinc-600" />
+                        <flux:icon name="user-group" class="mx-auto h-8 w-8 text-zinc-300 dark:text-zinc-600" />
                         <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">{{ __('No patients being served') }}</p>
                     </div>
                 @endif
@@ -90,22 +90,15 @@
         </div>
 
         <!-- Up Next -->
-        <div class="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <div class="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-                <flux:heading size="base" level="2">{{ __('Up Next') }}</flux:heading>
+        <div class="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
+                <h2 class="text-sm font-medium text-zinc-900 dark:text-white">{{ __('Up Next') }}</h2>
             </div>
             <div class="p-4">
                 @if($recentQueue->isNotEmpty())
                     <div class="space-y-2">
                         @foreach($recentQueue as $queue)
-                            @php
-                                $priorityColors = [
-                                    'emergency' => 'border-l-red-500',
-                                    'urgent' => 'border-l-orange-500',
-                                    'normal' => 'border-l-zinc-300 dark:border-l-zinc-600',
-                                ];
-                            @endphp
-                            <div class="flex items-center justify-between rounded-lg border-l-4 bg-zinc-50 p-3 dark:bg-zinc-800/50 {{ $priorityColors[$queue->priority] ?? $priorityColors['normal'] }}">
+                            <div class="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
                                 <div class="flex items-center gap-3">
                                     <span class="font-bold text-zinc-700 dark:text-zinc-200">
                                         {{ $queue->formatted_number }}
@@ -117,18 +110,12 @@
                                         <div class="text-xs text-zinc-500 dark:text-zinc-400">
                                             {{ $queue->consultationType?->name }}
                                             @if($queue->priority !== 'normal')
-                                                <span class="ml-1 font-medium text-{{ $queue->priority === 'emergency' ? 'red' : 'orange' }}-600">
-                                                    ({{ ucfirst($queue->priority) }})
-                                                </span>
+                                                <span class="ml-1 font-medium">({{ ucfirst($queue->priority) }})</span>
                                             @endif
                                         </div>
                                     </div>
                                 </div>
-                                <span @class([
-                                    'rounded-full px-2 py-0.5 text-xs font-medium',
-                                    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' => $queue->status === 'waiting',
-                                    'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' => $queue->status === 'called',
-                                ])>
+                                <span class="rounded px-2 py-0.5 text-xs font-medium bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
                                     {{ ucfirst($queue->status) }}
                                 </span>
                             </div>
@@ -136,12 +123,12 @@
                     </div>
                     <div class="mt-4 text-center">
                         <flux:button href="{{ route('nurse.queue') }}" wire:navigate variant="ghost" size="sm">
-                            {{ __('View All Queue') }}
+                            {{ __('View All') }}
                         </flux:button>
                     </div>
                 @else
                     <div class="py-8 text-center">
-                        <flux:icon name="queue-list" class="mx-auto h-10 w-10 text-zinc-300 dark:text-zinc-600" />
+                        <flux:icon name="queue-list" class="mx-auto h-8 w-8 text-zinc-300 dark:text-zinc-600" />
                         <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">{{ __('No patients in queue') }}</p>
                         <flux:button href="{{ route('nurse.walk-in') }}" wire:navigate variant="primary" size="sm" class="mt-3" icon="plus">
                             {{ __('Register Walk-in') }}
@@ -153,20 +140,20 @@
     </div>
 
     <!-- Quick Actions -->
-    <div class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <flux:heading size="base" level="2" class="mb-4">{{ __('Quick Actions') }}</flux:heading>
+    <div class="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+        <h2 class="mb-4 text-sm font-medium text-zinc-900 dark:text-white">{{ __('Quick Actions') }}</h2>
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <flux:button href="{{ route('nurse.walk-in') }}" wire:navigate variant="ghost" class="h-auto flex-col gap-2 py-4" icon="user-plus">
-                <span>{{ __('Walk-in Patient') }}</span>
+                <span>{{ __('Walk-in') }}</span>
             </flux:button>
             <flux:button href="{{ route('nurse.queue') }}" wire:navigate variant="ghost" class="h-auto flex-col gap-2 py-4" icon="queue-list">
-                <span>{{ __('Manage Queue') }}</span>
+                <span>{{ __('Queue') }}</span>
             </flux:button>
             <flux:button href="{{ route('nurse.appointments') }}" wire:navigate variant="ghost" class="h-auto flex-col gap-2 py-4" icon="calendar-days">
                 <span>{{ __('Appointments') }}</span>
             </flux:button>
             <flux:button href="{{ route('nurse.appointments', ['status' => 'pending']) }}" wire:navigate variant="ghost" class="h-auto flex-col gap-2 py-4" icon="clipboard-document-check">
-                <span>{{ __('Pending Requests') }}</span>
+                <span>{{ __('Pending') }}</span>
             </flux:button>
         </div>
     </div>

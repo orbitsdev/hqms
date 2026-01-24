@@ -3,26 +3,26 @@
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div class="space-y-1">
             <flux:heading size="xl" level="1">{{ __('Today\'s Queue') }}</flux:heading>
-            <flux:text variant="subtle" class="text-sm">
+            <flux:text class="text-sm text-zinc-500 dark:text-zinc-400">
                 {{ __('Manage patient queue, vital signs, and forward to doctors.') }}
             </flux:text>
         </div>
         <flux:button href="{{ route('nurse.walk-in') }}" wire:navigate variant="primary" icon="plus">
-            {{ __('Walk-in Patient') }}
+            {{ __('Walk-in') }}
         </flux:button>
     </div>
 
     <!-- Current Serving Display -->
     @if($currentServing->isNotEmpty())
-        <div class="rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
-            <div class="flex items-center gap-2 text-sm font-medium text-blue-800 dark:text-blue-200">
+        <div class="rounded-lg border border-zinc-300 bg-zinc-50 p-4 dark:border-zinc-600 dark:bg-zinc-800">
+            <div class="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                 <flux:icon name="play-circle" class="h-5 w-5" />
                 {{ __('Currently Serving') }}
             </div>
             <div class="mt-2 flex flex-wrap gap-3">
                 @foreach($currentServing as $typeId => $queues)
                     @foreach($queues as $queue)
-                        <span class="inline-flex items-center gap-2 rounded-full bg-blue-100 px-4 py-2 text-sm font-bold text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                        <span class="inline-flex items-center gap-2 rounded-full border border-zinc-300 bg-white px-4 py-2 text-sm font-bold text-zinc-800 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-100">
                             {{ $queue->formatted_number }}
                         </span>
                     @endforeach
@@ -33,22 +33,20 @@
 
     <!-- Pending Check-ins Alert -->
     @if($pendingCheckIns->isNotEmpty())
-        <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-200">
-                    <flux:icon name="clock" class="h-5 w-5" />
-                    {{ __(':count patient(s) waiting to check in', ['count' => $pendingCheckIns->count()]) }}
-                </div>
+        <div class="rounded-lg border border-zinc-300 bg-zinc-50 p-4 dark:border-zinc-600 dark:bg-zinc-800">
+            <div class="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <flux:icon name="clock" class="h-5 w-5" />
+                {{ __(':count patient(s) waiting to check in', ['count' => $pendingCheckIns->count()]) }}
             </div>
             <div class="mt-3 flex flex-wrap gap-2">
                 @foreach($pendingCheckIns as $appointment)
                     <button
                         wire:click="openCheckInModal({{ $appointment->id }})"
                         type="button"
-                        class="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm font-medium text-amber-800 shadow-sm transition hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/60"
+                        class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600"
                     >
                         <span>{{ $appointment->patient_first_name }} {{ $appointment->patient_last_name }}</span>
-                        <span class="text-xs text-amber-600 dark:text-amber-400">
+                        <span class="text-xs text-zinc-500 dark:text-zinc-400">
                             @if($appointment->appointment_time)
                                 {{ $appointment->appointment_time->format('h:i A') }}
                             @else
@@ -62,54 +60,54 @@
     @endif
 
     <!-- Status Tabs -->
-    <div class="flex flex-wrap items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2 border-b border-zinc-200 pb-4 dark:border-zinc-700">
         <flux:button
             wire:click="setStatus('waiting')"
-            :variant="$status === 'waiting' ? 'primary' : 'ghost'"
+            :variant="$status === 'waiting' ? 'filled' : 'ghost'"
             size="sm"
         >
             {{ __('Waiting') }}
             @if($statusCounts['waiting'] > 0)
-                <flux:badge color="yellow" size="sm" class="ml-1">{{ $statusCounts['waiting'] }}</flux:badge>
+                <span class="ml-1 rounded-full bg-zinc-200 px-1.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">{{ $statusCounts['waiting'] }}</span>
             @endif
         </flux:button>
         <flux:button
             wire:click="setStatus('called')"
-            :variant="$status === 'called' ? 'primary' : 'ghost'"
+            :variant="$status === 'called' ? 'filled' : 'ghost'"
             size="sm"
         >
             {{ __('Called') }}
             @if($statusCounts['called'] > 0)
-                <flux:badge color="orange" size="sm" class="ml-1">{{ $statusCounts['called'] }}</flux:badge>
+                <span class="ml-1 rounded-full bg-zinc-200 px-1.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">{{ $statusCounts['called'] }}</span>
             @endif
         </flux:button>
         <flux:button
             wire:click="setStatus('serving')"
-            :variant="$status === 'serving' ? 'primary' : 'ghost'"
+            :variant="$status === 'serving' ? 'filled' : 'ghost'"
             size="sm"
         >
             {{ __('Serving') }}
             @if($statusCounts['serving'] > 0)
-                <flux:badge color="blue" size="sm" class="ml-1">{{ $statusCounts['serving'] }}</flux:badge>
+                <span class="ml-1 rounded-full bg-zinc-200 px-1.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">{{ $statusCounts['serving'] }}</span>
             @endif
         </flux:button>
         <flux:button
             wire:click="setStatus('completed')"
-            :variant="$status === 'completed' ? 'primary' : 'ghost'"
+            :variant="$status === 'completed' ? 'filled' : 'ghost'"
             size="sm"
         >
             {{ __('Completed') }}
             @if($statusCounts['completed'] > 0)
-                <flux:badge color="green" size="sm" class="ml-1">{{ $statusCounts['completed'] }}</flux:badge>
+                <span class="ml-1 rounded-full bg-zinc-200 px-1.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">{{ $statusCounts['completed'] }}</span>
             @endif
         </flux:button>
         <flux:button
             wire:click="setStatus('all')"
-            :variant="$status === 'all' ? 'primary' : 'ghost'"
+            :variant="$status === 'all' ? 'filled' : 'ghost'"
             size="sm"
         >
             {{ __('All') }}
-            <flux:badge size="sm" class="ml-1">{{ $statusCounts['all'] }}</flux:badge>
+            <span class="ml-1 rounded-full bg-zinc-200 px-1.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">{{ $statusCounts['all'] }}</span>
         </flux:button>
     </div>
 
@@ -125,9 +123,9 @@
 
     <!-- Queue Table -->
     @if($queues->isNotEmpty())
-        <div class="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
-                <thead class="bg-zinc-50 dark:bg-zinc-800/50">
+        <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+            <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+                <thead class="bg-zinc-50 dark:bg-zinc-800">
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                             {{ __('Queue #') }}
@@ -152,7 +150,7 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
                     @foreach($queues as $queue)
                         @php
                             $patientName = $queue->appointment
@@ -160,7 +158,7 @@
                                 : __('Walk-in');
                             $hasVitals = $queue->medicalRecord?->vital_signs_recorded_at !== null;
                         @endphp
-                        <tr wire:key="queue-{{ $queue->id }}" class="@if($queue->status === 'serving') bg-blue-50 dark:bg-blue-900/10 @endif">
+                        <tr wire:key="queue-{{ $queue->id }}" class="@if($queue->status === 'serving') bg-zinc-50 dark:bg-zinc-800/50 @endif">
                             <td class="whitespace-nowrap px-4 py-4">
                                 <span class="text-lg font-bold text-zinc-900 dark:text-white">
                                     {{ $queue->formatted_number }}
@@ -175,51 +173,25 @@
                                 @endif
                             </td>
                             <td class="whitespace-nowrap px-4 py-4">
-                                @php
-                                    $shortName = $queue->consultationType?->short_name ?? '?';
-                                    $typeColors = [
-                                        'O' => 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400',
-                                        'P' => 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
-                                        'G' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-                                    ];
-                                    $typeClass = $typeColors[$shortName] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
-                                @endphp
-                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $typeClass }}">
+                                <span class="text-sm text-zinc-700 dark:text-zinc-300">
                                     {{ $queue->consultationType?->name ?? '-' }}
                                 </span>
                             </td>
                             <td class="whitespace-nowrap px-4 py-4">
-                                @php
-                                    $priorityColors = [
-                                        'normal' => 'bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300',
-                                        'urgent' => 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-                                        'emergency' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-                                    ];
-                                @endphp
-                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $priorityColors[$queue->priority] ?? $priorityColors['normal'] }}">
+                                <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium {{ $queue->priority === 'normal' ? 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400' : 'bg-zinc-200 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200' }}">
                                     {{ ucfirst($queue->priority) }}
                                 </span>
                             </td>
                             <td class="whitespace-nowrap px-4 py-4">
-                                @php
-                                    $statusColors = [
-                                        'waiting' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-                                        'called' => 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-                                        'serving' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-                                        'completed' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-                                        'skipped' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
-                                        'cancelled' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-                                    ];
-                                @endphp
-                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $statusColors[$queue->status] ?? $statusColors['waiting'] }}">
+                                <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
                                     {{ ucfirst($queue->status) }}
                                 </span>
                             </td>
                             <td class="whitespace-nowrap px-4 py-4">
                                 @if($hasVitals)
-                                    <flux:icon name="check-circle" class="h-5 w-5 text-green-500" />
+                                    <flux:icon name="check-circle" class="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
                                 @elseif($queue->status === 'serving')
-                                    <flux:icon name="exclamation-circle" class="h-5 w-5 text-amber-500" />
+                                    <flux:icon name="exclamation-circle" class="h-5 w-5 text-zinc-500" />
                                 @else
                                     <flux:icon name="minus-circle" class="h-5 w-5 text-zinc-300 dark:text-zinc-600" />
                                 @endif
@@ -266,12 +238,12 @@
             </table>
         </div>
     @else
-        <div class="rounded-xl border border-zinc-200/70 bg-white p-8 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900 space-y-4">
-            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-                <flux:icon name="queue-list" class="h-8 w-8 text-zinc-400" />
+        <div class="rounded-lg border border-zinc-200 bg-white p-8 text-center dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+                <flux:icon name="queue-list" class="h-6 w-6 text-zinc-400" />
             </div>
-            <flux:heading size="lg" level="2">{{ __('No patients in queue') }}</flux:heading>
-            <flux:text variant="subtle" class="text-sm">
+            <h3 class="mt-4 text-sm font-medium text-zinc-900 dark:text-white">{{ __('No patients in queue') }}</h3>
+            <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
                 @if($status === 'waiting')
                     {{ __('No patients are currently waiting.') }}
                 @elseif($status === 'serving')
@@ -279,10 +251,12 @@
                 @else
                     {{ __('The queue is empty for this status.') }}
                 @endif
-            </flux:text>
-            <flux:button href="{{ route('nurse.walk-in') }}" wire:navigate variant="primary" icon="plus">
-                {{ __('Register Walk-in') }}
-            </flux:button>
+            </p>
+            <div class="mt-4">
+                <flux:button href="{{ route('nurse.walk-in') }}" wire:navigate variant="primary" icon="plus">
+                    {{ __('Register Walk-in') }}
+                </flux:button>
+            </div>
         </div>
     @endif
 
@@ -296,7 +270,7 @@
                     $checkInAppt = $pendingCheckIns->firstWhere('id', $checkInAppointmentId);
                 @endphp
                 @if($checkInAppt)
-                    <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800">
+                    <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800">
                         <dl class="space-y-2">
                             <div class="flex justify-between">
                                 <dt class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Patient') }}</dt>
@@ -331,9 +305,9 @@
                 @endif
             @endif
 
-            <flux:text variant="subtle" class="text-sm">
-                {{ __('Confirm that this patient has arrived and is ready to be seen.') }}
-            </flux:text>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">
+                {{ __('Confirm that this patient has arrived.') }}
+            </p>
 
             <div class="flex justify-end gap-3">
                 <flux:button wire:click="closeCheckInModal" variant="ghost">
@@ -436,7 +410,7 @@
 
                 <flux:field>
                     <flux:label>{{ __('Updated Chief Complaints') }}</flux:label>
-                    <flux:textarea wire:model="chiefComplaintsUpdated" rows="2" placeholder="{{ __('Any additional symptoms or updates...') }}" />
+                    <flux:textarea wire:model="chiefComplaintsUpdated" rows="2" placeholder="{{ __('Any additional symptoms...') }}" />
                     <flux:error name="chiefComplaintsUpdated" />
                 </flux:field>
             @endif
@@ -446,7 +420,7 @@
                     {{ __('Cancel') }}
                 </flux:button>
                 <flux:button wire:click="saveVitalSigns" variant="primary" icon="check">
-                    {{ __('Save Vital Signs') }}
+                    {{ __('Save') }}
                 </flux:button>
             </div>
         </div>

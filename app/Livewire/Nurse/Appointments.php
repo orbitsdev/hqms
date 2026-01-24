@@ -25,12 +25,15 @@ class Appointments extends Component
 
     public string $sortDirection = 'asc';
 
+    public string $sourceFilter = '';
+
     /** @var array<string, mixed> */
     protected array $queryString = [
         'search' => ['except' => ''],
         'status' => ['except' => 'pending'],
         'consultationTypeFilter' => ['except' => ''],
         'dateFilter' => ['except' => ''],
+        'sourceFilter' => ['except' => ''],
         'sortBy' => ['except' => 'appointment_date'],
         'sortDirection' => ['except' => 'asc'],
     ];
@@ -55,6 +58,11 @@ class Appointments extends Component
         $this->resetPage();
     }
 
+    public function updatedSourceFilter(): void
+    {
+        $this->resetPage();
+    }
+
     public function setStatus(string $status): void
     {
         $this->status = $status;
@@ -73,7 +81,7 @@ class Appointments extends Component
 
     public function clearFilters(): void
     {
-        $this->reset(['search', 'consultationTypeFilter', 'dateFilter']);
+        $this->reset(['search', 'consultationTypeFilter', 'dateFilter', 'sourceFilter']);
         $this->resetPage();
     }
 
@@ -109,6 +117,7 @@ class Appointments extends Component
             ->when($this->status === 'today', fn (Builder $q) => $q->whereDate('appointment_date', today()))
             ->when($this->consultationTypeFilter !== '', fn (Builder $q) => $q->where('consultation_type_id', $this->consultationTypeFilter))
             ->when($this->dateFilter !== '', fn (Builder $q) => $q->whereDate('appointment_date', $this->dateFilter))
+            ->when($this->sourceFilter !== '', fn (Builder $q) => $q->where('source', $this->sourceFilter))
             ->when($search !== '', function (Builder $query) use ($search): void {
                 $likeSearch = '%'.$search.'%';
 
