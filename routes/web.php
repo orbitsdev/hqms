@@ -12,7 +12,18 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-Route::view('dashboard', 'dashboard')
+Route::get('dashboard', function(){
+    // redire base on role
+    if (auth()->user()->isPatient()) {
+        return redirect()->route('patient.dashboard');
+    }
+
+    if (auth()->user()->isNurse()) {
+        return redirect()->route('nurse.dashboard');
+    }
+
+    return redirect()->route('nurse.dashboard');
+})
     ->middleware(['auth'])
     ->name('dashboard');
 
