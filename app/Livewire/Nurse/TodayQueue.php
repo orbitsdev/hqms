@@ -64,18 +64,43 @@ class TodayQueue extends Component
         $this->status = $status;
     }
 
+    public function setConsultationType(string $typeId): void
+    {
+        $this->consultationTypeFilter = $typeId;
+        // Reset to waiting status when changing type for better UX
+        $this->status = 'waiting';
+    }
+
     /** @return array<string, int> */
     public function getStatusCountsProperty(): array
     {
-        $baseQuery = Queue::query()->today();
+        $baseQuery = Queue::query()
+            ->today()
+            ->when($this->consultationTypeFilter !== '', fn (Builder $q) => $q->where('consultation_type_id', $this->consultationTypeFilter));
 
         return [
             'all' => (clone $baseQuery)->count(),
             'waiting' => (clone $baseQuery)->where('status', 'waiting')->count(),
             'called' => (clone $baseQuery)->where('status', 'called')->count(),
             'serving' => (clone $baseQuery)->where('status', 'serving')->count(),
+            'skipped' => (clone $baseQuery)->where('status', 'skipped')->count(),
             'completed' => (clone $baseQuery)->where('status', 'completed')->count(),
         ];
+    }
+
+    /** @return array<int, array<string, int>> */
+    public function getTypeCountsProperty(): array
+    {
+        $counts = Queue::query()
+            ->today()
+            ->selectRaw('consultation_type_id, COUNT(*) as total')
+            ->groupBy('consultation_type_id')
+            ->pluck('total', 'consultation_type_id')
+            ->toArray();
+
+        $counts['all'] = array_sum($counts);
+
+        return $counts;
     }
 
     /** @return array<string, int> */
@@ -270,6 +295,41 @@ class TodayQueue extends Component
         ]);
 
         Toaster::success(__('Patient requeued: :number', ['number' => $queue->formatted_number]));
+    }
+
+    public function stopServing(int $queueId): void
+    {
+        $queue = Queue::with(['medicalRecord', 'appointment'])->find($queueId);
+
+        if (! $queue || $queue->status !== 'serving') {
+            Toaster::error(__('Cannot stop serving this patient.'));
+
+            return;
+        }
+
+        DB::transaction(function () use ($queue): void {
+            // Delete medical record if no vital signs were recorded yet
+            if ($queue->medicalRecord && ! $queue->medicalRecord->vital_signs_recorded_at) {
+                $queue->medicalRecord->delete();
+            }
+
+            // Reset appointment status if it was changed
+            if ($queue->appointment && $queue->appointment->status === 'in_progress') {
+                $queue->appointment->update([
+                    'status' => 'checked_in',
+                ]);
+            }
+
+            // Reset queue to waiting state
+            $queue->update([
+                'status' => 'waiting',
+                'serving_started_at' => null,
+                'served_by' => null,
+                'called_at' => null,
+            ]);
+        });
+
+        Toaster::success(__('Stopped serving patient: :number', ['number' => $queue->formatted_number]));
     }
 
     // Vital Signs Methods
@@ -467,6 +527,7 @@ class TodayQueue extends Component
             'pendingCheckIns' => $pendingCheckIns,
             'consultationTypes' => $consultationTypes,
             'statusCounts' => $this->statusCounts,
+            'typeCounts' => $this->typeCounts,
             'currentServing' => $currentServing,
         ])->layout('layouts.app');
     }

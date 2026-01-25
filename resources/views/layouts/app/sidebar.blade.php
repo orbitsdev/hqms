@@ -56,11 +56,11 @@
                         <flux:sidebar.item icon="home" :href="route('nurse.dashboard')" :current="request()->routeIs('nurse.dashboard')" wire:navigate>
                             {{ __('Dashboard') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="queue-list" :href="route('nurse.queue')" :current="request()->routeIs('nurse.queue')" wire:navigate>
-                            {{ __('Today\'s Queue') }}
-                        </flux:sidebar.item>
                         <flux:sidebar.item icon="calendar-days" :href="route('nurse.appointments')" :current="request()->routeIs('nurse.appointments*') || request()->routeIs('nurse.walk-in')" wire:navigate>
                             {{ __('Appointments') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="queue-list" :href="route('nurse.queue')" :current="request()->routeIs('nurse.queue')" wire:navigate>
+                            {{ __('Today\'s Queue') }}
                         </flux:sidebar.item>
                         <flux:sidebar.item icon="cog" :href="route('profile.edit')" :current="request()->routeIs('profile.edit')" wire:navigate>
                             {{ __('Settings') }}

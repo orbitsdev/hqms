@@ -222,6 +222,9 @@
                                             {{ __('Skip') }}
                                         </flux:button>
                                     @elseif($queue->status === 'serving')
+                                        <flux:button wire:click="stopServing({{ $queue->id }})" wire:confirm="{{ __('Stop serving this patient? They will be returned to the waiting queue.') }}" size="xs" variant="ghost" icon="x-mark">
+                                            {{ __('Stop') }}
+                                        </flux:button>
                                         <flux:button wire:click="openVitalSignsModal({{ $queue->id }})" size="xs" variant="{{ $hasVitals ? 'ghost' : 'primary' }}" icon="heart">
                                             {{ __('Vitals') }}
                                         </flux:button>
