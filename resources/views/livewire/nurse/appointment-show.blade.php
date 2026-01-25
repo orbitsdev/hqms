@@ -415,16 +415,6 @@
                 </div>
 
                 <flux:field>
-                    <flux:label>{{ __('Appointment Time (Optional)') }}</flux:label>
-                    <flux:input
-                        type="time"
-                        wire:model="appointmentTime"
-                    />
-                    <flux:description>{{ __('Leave empty if time is flexible') }}</flux:description>
-                    <flux:error name="appointmentTime" />
-                </flux:field>
-
-                <flux:field>
                     <flux:label>{{ __('Notes (Optional)') }}</flux:label>
                     <flux:textarea
                         wire:model="notes"

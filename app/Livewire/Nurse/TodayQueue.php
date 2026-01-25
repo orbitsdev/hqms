@@ -235,6 +235,25 @@ class TodayQueue extends Component
         Toaster::success(__('Patient skipped: :number', ['number' => $queue->formatted_number]));
     }
 
+    public function serveNextAvailable(): void
+    {
+        $nextQueue = Queue::query()
+            ->today()
+            ->whereIn('status', ['waiting', 'called'])
+            ->when($this->consultationTypeFilter !== '', fn (Builder $q) => $q->where('consultation_type_id', $this->consultationTypeFilter))
+            ->orderByRaw("FIELD(priority, 'emergency', 'urgent', 'normal')")
+            ->orderBy('queue_number')
+            ->first();
+
+        if (! $nextQueue) {
+            Toaster::info(__('No patients waiting in queue.'));
+
+            return;
+        }
+
+        $this->startServing($nextQueue->id);
+    }
+
     public function requeuePatient(int $queueId): void
     {
         $queue = Queue::find($queueId);

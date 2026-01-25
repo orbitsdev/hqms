@@ -4,10 +4,14 @@ namespace App\Livewire\Nurse;
 
 use App\Models\Appointment;
 use App\Models\ConsultationType;
+use App\Models\PersonalInformation;
 use App\Models\User;
 use App\Notifications\GenericNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Livewire\Component;
@@ -15,8 +19,14 @@ use Masmerise\Toaster\Toaster;
 
 class WalkInRegistration extends Component
 {
+    public int $currentStep = 1;
+
+    public int $maxStep = 1;
+
+    // Step 1: Consultation Type
     public ?int $consultationTypeId = null;
 
+    // Step 2: Patient Information
     public string $patientFirstName = '';
 
     public ?string $patientMiddleName = null;
@@ -37,11 +47,92 @@ class WalkInRegistration extends Component
 
     public ?string $patientStreet = null;
 
+    // Step 3: Chief Complaints
     public string $chiefComplaints = '';
+
+    // Step 4: Account creation (optional)
+    public bool $createAccount = false;
+
+    public string $accountEmail = '';
+
+    public string $accountPassword = '';
+
+    public bool $generatePassword = true;
+
+    public function selectConsultationType(int $typeId): void
+    {
+        $this->consultationTypeId = $typeId;
+    }
+
+    public function goToStep(int $step): void
+    {
+        if ($step <= $this->maxStep && $step >= 1) {
+            $this->currentStep = $step;
+        }
+    }
+
+    public function previousStep(): void
+    {
+        if ($this->currentStep > 1) {
+            $this->currentStep--;
+        }
+    }
+
+    public function nextStep(): void
+    {
+        if ($this->currentStep === 1) {
+            $this->validate([
+                'consultationTypeId' => ['required', 'exists:consultation_types,id'],
+            ]);
+
+            $this->currentStep = 2;
+            $this->maxStep = max($this->maxStep, 2);
+
+            return;
+        }
+
+        if ($this->currentStep === 2) {
+            $this->validate([
+                'patientFirstName' => ['required', 'string', 'max:255'],
+                'patientMiddleName' => ['nullable', 'string', 'max:255'],
+                'patientLastName' => ['required', 'string', 'max:255'],
+                'patientDateOfBirth' => ['required', 'date', 'before_or_equal:today'],
+                'patientGender' => ['required', Rule::in(['male', 'female'])],
+                'patientPhone' => ['nullable', 'string', 'max:20'],
+                'patientProvince' => ['nullable', 'string', 'max:255'],
+                'patientMunicipality' => ['nullable', 'string', 'max:255'],
+                'patientBarangay' => ['nullable', 'string', 'max:255'],
+                'patientStreet' => ['nullable', 'string', 'max:500'],
+            ]);
+
+            $this->currentStep = 3;
+            $this->maxStep = max($this->maxStep, 3);
+
+            return;
+        }
+
+        if ($this->currentStep === 3) {
+            $this->validate([
+                'chiefComplaints' => ['required', 'string', 'min:5', 'max:2000'],
+            ]);
+
+            $this->currentStep = 4;
+            $this->maxStep = max($this->maxStep, 4);
+        }
+    }
+
+    public function updatedCreateAccount(): void
+    {
+        if (! $this->createAccount) {
+            $this->accountEmail = '';
+            $this->accountPassword = '';
+            $this->generatePassword = true;
+        }
+    }
 
     public function register(): void
     {
-        $this->validate([
+        $rules = [
             'consultationTypeId' => ['required', 'exists:consultation_types,id'],
             'patientFirstName' => ['required', 'string', 'max:255'],
             'patientMiddleName' => ['nullable', 'string', 'max:255'],
@@ -54,7 +145,17 @@ class WalkInRegistration extends Component
             'patientBarangay' => ['nullable', 'string', 'max:255'],
             'patientStreet' => ['nullable', 'string', 'max:500'],
             'chiefComplaints' => ['required', 'string', 'min:5', 'max:2000'],
-        ]);
+        ];
+
+        if ($this->createAccount) {
+            $rules['accountEmail'] = ['required', 'email', 'max:255', 'unique:users,email'];
+
+            if (! $this->generatePassword) {
+                $rules['accountPassword'] = ['required', 'string', 'min:8'];
+            }
+        }
+
+        $this->validate($rules);
 
         $nurse = Auth::user();
 
@@ -62,8 +163,44 @@ class WalkInRegistration extends Component
             abort(403);
         }
 
+        $patientUserId = $nurse->id;
+        $generatedPassword = null;
+
+        DB::transaction(function () use ($nurse, &$patientUserId, &$generatedPassword): void {
+            // Create patient account if requested
+            if ($this->createAccount) {
+                $generatedPassword = $this->generatePassword
+                    ? Str::password(12)
+                    : $this->accountPassword;
+
+                $patientUser = User::create([
+                    'email' => $this->accountEmail,
+                    'password' => Hash::make($generatedPassword),
+                    'is_active' => true,
+                ]);
+
+                $patientUser->assignRole('patient');
+
+                PersonalInformation::create([
+                    'user_id' => $patientUser->id,
+                    'first_name' => $this->patientFirstName,
+                    'middle_name' => $this->patientMiddleName,
+                    'last_name' => $this->patientLastName,
+                    'date_of_birth' => $this->patientDateOfBirth,
+                    'gender' => $this->patientGender,
+                    'phone' => $this->patientPhone,
+                    'province' => $this->patientProvince,
+                    'municipality' => $this->patientMunicipality,
+                    'barangay' => $this->patientBarangay,
+                    'street' => $this->patientStreet,
+                ]);
+
+                $patientUserId = $patientUser->id;
+            }
+        });
+
         $appointment = Appointment::create([
-            'user_id' => $nurse->id,
+            'user_id' => $patientUserId,
             'consultation_type_id' => $this->consultationTypeId,
             'doctor_id' => null,
             'patient_first_name' => $this->patientFirstName,
@@ -97,7 +234,14 @@ class WalkInRegistration extends Component
             'url' => route('nurse.appointments.show', $appointment),
         ]));
 
-        Toaster::success(__('Walk-in patient registered. Please approve to add to queue.'));
+        if ($this->createAccount && $generatedPassword) {
+            Toaster::success(__('Patient registered with account. Email: :email, Password: :password', [
+                'email' => $this->accountEmail,
+                'password' => $generatedPassword,
+            ]));
+        } else {
+            Toaster::success(__('Walk-in patient registered. Please approve to add to queue.'));
+        }
 
         $this->redirect(route('nurse.appointments.show', $appointment), navigate: true);
     }
@@ -109,8 +253,11 @@ class WalkInRegistration extends Component
             ->orderBy('name')
             ->get();
 
+        $selectedConsultationType = $consultationTypes->firstWhere('id', $this->consultationTypeId);
+
         return view('livewire.nurse.walk-in-registration', [
             'consultationTypes' => $consultationTypes,
+            'selectedConsultationType' => $selectedConsultationType,
         ])->layout('layouts.app');
     }
 }

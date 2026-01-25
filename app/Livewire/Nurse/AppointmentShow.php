@@ -23,8 +23,6 @@ class AppointmentShow extends Component
 
     public string $cancelReason = '';
 
-    public ?string $appointmentTime = null;
-
     public string $notes = '';
 
     public function mount(Appointment $appointment): void
@@ -37,7 +35,6 @@ class AppointmentShow extends Component
             'approvedBy',
         ]);
 
-        $this->appointmentTime = $appointment->appointment_time?->format('H:i');
         $this->notes = $appointment->notes ?? '';
     }
 
@@ -78,7 +75,6 @@ class AppointmentShow extends Component
     public function approveAppointment(): void
     {
         $this->validate([
-            'appointmentTime' => ['nullable', 'date_format:H:i'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
 
@@ -106,7 +102,6 @@ class AppointmentShow extends Component
                 'queue_number' => $queueNumber,
                 'queue_date' => $this->appointment->appointment_date,
                 'session_number' => 1,
-                'estimated_time' => $this->appointmentTime,
                 'priority' => 'normal',
                 'status' => 'waiting',
                 'source' => $this->appointment->source,
@@ -115,7 +110,6 @@ class AppointmentShow extends Component
 
             $this->appointment->update([
                 'status' => 'approved',
-                'appointment_time' => $this->appointmentTime,
                 'approved_by' => $nurse->id,
                 'approved_at' => now(),
                 'notes' => $this->notes ?: null,

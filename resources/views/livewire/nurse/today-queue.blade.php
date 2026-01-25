@@ -111,14 +111,20 @@
         </flux:button>
     </div>
 
-    <!-- Filter by Type -->
-    <div class="flex items-center gap-3">
+    <!-- Filter by Type and Quick Actions -->
+    <div class="flex flex-wrap items-center justify-between gap-3">
         <flux:select wire:model.live="consultationTypeFilter" class="w-48" placeholder="{{ __('All types') }}">
             <flux:select.option value="">{{ __('All types') }}</flux:select.option>
             @foreach($consultationTypes as $type)
                 <flux:select.option value="{{ $type->id }}">{{ $type->name }}</flux:select.option>
             @endforeach
         </flux:select>
+
+        @if($statusCounts['waiting'] > 0 || $statusCounts['called'] > 0)
+            <flux:button wire:click="serveNextAvailable" variant="primary" icon="play">
+                {{ __('Serve Next') }}
+            </flux:button>
+        @endif
     </div>
 
     <!-- Queue Table -->
@@ -204,6 +210,9 @@
                                         </flux:button>
                                         <flux:button wire:click="startServing({{ $queue->id }})" size="xs" variant="primary" icon="play">
                                             {{ __('Serve') }}
+                                        </flux:button>
+                                        <flux:button wire:click="skipPatient({{ $queue->id }})" size="xs" variant="ghost" icon="forward">
+                                            {{ __('Skip') }}
                                         </flux:button>
                                     @elseif($queue->status === 'called')
                                         <flux:button wire:click="startServing({{ $queue->id }})" size="xs" variant="primary" icon="play">

@@ -4,10 +4,17 @@ namespace App\Livewire\Nurse;
 
 use App\Models\Appointment;
 use App\Models\ConsultationType;
+use App\Models\Queue;
+use App\Models\User;
+use App\Notifications\GenericNotification;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Masmerise\Toaster\Toaster;
 
 class Appointments extends Component
 {
@@ -26,6 +33,20 @@ class Appointments extends Component
     public string $sortDirection = 'asc';
 
     public string $sourceFilter = '';
+
+    // Modal states
+    public bool $showViewModal = false;
+
+    public bool $showApproveModal = false;
+
+    public bool $showCancelModal = false;
+
+    #[Locked]
+    public ?int $selectedAppointmentId = null;
+
+    public string $cancelReason = '';
+
+    public string $notes = '';
 
     /** @var array<string, mixed> */
     protected array $queryString = [
@@ -85,6 +106,181 @@ class Appointments extends Component
         $this->resetPage();
     }
 
+    // Modal methods
+    public function viewAppointment(int $id): void
+    {
+        $this->selectedAppointmentId = $id;
+        $this->showViewModal = true;
+    }
+
+    public function closeViewModal(): void
+    {
+        $this->showViewModal = false;
+        $this->selectedAppointmentId = null;
+    }
+
+    public function openApproveModal(int $id): void
+    {
+        $this->selectedAppointmentId = $id;
+        $this->notes = '';
+        $this->showApproveModal = true;
+    }
+
+    public function closeApproveModal(): void
+    {
+        $this->showApproveModal = false;
+        $this->notes = '';
+    }
+
+    public function openCancelModal(int $id): void
+    {
+        $this->selectedAppointmentId = $id;
+        $this->cancelReason = '';
+        $this->showCancelModal = true;
+    }
+
+    public function closeCancelModal(): void
+    {
+        $this->showCancelModal = false;
+        $this->cancelReason = '';
+    }
+
+    public function approveAppointment(): void
+    {
+        $this->validate([
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $appointment = Appointment::find($this->selectedAppointmentId);
+
+        if (! $appointment || $appointment->status !== 'pending') {
+            Toaster::error(__('Only pending appointments can be approved.'));
+            $this->closeApproveModal();
+
+            return;
+        }
+
+        $nurse = Auth::user();
+
+        if (! $nurse) {
+            abort(403);
+        }
+
+        DB::transaction(function () use ($appointment, $nurse): void {
+            $queueNumber = $this->generateQueueNumber($appointment);
+
+            $queue = Queue::create([
+                'appointment_id' => $appointment->id,
+                'user_id' => $appointment->user_id,
+                'consultation_type_id' => $appointment->consultation_type_id,
+                'doctor_id' => $appointment->doctor_id,
+                'queue_number' => $queueNumber,
+                'queue_date' => $appointment->appointment_date,
+                'session_number' => 1,
+                'priority' => 'normal',
+                'status' => 'waiting',
+                'source' => $appointment->source,
+                'notes' => $this->notes ?: null,
+            ]);
+
+            $appointment->update([
+                'status' => 'approved',
+                'approved_by' => $nurse->id,
+                'approved_at' => now(),
+                'notes' => $this->notes ?: null,
+            ]);
+
+            $appointment->user->notify(new GenericNotification([
+                'type' => 'appointment.approved',
+                'title' => __('Appointment Approved'),
+                'message' => __('Your appointment for :type on :date has been approved. Queue number: :queue', [
+                    'type' => $appointment->consultationType->name,
+                    'date' => $appointment->appointment_date->format('M d, Y'),
+                    'queue' => $queue->formatted_number,
+                ]),
+                'appointment_id' => $appointment->id,
+                'queue_id' => $queue->id,
+                'queue_number' => $queue->formatted_number,
+                'sender_id' => $nurse->id,
+                'sender_role' => 'nurse',
+                'url' => route('patient.appointments.show', $appointment),
+            ]));
+        });
+
+        $this->closeApproveModal();
+        $this->closeViewModal();
+
+        Toaster::success(__('Appointment approved and queue number assigned.'));
+    }
+
+    public function cancelAppointment(): void
+    {
+        $this->validate([
+            'cancelReason' => ['required', 'string', 'min:10', 'max:500'],
+        ], [
+            'cancelReason.required' => __('Please provide a reason for cancellation.'),
+            'cancelReason.min' => __('Cancellation reason must be at least 10 characters.'),
+        ]);
+
+        $appointment = Appointment::find($this->selectedAppointmentId);
+
+        if (! $appointment || ! in_array($appointment->status, ['pending', 'approved'])) {
+            Toaster::error(__('This appointment cannot be cancelled.'));
+            $this->closeCancelModal();
+
+            return;
+        }
+
+        $nurse = Auth::user();
+
+        if (! $nurse) {
+            abort(403);
+        }
+
+        DB::transaction(function () use ($appointment, $nurse): void {
+            if ($appointment->queue) {
+                $appointment->queue->update([
+                    'status' => 'cancelled',
+                ]);
+            }
+
+            $appointment->update([
+                'status' => 'cancelled',
+                'cancellation_reason' => $this->cancelReason,
+            ]);
+
+            $appointment->user->notify(new GenericNotification([
+                'type' => 'appointment.cancelled',
+                'title' => __('Appointment Cancelled'),
+                'message' => __('Your appointment for :type on :date has been cancelled. Reason: :reason', [
+                    'type' => $appointment->consultationType->name,
+                    'date' => $appointment->appointment_date->format('M d, Y'),
+                    'reason' => $this->cancelReason,
+                ]),
+                'appointment_id' => $appointment->id,
+                'sender_id' => $nurse->id,
+                'sender_role' => 'nurse',
+                'url' => route('patient.appointments.show', $appointment),
+            ]));
+        });
+
+        $this->closeCancelModal();
+        $this->closeViewModal();
+
+        Toaster::success(__('Appointment cancelled.'));
+    }
+
+    protected function generateQueueNumber(Appointment $appointment): int
+    {
+        $lastQueue = Queue::query()
+            ->where('consultation_type_id', $appointment->consultation_type_id)
+            ->where('queue_date', $appointment->appointment_date)
+            ->where('session_number', 1)
+            ->max('queue_number');
+
+        return ($lastQueue ?? 0) + 1;
+    }
+
     /** @return array<string, int> */
     public function getStatusCountsProperty(): array
     {
@@ -97,6 +293,21 @@ class Appointments extends Component
             'today' => (clone $baseQuery)->whereDate('appointment_date', today())->count(),
             'cancelled' => (clone $baseQuery)->where('status', 'cancelled')->count(),
         ];
+    }
+
+    public function getSelectedAppointmentProperty(): ?Appointment
+    {
+        if (! $this->selectedAppointmentId) {
+            return null;
+        }
+
+        return Appointment::with([
+            'user.personalInformation',
+            'consultationType',
+            'doctor',
+            'queue.consultationType',
+            'approvedBy',
+        ])->find($this->selectedAppointmentId);
     }
 
     public function render(): View
@@ -133,7 +344,7 @@ class Appointments extends Component
             })
             ->orderBy($this->sortBy, $this->sortDirection)
             ->orderBy('created_at', 'desc')
-            ->paginate(9);
+            ->paginate(10);
 
         $consultationTypes = ConsultationType::query()
             ->where('is_active', true)
@@ -144,6 +355,7 @@ class Appointments extends Component
             'appointments' => $appointments,
             'consultationTypes' => $consultationTypes,
             'statusCounts' => $this->statusCounts,
+            'selectedAppointment' => $this->selectedAppointment,
         ])->layout('layouts.app');
     }
 }
