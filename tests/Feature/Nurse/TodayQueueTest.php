@@ -61,6 +61,86 @@ describe('Today Queue Page', function () {
             ->assertSee('John')
             ->assertSee('Doe');
     });
+
+    it('can search queues by patient name', function () {
+        $patient1 = User::factory()->create();
+        $appointment1 = Appointment::factory()->create([
+            'user_id' => $patient1->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'patient_first_name' => 'Maria',
+            'patient_last_name' => 'Santos',
+        ]);
+        Queue::factory()->today()->create([
+            'appointment_id' => $appointment1->id,
+            'user_id' => $patient1->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'queue_number' => 1,
+        ]);
+
+        $patient2 = User::factory()->create();
+        $appointment2 = Appointment::factory()->create([
+            'user_id' => $patient2->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'patient_first_name' => 'Juan',
+            'patient_last_name' => 'Cruz',
+        ]);
+        Queue::factory()->today()->create([
+            'appointment_id' => $appointment2->id,
+            'user_id' => $patient2->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'queue_number' => 2,
+        ]);
+
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->set('status', 'all')
+            ->set('search', 'Maria')
+            ->assertSee('Maria Santos')
+            ->assertDontSee('Juan Cruz');
+    });
+
+    it('can filter queues by consultation type', function () {
+        $pedType = ConsultationType::factory()->create([
+            'code' => 'ped',
+            'name' => 'Pediatrics',
+            'short_name' => 'P',
+        ]);
+
+        $patient1 = User::factory()->create();
+        $appointment1 = Appointment::factory()->create([
+            'user_id' => $patient1->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'patient_first_name' => 'OB',
+            'patient_last_name' => 'Patient',
+        ]);
+        Queue::factory()->today()->create([
+            'appointment_id' => $appointment1->id,
+            'user_id' => $patient1->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'queue_number' => 1,
+        ]);
+
+        $patient2 = User::factory()->create();
+        $appointment2 = Appointment::factory()->create([
+            'user_id' => $patient2->id,
+            'consultation_type_id' => $pedType->id,
+            'patient_first_name' => 'Pedia',
+            'patient_last_name' => 'Patient',
+        ]);
+        Queue::factory()->today()->create([
+            'appointment_id' => $appointment2->id,
+            'user_id' => $patient2->id,
+            'consultation_type_id' => $pedType->id,
+            'queue_number' => 1,
+        ]);
+
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->set('status', 'all')
+            ->call('setConsultationType', $this->consultationType->id)
+            ->assertSee('OB Patient')
+            ->assertDontSee('Pedia Patient');
+    });
 });
 
 describe('Start Serving', function () {
@@ -115,6 +195,28 @@ describe('Start Serving', function () {
 });
 
 describe('Stop Serving', function () {
+    it('can open stop serving modal', function () {
+        $patient = User::factory()->create();
+        $appointment = Appointment::factory()->create([
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'status' => 'in_progress',
+        ]);
+
+        $queue = Queue::factory()->today()->serving()->create([
+            'appointment_id' => $appointment->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'served_by' => $this->nurse->id,
+        ]);
+
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('openStopServingModal', $queue->id)
+            ->assertSet('showStopServingModal', true)
+            ->assertSet('stopServingQueueId', $queue->id);
+    });
+
     it('can stop serving a patient and return to waiting', function () {
         $patient = User::factory()->create();
         $appointment = Appointment::factory()->create([
@@ -132,7 +234,8 @@ describe('Stop Serving', function () {
 
         Livewire::actingAs($this->nurse)
             ->test(TodayQueue::class)
-            ->call('stopServing', $queue->id);
+            ->call('openStopServingModal', $queue->id)
+            ->call('confirmStopServing');
 
         $queue->refresh();
         $appointment->refresh();
@@ -166,7 +269,8 @@ describe('Stop Serving', function () {
 
         Livewire::actingAs($this->nurse)
             ->test(TodayQueue::class)
-            ->call('stopServing', $queue->id);
+            ->call('openStopServingModal', $queue->id)
+            ->call('confirmStopServing');
 
         expect(MedicalRecord::find($medicalRecord->id))->toBeNull();
     });
@@ -195,12 +299,13 @@ describe('Stop Serving', function () {
 
         Livewire::actingAs($this->nurse)
             ->test(TodayQueue::class)
-            ->call('stopServing', $queue->id);
+            ->call('openStopServingModal', $queue->id)
+            ->call('confirmStopServing');
 
         expect(MedicalRecord::find($medicalRecord->id))->not->toBeNull();
     });
 
-    it('cannot stop serving a non-serving queue', function () {
+    it('cannot open stop modal for non-serving queue', function () {
         $patient = User::factory()->create();
         $appointment = Appointment::factory()->create([
             'user_id' => $patient->id,
@@ -215,15 +320,32 @@ describe('Stop Serving', function () {
 
         Livewire::actingAs($this->nurse)
             ->test(TodayQueue::class)
-            ->call('stopServing', $queue->id);
-
-        $queue->refresh();
-
-        expect($queue->status)->toBe('waiting');
+            ->call('openStopServingModal', $queue->id)
+            ->assertSet('showStopServingModal', false);
     });
 });
 
 describe('Skip and Requeue', function () {
+    it('can open skip modal', function () {
+        $patient = User::factory()->create();
+        $appointment = Appointment::factory()->create([
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        $queue = Queue::factory()->today()->waiting()->create([
+            'appointment_id' => $appointment->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('openSkipModal', $queue->id)
+            ->assertSet('showSkipModal', true)
+            ->assertSet('skipQueueId', $queue->id);
+    });
+
     it('can skip a waiting patient', function () {
         $patient = User::factory()->create();
         $appointment = Appointment::factory()->create([
@@ -239,11 +361,32 @@ describe('Skip and Requeue', function () {
 
         Livewire::actingAs($this->nurse)
             ->test(TodayQueue::class)
-            ->call('skipPatient', $queue->id);
+            ->call('openSkipModal', $queue->id)
+            ->call('confirmSkip');
 
         $queue->refresh();
 
         expect($queue->status)->toBe('skipped');
+    });
+
+    it('can open requeue modal', function () {
+        $patient = User::factory()->create();
+        $appointment = Appointment::factory()->create([
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        $queue = Queue::factory()->today()->skipped()->create([
+            'appointment_id' => $appointment->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('openRequeueModal', $queue->id)
+            ->assertSet('showRequeueModal', true)
+            ->assertSet('requeueQueueId', $queue->id);
     });
 
     it('can requeue a skipped patient', function () {
@@ -261,12 +404,39 @@ describe('Skip and Requeue', function () {
 
         Livewire::actingAs($this->nurse)
             ->test(TodayQueue::class)
-            ->call('requeuePatient', $queue->id);
+            ->call('openRequeueModal', $queue->id)
+            ->call('confirmRequeue');
 
         $queue->refresh();
 
         expect($queue->status)->toBe('waiting')
             ->and($queue->called_at)->toBeNull();
+    });
+
+    it('keeps the same queue number when requeued', function () {
+        $patient = User::factory()->create();
+        $appointment = Appointment::factory()->create([
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        $queue = Queue::factory()->today()->skipped()->create([
+            'appointment_id' => $appointment->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'queue_number' => 5,
+        ]);
+
+        $originalNumber = $queue->queue_number;
+
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('openRequeueModal', $queue->id)
+            ->call('confirmRequeue');
+
+        $queue->refresh();
+
+        expect($queue->queue_number)->toBe($originalNumber);
     });
 });
 

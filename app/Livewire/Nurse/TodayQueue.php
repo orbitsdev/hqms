@@ -22,6 +22,8 @@ class TodayQueue extends Component
 
     public string $consultationTypeFilter = '';
 
+    public string $search = '';
+
     // Check-in modal
     public bool $showCheckInModal = false;
 
@@ -33,6 +35,24 @@ class TodayQueue extends Component
 
     #[Locked]
     public ?int $vitalSignsQueueId = null;
+
+    // Stop serving modal
+    public bool $showStopServingModal = false;
+
+    #[Locked]
+    public ?int $stopServingQueueId = null;
+
+    // Skip patient modal
+    public bool $showSkipModal = false;
+
+    #[Locked]
+    public ?int $skipQueueId = null;
+
+    // Requeue patient modal
+    public bool $showRequeueModal = false;
+
+    #[Locked]
+    public ?int $requeueQueueId = null;
 
     // Vital signs data
     public ?string $temperature = null;
@@ -243,7 +263,7 @@ class TodayQueue extends Component
         Toaster::success(__('Now serving patient: :number', ['number' => $queue->formatted_number]));
     }
 
-    public function skipPatient(int $queueId): void
+    public function openSkipModal(int $queueId): void
     {
         $queue = Queue::find($queueId);
 
@@ -253,11 +273,40 @@ class TodayQueue extends Component
             return;
         }
 
+        $this->skipQueueId = $queueId;
+        $this->showSkipModal = true;
+    }
+
+    public function closeSkipModal(): void
+    {
+        $this->showSkipModal = false;
+        $this->skipQueueId = null;
+    }
+
+    public function confirmSkip(): void
+    {
+        if (! $this->skipQueueId) {
+            return;
+        }
+
+        $queue = Queue::find($this->skipQueueId);
+
+        if (! $queue || ! in_array($queue->status, ['waiting', 'called'])) {
+            Toaster::error(__('Cannot skip this patient.'));
+            $this->closeSkipModal();
+
+            return;
+        }
+
+        $formattedNumber = $queue->formatted_number;
+
         $queue->update([
             'status' => 'skipped',
         ]);
 
-        Toaster::success(__('Patient skipped: :number', ['number' => $queue->formatted_number]));
+        Toaster::success(__('Patient skipped: :number', ['number' => $formattedNumber]));
+
+        $this->closeSkipModal();
     }
 
     public function serveNextAvailable(): void
@@ -279,7 +328,7 @@ class TodayQueue extends Component
         $this->startServing($nextQueue->id);
     }
 
-    public function requeuePatient(int $queueId): void
+    public function openRequeueModal(int $queueId): void
     {
         $queue = Queue::find($queueId);
 
@@ -289,23 +338,79 @@ class TodayQueue extends Component
             return;
         }
 
+        $this->requeueQueueId = $queueId;
+        $this->showRequeueModal = true;
+    }
+
+    public function closeRequeueModal(): void
+    {
+        $this->showRequeueModal = false;
+        $this->requeueQueueId = null;
+    }
+
+    public function confirmRequeue(): void
+    {
+        if (! $this->requeueQueueId) {
+            return;
+        }
+
+        $queue = Queue::find($this->requeueQueueId);
+
+        if (! $queue || $queue->status !== 'skipped') {
+            Toaster::error(__('Cannot requeue this patient.'));
+            $this->closeRequeueModal();
+
+            return;
+        }
+
+        $formattedNumber = $queue->formatted_number;
+
         $queue->update([
             'status' => 'waiting',
             'called_at' => null,
         ]);
 
-        Toaster::success(__('Patient requeued: :number', ['number' => $queue->formatted_number]));
+        Toaster::success(__('Patient requeued: :number', ['number' => $formattedNumber]));
+
+        $this->closeRequeueModal();
     }
 
-    public function stopServing(int $queueId): void
+    public function openStopServingModal(int $queueId): void
     {
-        $queue = Queue::with(['medicalRecord', 'appointment'])->find($queueId);
+        $queue = Queue::find($queueId);
 
         if (! $queue || $queue->status !== 'serving') {
             Toaster::error(__('Cannot stop serving this patient.'));
 
             return;
         }
+
+        $this->stopServingQueueId = $queueId;
+        $this->showStopServingModal = true;
+    }
+
+    public function closeStopServingModal(): void
+    {
+        $this->showStopServingModal = false;
+        $this->stopServingQueueId = null;
+    }
+
+    public function confirmStopServing(): void
+    {
+        if (! $this->stopServingQueueId) {
+            return;
+        }
+
+        $queue = Queue::with(['medicalRecord', 'appointment'])->find($this->stopServingQueueId);
+
+        if (! $queue || $queue->status !== 'serving') {
+            Toaster::error(__('Cannot stop serving this patient.'));
+            $this->closeStopServingModal();
+
+            return;
+        }
+
+        $formattedNumber = $queue->formatted_number;
 
         DB::transaction(function () use ($queue): void {
             // Delete medical record if no vital signs were recorded yet
@@ -329,7 +434,9 @@ class TodayQueue extends Component
             ]);
         });
 
-        Toaster::success(__('Stopped serving patient: :number', ['number' => $queue->formatted_number]));
+        Toaster::success(__('Stopped serving patient: :number', ['number' => $formattedNumber]));
+
+        $this->closeStopServingModal();
     }
 
     // Vital Signs Methods
@@ -499,6 +606,16 @@ class TodayQueue extends Component
             ->today()
             ->when($this->status !== 'all', fn (Builder $q) => $q->where('status', $this->status))
             ->when($this->consultationTypeFilter !== '', fn (Builder $q) => $q->where('consultation_type_id', $this->consultationTypeFilter))
+            ->when($this->search !== '', function (Builder $q) {
+                $search = '%'.$this->search.'%';
+                $q->where(function (Builder $query) use ($search) {
+                    $query->where('queue_number', 'like', $search)
+                        ->orWhereHas('appointment', function (Builder $appointmentQuery) use ($search) {
+                            $appointmentQuery->where('patient_first_name', 'like', $search)
+                                ->orWhere('patient_last_name', 'like', $search);
+                        });
+                });
+            })
             ->orderByRaw("FIELD(priority, 'emergency', 'urgent', 'normal')")
             ->orderBy('queue_number')
             ->get();
