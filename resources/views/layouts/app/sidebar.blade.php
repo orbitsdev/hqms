@@ -92,29 +92,50 @@
                 </flux:sidebar.nav>
             @endunless
 
+            {{-- Desktop Notification Bell --}}
+            <div class="hidden lg:flex items-center justify-center px-3 py-2">
+                <livewire:notification-dropdown />
+            </div>
+
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
 
         @if($isPatient)
             <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-zinc-900/95 border-t border-zinc-200 dark:border-zinc-700 z-50 backdrop-blur">
-                <nav class="grid grid-cols-3 h-16">
+                <nav class="grid grid-cols-4 h-16">
                     <a href="{{ route('patient.dashboard') }}"
                        class="flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.dashboard') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
                        wire:navigate>
                         <flux:icon name="home" class="w-5 h-5" />
-                        <span class="text-xs mt-1">Home</span>
+                        <span class="text-xs mt-1">{{ __('Home') }}</span>
                     </a>
                     <a href="{{ route('patient.appointments') }}"
                        class="flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.appointments*') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
                        wire:navigate>
                         <flux:icon name="calendar-days" class="w-5 h-5" />
-                        <span class="text-xs mt-1">Appointments</span>
+                        <span class="text-xs mt-1">{{ __('Bookings') }}</span>
+                    </a>
+                    @php
+                        $patientUnreadCount = auth()->user()->unreadNotifications()->count();
+                    @endphp
+                    <a href="{{ route('patient.notifications') }}"
+                       class="relative flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.notifications') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
+                       wire:navigate>
+                        <div class="relative">
+                            <flux:icon name="bell" class="w-5 h-5" />
+                            @if($patientUnreadCount > 0)
+                                <span class="absolute -top-1 -right-1 flex items-center justify-center min-w-[14px] h-[14px] px-0.5 text-[9px] font-bold text-white bg-red-500 rounded-full">
+                                    {{ $patientUnreadCount > 99 ? '99+' : $patientUnreadCount }}
+                                </span>
+                            @endif
+                        </div>
+                        <span class="text-xs mt-1">{{ __('Alerts') }}</span>
                     </a>
                     <a href="{{ route('patient.profile') }}"
                        class="flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.profile') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
                        wire:navigate>
                         <flux:icon name="user" class="w-5 h-5" />
-                        <span class="text-xs mt-1">Profile</span>
+                        <span class="text-xs mt-1">{{ __('Profile') }}</span>
                     </a>
                 </nav>
             </div>
@@ -125,6 +146,9 @@
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 
             <flux:spacer />
+
+            {{-- Mobile Notification Bell --}}
+            <livewire:notification-dropdown />
 
             <flux:dropdown position="top" align="end">
                 <flux:profile
