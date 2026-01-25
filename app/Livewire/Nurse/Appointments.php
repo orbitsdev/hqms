@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Nurse;
 
+use App\Jobs\SendSmsJob;
 use App\Models\Appointment;
 use App\Models\ConsultationType;
 use App\Models\Queue;
@@ -166,7 +167,9 @@ class Appointments extends Component
             abort(403);
         }
 
-        DB::transaction(function () use ($appointment, $nurse): void {
+        $queue = null;
+
+        DB::transaction(function () use ($appointment, $nurse, &$queue): void {
             $queueNumber = $this->generateQueueNumber($appointment);
 
             $queue = Queue::create([
@@ -190,22 +193,44 @@ class Appointments extends Component
                 'notes' => $this->notes ?: null,
             ]);
 
-            $appointment->user->notify(new GenericNotification([
-                'type' => 'appointment.approved',
-                'title' => __('Appointment Approved'),
-                'message' => __('Your appointment for :type on :date has been approved. Queue number: :queue', [
-                    'type' => $appointment->consultationType->name,
-                    'date' => $appointment->appointment_date->format('M d, Y'),
-                    'queue' => $queue->formatted_number,
-                ]),
-                'appointment_id' => $appointment->id,
-                'queue_id' => $queue->id,
-                'queue_number' => $queue->formatted_number,
-                'sender_id' => $nurse->id,
-                'sender_role' => 'nurse',
-                'url' => route('patient.appointments.show', $appointment),
-            ]));
+            // Send in-app notification only if user has a patient account (not nurse's own account for walk-ins)
+            $patientUser = $appointment->user;
+            if ($patientUser && $patientUser->id !== $nurse->id && $patientUser->hasRole('patient')) {
+                $patientUser->notify(new GenericNotification([
+                    'type' => 'appointment.approved',
+                    'title' => __('Appointment Approved'),
+                    'message' => __('Your appointment for :type on :date has been approved. Queue number: :queue', [
+                        'type' => $appointment->consultationType->name,
+                        'date' => $appointment->appointment_date->format('M d, Y'),
+                        'queue' => $queue->formatted_number,
+                    ]),
+                    'appointment_id' => $appointment->id,
+                    'queue_id' => $queue->id,
+                    'queue_number' => $queue->formatted_number,
+                    'sender_id' => $nurse->id,
+                    'sender_role' => 'nurse',
+                    'url' => route('patient.appointments.show', $appointment),
+                ]));
+            }
         });
+
+        // Send SMS if patient has phone number
+        $phoneNumber = $appointment->patient_phone;
+        if ($phoneNumber && $queue) {
+            $smsMessage = __('Your appointment for :type on :date has been approved. Queue number: :queue. Please arrive on time.', [
+                'type' => $appointment->consultationType->name,
+                'date' => $appointment->appointment_date->format('M d, Y'),
+                'queue' => $queue->formatted_number,
+            ]);
+
+            SendSmsJob::dispatch(
+                $phoneNumber,
+                $smsMessage,
+                'appointment.approved',
+                $appointment->user_id,
+                $nurse->id
+            );
+        }
 
         $this->closeApproveModal();
         $this->closeViewModal();
@@ -249,20 +274,42 @@ class Appointments extends Component
                 'cancellation_reason' => $this->cancelReason,
             ]);
 
-            $appointment->user->notify(new GenericNotification([
-                'type' => 'appointment.cancelled',
-                'title' => __('Appointment Cancelled'),
-                'message' => __('Your appointment for :type on :date has been cancelled. Reason: :reason', [
-                    'type' => $appointment->consultationType->name,
-                    'date' => $appointment->appointment_date->format('M d, Y'),
-                    'reason' => $this->cancelReason,
-                ]),
-                'appointment_id' => $appointment->id,
-                'sender_id' => $nurse->id,
-                'sender_role' => 'nurse',
-                'url' => route('patient.appointments.show', $appointment),
-            ]));
+            // Send in-app notification only if user has a patient account (not nurse's own account for walk-ins)
+            $patientUser = $appointment->user;
+            if ($patientUser && $patientUser->id !== $nurse->id && $patientUser->hasRole('patient')) {
+                $patientUser->notify(new GenericNotification([
+                    'type' => 'appointment.cancelled',
+                    'title' => __('Appointment Cancelled'),
+                    'message' => __('Your appointment for :type on :date has been cancelled. Reason: :reason', [
+                        'type' => $appointment->consultationType->name,
+                        'date' => $appointment->appointment_date->format('M d, Y'),
+                        'reason' => $this->cancelReason,
+                    ]),
+                    'appointment_id' => $appointment->id,
+                    'sender_id' => $nurse->id,
+                    'sender_role' => 'nurse',
+                    'url' => route('patient.appointments.show', $appointment),
+                ]));
+            }
         });
+
+        // Send SMS if patient has phone number
+        $phoneNumber = $appointment->patient_phone;
+        if ($phoneNumber) {
+            $smsMessage = __('Your appointment for :type on :date has been cancelled. Reason: :reason', [
+                'type' => $appointment->consultationType->name,
+                'date' => $appointment->appointment_date->format('M d, Y'),
+                'reason' => $this->cancelReason,
+            ]);
+
+            SendSmsJob::dispatch(
+                $phoneNumber,
+                $smsMessage,
+                'appointment.cancelled',
+                $appointment->user_id,
+                $nurse->id
+            );
+        }
 
         $this->closeCancelModal();
         $this->closeViewModal();

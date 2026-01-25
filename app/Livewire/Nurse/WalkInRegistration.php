@@ -224,19 +224,25 @@ class WalkInRegistration extends Component
             'source' => 'walk-in',
         ]);
 
-        $nurses = User::role('nurse')->get();
+        // Notify other nurses about the new walk-in
+        $otherNurses = User::role('nurse')->where('id', '!=', $nurse->id)->get();
 
-        Notification::send($nurses, new GenericNotification([
-            'type' => 'appointment.requested',
-            'title' => 'New Walk-in Patient',
-            'message' => "{$this->patientFirstName} {$this->patientLastName} registered as walk-in.",
-            'appointment_id' => $appointment->id,
-            'consultation_type_id' => $appointment->consultation_type_id,
-            'appointment_date' => $appointment->appointment_date,
-            'sender_id' => $nurse->id,
-            'sender_role' => 'nurse',
-            'url' => route('nurse.appointments.show', $appointment),
-        ]));
+        if ($otherNurses->isNotEmpty()) {
+            Notification::send($otherNurses, new GenericNotification([
+                'type' => 'appointment.requested',
+                'title' => __('New Walk-in Patient'),
+                'message' => __(':name registered as walk-in for :type.', [
+                    'name' => "{$this->patientFirstName} {$this->patientLastName}",
+                    'type' => $appointment->consultationType->name,
+                ]),
+                'appointment_id' => $appointment->id,
+                'consultation_type_id' => $appointment->consultation_type_id,
+                'appointment_date' => $appointment->appointment_date,
+                'sender_id' => $nurse->id,
+                'sender_role' => 'nurse',
+                'url' => route('nurse.appointments', ['status' => 'pending']),
+            ]));
+        }
 
         Toaster::success(__('Walk-in patient registered successfully.'));
 

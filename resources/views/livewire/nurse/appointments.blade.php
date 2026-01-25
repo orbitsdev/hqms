@@ -147,13 +147,21 @@
 
                                 <td class="whitespace-nowrap px-4 py-3 text-right">
                                     <div class="flex items-center justify-end gap-1">
-                                        <flux:button wire:click="viewAppointment({{ $appointment->id }})" size="xs" variant="ghost" icon="eye" />
+                                        <flux:button wire:click="viewAppointment({{ $appointment->id }})" size="xs" variant="ghost" icon="eye">
+                                            {{ __('View') }}
+                                        </flux:button>
 
                                         @if($appointment->status === 'pending')
-                                            <flux:button wire:click="openApproveModal({{ $appointment->id }})" size="xs" variant="primary" icon="check" />
-                                            <flux:button wire:click="openCancelModal({{ $appointment->id }})" size="xs" variant="ghost" icon="x-mark" />
+                                            <flux:button wire:click="openApproveModal({{ $appointment->id }})" size="xs" variant="primary" icon="check">
+                                                {{ __('Approve') }}
+                                            </flux:button>
+                                            <flux:button wire:click="openCancelModal({{ $appointment->id }})" size="xs" variant="danger" icon="x-mark">
+                                                {{ __('Cancel') }}
+                                            </flux:button>
                                         @elseif($appointment->status === 'approved')
-                                            <flux:button wire:click="openCancelModal({{ $appointment->id }})" size="xs" variant="ghost" icon="x-mark" />
+                                            <flux:button wire:click="openCancelModal({{ $appointment->id }})" size="xs" variant="danger" icon="x-mark">
+                                                {{ __('Cancel') }}
+                                            </flux:button>
                                         @endif
                                     </div>
                                 </td>
