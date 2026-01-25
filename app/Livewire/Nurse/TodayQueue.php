@@ -45,6 +45,8 @@ class TodayQueue extends Component
     // Skip patient modal
     public bool $showSkipModal = false;
 
+    public bool $skipConfirmed = false;
+
     #[Locked]
     public ?int $skipQueueId = null;
 
@@ -281,6 +283,7 @@ class TodayQueue extends Component
     {
         $this->showSkipModal = false;
         $this->skipQueueId = null;
+        $this->skipConfirmed = false;
     }
 
     public function confirmSkip(): void
@@ -298,13 +301,37 @@ class TodayQueue extends Component
             return;
         }
 
-        $formattedNumber = $queue->formatted_number;
-
         $queue->update([
             'status' => 'skipped',
         ]);
 
-        Toaster::success(__('Patient skipped: :number', ['number' => $formattedNumber]));
+        // Show success state with requeue option
+        $this->skipConfirmed = true;
+    }
+
+    public function requeueFromSkipModal(): void
+    {
+        if (! $this->skipQueueId) {
+            return;
+        }
+
+        $queue = Queue::find($this->skipQueueId);
+
+        if (! $queue || $queue->status !== 'skipped') {
+            Toaster::error(__('Cannot requeue this patient.'));
+            $this->closeSkipModal();
+
+            return;
+        }
+
+        $formattedNumber = $queue->formatted_number;
+
+        $queue->update([
+            'status' => 'waiting',
+            'called_at' => null,
+        ]);
+
+        Toaster::success(__('Patient requeued: :number', ['number' => $formattedNumber]));
 
         $this->closeSkipModal();
     }

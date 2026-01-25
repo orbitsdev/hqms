@@ -362,11 +362,38 @@ describe('Skip and Requeue', function () {
         Livewire::actingAs($this->nurse)
             ->test(TodayQueue::class)
             ->call('openSkipModal', $queue->id)
-            ->call('confirmSkip');
+            ->call('confirmSkip')
+            ->assertSet('skipConfirmed', true);
 
         $queue->refresh();
 
         expect($queue->status)->toBe('skipped');
+    });
+
+    it('can requeue immediately after skipping from modal', function () {
+        $patient = User::factory()->create();
+        $appointment = Appointment::factory()->create([
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        $queue = Queue::factory()->today()->waiting()->create([
+            'appointment_id' => $appointment->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('openSkipModal', $queue->id)
+            ->call('confirmSkip')
+            ->assertSet('skipConfirmed', true)
+            ->call('requeueFromSkipModal')
+            ->assertSet('showSkipModal', false);
+
+        $queue->refresh();
+
+        expect($queue->status)->toBe('waiting');
     });
 
     it('can open requeue modal', function () {

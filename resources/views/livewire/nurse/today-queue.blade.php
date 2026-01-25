@@ -546,8 +546,8 @@
                 @endif
             @endif
 
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">
-                {{ __('This patient will be returned to the waiting queue with the same queue number.') }}
+            <p class="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-200">
+                {{ __('Patient will be returned to waiting queue with the same queue number and will be next in line.') }}
             </p>
 
             <div class="flex justify-end gap-3">
@@ -564,43 +564,82 @@
     <!-- Skip Patient Modal -->
     <flux:modal wire:model="showSkipModal" class="max-w-md">
         <div class="space-y-4">
-            <flux:heading size="lg">{{ __('Skip Patient?') }}</flux:heading>
+            @if(!$skipConfirmed)
+                {{-- Confirmation State --}}
+                <flux:heading size="lg">{{ __('Skip Patient?') }}</flux:heading>
 
-            @if($skipQueueId)
-                @php
-                    $skipQueue = $queues->firstWhere('id', $skipQueueId);
-                @endphp
-                @if($skipQueue)
-                    <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800">
-                        <div class="flex items-center gap-3">
-                            <span class="text-2xl font-bold text-zinc-900 dark:text-white">
-                                {{ $skipQueue->formatted_number }}
-                            </span>
-                            <div>
-                                <div class="text-sm font-medium text-zinc-900 dark:text-white">
-                                    {{ $skipQueue->appointment?->patient_first_name }} {{ $skipQueue->appointment?->patient_last_name }}
-                                </div>
-                                <div class="text-xs text-zinc-500 dark:text-zinc-400">
-                                    {{ $skipQueue->consultationType?->name }}
+                @if($skipQueueId)
+                    @php
+                        $skipQueue = $queues->firstWhere('id', $skipQueueId);
+                    @endphp
+                    @if($skipQueue)
+                        <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800">
+                            <div class="flex items-center gap-3">
+                                <span class="text-2xl font-bold text-zinc-900 dark:text-white">
+                                    {{ $skipQueue->formatted_number }}
+                                </span>
+                                <div>
+                                    <div class="text-sm font-medium text-zinc-900 dark:text-white">
+                                        {{ $skipQueue->appointment?->patient_first_name }} {{ $skipQueue->appointment?->patient_last_name }}
+                                    </div>
+                                    <div class="text-xs text-zinc-500 dark:text-zinc-400">
+                                        {{ $skipQueue->consultationType?->name }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    @endif
                 @endif
+
+                <p class="text-sm text-zinc-500 dark:text-zinc-400">
+                    {{ __('This patient will be moved to the skipped list. You can requeue them later when they arrive.') }}
+                </p>
+
+                <div class="flex justify-end gap-3">
+                    <flux:button wire:click="closeSkipModal" variant="ghost">
+                        {{ __('Cancel') }}
+                    </flux:button>
+                    <flux:button wire:click="confirmSkip" variant="filled" icon="forward">
+                        {{ __('Skip Patient') }}
+                    </flux:button>
+                </div>
+            @else
+                {{-- Success State with Requeue Option --}}
+                <div class="text-center">
+                    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+                        <flux:icon name="check" class="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
+                    </div>
+                    <flux:heading size="lg" class="mt-4">{{ __('Patient Skipped') }}</flux:heading>
+
+                    @if($skipQueueId)
+                        @php
+                            $skippedQueue = \App\Models\Queue::find($skipQueueId);
+                        @endphp
+                        @if($skippedQueue)
+                            <p class="mt-2 text-lg font-bold text-zinc-900 dark:text-white">
+                                {{ $skippedQueue->formatted_number }}
+                            </p>
+                        @endif
+                    @endif
+
+                    <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                        {{ __('Patient has been moved to the skipped list.') }}
+                    </p>
+                </div>
+
+                <p class="rounded-lg border border-blue-200 bg-blue-50 p-3 text-center text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-200">
+                    {{ __('Did they just arrive? Requeue to put them next in line with the same queue number.') }}
+                </p>
+
+                <div class="flex justify-center gap-3">
+                    <flux:button wire:click="closeSkipModal" variant="ghost">
+                        {{ __('Close') }}
+                    </flux:button>
+                    <flux:button wire:click="requeueFromSkipModal" variant="primary" icon="arrow-path">
+                        {{ __('Requeue Now') }}
+                    </flux:button>
+                </div>
             @endif
-
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">
-                {{ __('This patient will be moved to the skipped list. You can requeue them later when they arrive.') }}
-            </p>
-
-            <div class="flex justify-end gap-3">
-                <flux:button wire:click="closeSkipModal" variant="ghost">
-                    {{ __('Cancel') }}
-                </flux:button>
-                <flux:button wire:click="confirmSkip" variant="filled" icon="forward">
-                    {{ __('Skip Patient') }}
-                </flux:button>
-            </div>
         </div>
     </flux:modal>
 

@@ -96,13 +96,24 @@ This document explains how the queue management system works for nurses.
 - Status changes: `skipped` → `waiting`
 - Clears `called_at` timestamp
 - **Queue number stays the same** (P-003 remains P-003)
+- **Patient becomes next in line** (since their number is lower than current)
 - Patient can be called/served again
+
+**Example:**
+```
+Before Skip:  P-001 ✓, P-002 ✓, P-003 (waiting), P-004, P-005
+After Skip:   P-001 ✓, P-002 ✓, P-003 (skipped), P-004 (serving), P-005
+After Requeue: P-001 ✓, P-002 ✓, P-003 (next!), P-004 (serving), P-005
+```
 
 **When to use:**
 - Skipped patient has returned
 - Patient was accidentally skipped
+- Patient just stepped out briefly
 
-**Note:** Shows confirmation modal. Patient keeps their original queue number.
+**Note:** Shows confirmation modal. Patient keeps their original queue number and will be served next.
+
+**Quick Requeue:** After skipping a patient, a "Requeue Now" button appears in case they arrive immediately.
 
 ---
 
