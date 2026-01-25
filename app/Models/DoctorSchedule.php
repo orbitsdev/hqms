@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Traits\Models\DoctorScheduleRelations;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class DoctorSchedule extends Model
 {
-    use DoctorScheduleRelations;
+    use DoctorScheduleRelations, HasFactory;
 
     protected $guarded = ['id'];
 

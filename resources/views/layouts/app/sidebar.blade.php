@@ -56,6 +56,9 @@
                         <flux:sidebar.item icon="home" :href="route('nurse.dashboard')" :current="request()->routeIs('nurse.dashboard')" wire:navigate>
                             {{ __('Dashboard') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="clock" :href="route('nurse.doctor-schedules')" :current="request()->routeIs('nurse.doctor-schedules')" wire:navigate>
+                            {{ __('Doctor Schedules') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="calendar-days" :href="route('nurse.appointments')" :current="request()->routeIs('nurse.appointments*') || request()->routeIs('nurse.walk-in')" wire:navigate>
                             {{ __('Appointments') }}
                         </flux:sidebar.item>
