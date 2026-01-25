@@ -118,7 +118,7 @@
                     @php
                         $patientUnreadCount = auth()->user()->unreadNotifications()->count();
                     @endphp
-                    <a href="{{ route('patient.notifications') }}"
+                    {{-- <a href="{{ route('patient.notifications') }}"
                        class="relative flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.notifications') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
                        wire:navigate>
                         <div class="relative">
@@ -130,7 +130,7 @@
                             @endif
                         </div>
                         <span class="text-xs mt-1">{{ __('Alerts') }}</span>
-                    </a>
+                    </a> --}}
                     <a href="{{ route('patient.profile') }}"
                        class="flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.profile') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
                        wire:navigate>
