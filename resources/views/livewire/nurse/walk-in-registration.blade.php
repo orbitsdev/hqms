@@ -290,6 +290,17 @@
 
                 @if($createAccount)
                     <div class="space-y-4 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                        {{-- Show which name will be used --}}
+                        <div class="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800">
+                            <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Account will be created for:') }}</div>
+                            <div class="font-medium text-zinc-900 dark:text-white">
+                                {{ $patientFirstName }} {{ $patientMiddleName }} {{ $patientLastName }}
+                            </div>
+                            @if($patientPhone)
+                                <div class="text-sm text-zinc-600 dark:text-zinc-300">{{ $patientPhone }}</div>
+                            @endif
+                        </div>
+
                         <flux:field>
                             <flux:label>{{ __('Email') }} *</flux:label>
                             <flux:input type="email" wire:model="accountEmail" placeholder="patient@example.com" />

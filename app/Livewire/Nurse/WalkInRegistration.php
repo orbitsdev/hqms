@@ -174,7 +174,11 @@ class WalkInRegistration extends Component
                     : $this->accountPassword;
 
                 $patientUser = User::create([
+                    'first_name' => $this->patientFirstName,
+                    'middle_name' => $this->patientMiddleName,
+                    'last_name' => $this->patientLastName,
                     'email' => $this->accountEmail,
+                    'phone' => $this->patientPhone,
                     'password' => Hash::make($generatedPassword),
                     'is_active' => true,
                 ]);
@@ -234,16 +238,14 @@ class WalkInRegistration extends Component
             'url' => route('nurse.appointments.show', $appointment),
         ]));
 
+        Toaster::success(__('Walk-in patient registered successfully.'));
+
         if ($this->createAccount && $generatedPassword) {
-            Toaster::success(__('Patient registered with account. Email: :email, Password: :password', [
-                'email' => $this->accountEmail,
-                'password' => $generatedPassword,
-            ]));
-        } else {
-            Toaster::success(__('Walk-in patient registered. Please approve to add to queue.'));
+            Toaster::info(__('Account: :email', ['email' => $this->accountEmail]));
+            Toaster::warning(__('Password: :password (copy now!)', ['password' => $generatedPassword]));
         }
 
-        $this->redirect(route('nurse.appointments.show', $appointment), navigate: true);
+        $this->redirect(route('nurse.appointments', ['status' => 'pending']), navigate: true);
     }
 
     public function render(): View
