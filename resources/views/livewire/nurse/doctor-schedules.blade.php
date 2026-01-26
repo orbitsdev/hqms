@@ -736,9 +736,9 @@
                 {{-- Quick Preset Selection --}}
                 @unless($editExceptionId)
                     <flux:field>
-                        <flux:label>{{ __('Exception Type') }}</flux:label>
-                        <flux:select wire:model.live="exceptionPreset" placeholder="{{ __('Select type or choose custom') }}">
-                            <flux:select.option value="">{{ __('Select type...') }}</flux:select.option>
+                        <flux:label>{{ __('Quick Fill (Optional)') }}</flux:label>
+                        <flux:select wire:model.live="exceptionPreset" placeholder="{{ __('Select to auto-fill or leave empty') }}">
+                            <flux:select.option value="">{{ __('— Select to auto-fill —') }}</flux:select.option>
                             <flux:select.option value="annual_leave">{{ __('Annual Leave') }}</flux:select.option>
                             <flux:select.option value="sick_leave">{{ __('Sick Leave') }}</flux:select.option>
                             <flux:select.option value="holiday">{{ __('Holiday') }}</flux:select.option>
@@ -747,8 +747,8 @@
                             <flux:select.option value="half_day_am">{{ __('Half Day (Morning Off)') }}</flux:select.option>
                             <flux:select.option value="half_day_pm">{{ __('Half Day (Afternoon Off)') }}</flux:select.option>
                             <flux:select.option value="extra_clinic">{{ __('Extra Clinic Day') }}</flux:select.option>
-                            <flux:select.option value="custom">{{ __('Custom') }}</flux:select.option>
                         </flux:select>
+                        <flux:description>{{ __('Select a preset to auto-fill, or fill in the form manually below.') }}</flux:description>
                     </flux:field>
                 @endunless
 

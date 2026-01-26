@@ -115,7 +115,6 @@ class DoctorSchedules extends Component
         'half_day_am' => ['label' => 'Half Day (Morning Off)', 'available' => true, 'reason' => 'Half Day - Morning Off'],
         'half_day_pm' => ['label' => 'Half Day (Afternoon Off)', 'available' => true, 'reason' => 'Half Day - Afternoon Off'],
         'extra_clinic' => ['label' => 'Extra Clinic Day', 'available' => true, 'reason' => 'Extra Clinic Day'],
-        'custom' => ['label' => 'Custom', 'available' => false, 'reason' => ''],
     ];
 
     public function mount(): void
@@ -289,7 +288,7 @@ class DoctorSchedules extends Component
 
     protected function applyExceptionPreset(): void
     {
-        if (! $this->exceptionPreset || $this->exceptionPreset === 'custom') {
+        if (! $this->exceptionPreset) {
             return;
         }
 
