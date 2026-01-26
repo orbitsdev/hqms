@@ -48,4 +48,24 @@ class MedicalRecord extends Model
 
         return sprintf('MR-%d-%05d', $year, $sequence);
     }
+
+    public function getPatientFullNameAttribute(): string
+    {
+        $parts = array_filter([
+            $this->patient_first_name,
+            $this->patient_middle_name,
+            $this->patient_last_name,
+        ]);
+
+        return implode(' ', $parts);
+    }
+
+    public function getPatientAgeAttribute(): ?int
+    {
+        if (! $this->patient_date_of_birth) {
+            return null;
+        }
+
+        return $this->patient_date_of_birth->age;
+    }
 }

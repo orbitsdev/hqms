@@ -1,35 +1,60 @@
-<section class="space-y-6">
+<section class="space-y-4">
     <!-- Header -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div class="space-y-1">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
             <flux:heading size="xl" level="1">{{ __("Today's Queue") }}</flux:heading>
-            <flux:text class="text-sm text-zinc-500 dark:text-zinc-400">
-                {{ __('Manage patient queue, vital signs, and forward to doctors.') }}
-            </flux:text>
+            <flux:text class="text-sm text-zinc-500 dark:text-zinc-400">{{ now()->format('l, F j, Y') }}</flux:text>
         </div>
         <flux:button href="{{ route('nurse.walk-in') }}" wire:navigate variant="primary" icon="plus">
             {{ __('Walk-in') }}
         </flux:button>
     </div>
 
-    <!-- Pending Check-ins Alert -->
+    <!-- Quick Stats -->
+    <div class="flex flex-wrap gap-2">
+        <div class="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-800 dark:bg-amber-900/20">
+            <flux:icon name="clock" class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <span class="text-sm font-semibold text-amber-800 dark:text-amber-200">{{ $pendingCheckIns->count() }}</span>
+            <span class="text-xs text-amber-700 dark:text-amber-300">{{ __('Check-ins') }}</span>
+        </div>
+        <button wire:click="setStatus('waiting')" class="flex items-center gap-2 rounded-lg border px-3 py-2 transition {{ $status === 'waiting' ? 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/30' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}">
+            <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+            <span class="text-sm font-semibold">{{ $statusCounts['waiting'] }}</span>
+            <span class="text-xs text-zinc-600 dark:text-zinc-400">{{ __('Waiting') }}</span>
+        </button>
+        <button wire:click="setStatus('serving')" class="flex items-center gap-2 rounded-lg border px-3 py-2 transition {{ $status === 'serving' ? 'border-emerald-500 bg-emerald-50 dark:border-emerald-400 dark:bg-emerald-900/30' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}">
+            <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
+            <span class="text-sm font-semibold">{{ $statusCounts['serving'] }}</span>
+            <span class="text-xs text-zinc-600 dark:text-zinc-400">{{ __('Serving') }}</span>
+        </button>
+        <button wire:click="setStatus('completed')" class="flex items-center gap-2 rounded-lg border px-3 py-2 transition {{ $status === 'completed' ? 'border-zinc-500 bg-zinc-100 dark:border-zinc-400 dark:bg-zinc-700' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}">
+            <span class="h-2 w-2 rounded-full bg-zinc-400"></span>
+            <span class="text-sm font-semibold">{{ $statusCounts['completed'] }}</span>
+            <span class="text-xs text-zinc-600 dark:text-zinc-400">{{ __('Done') }}</span>
+        </button>
+        @if($statusCounts['skipped'] > 0)
+            <button wire:click="setStatus('skipped')" class="flex items-center gap-2 rounded-lg border px-3 py-2 transition {{ $status === 'skipped' ? 'border-zinc-500 bg-zinc-100 dark:border-zinc-400 dark:bg-zinc-700' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}">
+                <span class="h-2 w-2 rounded-full bg-zinc-300"></span>
+                <span class="text-sm font-semibold">{{ $statusCounts['skipped'] }}</span>
+                <span class="text-xs text-zinc-600 dark:text-zinc-400">{{ __('Skipped') }}</span>
+            </button>
+        @endif
+    </div>
+
+    <!-- Pending Check-ins -->
     @if($pendingCheckIns->isNotEmpty())
-        <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
-            <div class="flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-200">
-                <flux:icon name="clock" class="h-5 w-5" />
-                {{ __(':count patient(s) waiting to check in', ['count' => $pendingCheckIns->count()]) }}
-            </div>
-            <div class="mt-3 flex flex-wrap gap-2">
+        <div class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
+            <p class="mb-2 text-xs font-medium text-amber-700 dark:text-amber-300">{{ __('Click to check in:') }}</p>
+            <div class="flex flex-wrap gap-2">
                 @foreach($pendingCheckIns as $appointment)
                     <button
                         wire:click="openCheckInModal({{ $appointment->id }})"
-                        type="button"
-                        class="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm font-medium text-amber-800 transition hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200 dark:hover:bg-amber-900/50"
+                        class="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-white px-2 py-1 text-xs font-medium text-amber-800 transition hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
                     >
-                        <span class="font-semibold">{{ $appointment->consultationType?->short_name }}</span>
-                        <span>{{ $appointment->patient_first_name }} {{ $appointment->patient_last_name }}</span>
+                        <span class="font-bold">{{ $appointment->consultationType?->short_name }}</span>
+                        {{ $appointment->patient_first_name }}
                         @if($appointment->appointment_time)
-                            <span class="text-xs opacity-75">{{ $appointment->appointment_time->format('h:i A') }}</span>
+                            <span class="opacity-60">{{ $appointment->appointment_time->format('h:i A') }}</span>
                         @endif
                     </button>
                 @endforeach
@@ -37,651 +62,596 @@
         </div>
     @endif
 
-    <!-- Consultation Type Tabs -->
-    <div class="border-b border-zinc-200 dark:border-zinc-700">
-        <nav class="-mb-px flex gap-1 overflow-x-auto" aria-label="Consultation Types">
-            <button
-                wire:click="setConsultationType('')"
-                type="button"
-                class="inline-flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition {{ $consultationTypeFilter === '' ? 'border-zinc-900 text-zinc-900 dark:border-white dark:text-white' : 'border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-300' }}"
-            >
-                {{ __('All Queues') }}
-                <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                    {{ $typeCounts['all'] ?? 0 }}
-                </span>
-            </button>
-            @foreach($consultationTypes as $type)
+    <!-- Main Split View -->
+    <div class="grid gap-4 lg:grid-cols-3">
+        <!-- Left Panel: Queue Grid -->
+        <div class="lg:col-span-2 space-y-3">
+            <!-- Consultation Type Filter -->
+            <div class="flex flex-wrap items-center gap-2">
                 <button
-                    wire:click="setConsultationType('{{ $type->id }}')"
-                    type="button"
-                    class="inline-flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition {{ $consultationTypeFilter == $type->id ? 'border-zinc-900 text-zinc-900 dark:border-white dark:text-white' : 'border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-300' }}"
+                    wire:click="setConsultationType('')"
+                    class="rounded-full px-3 py-1 text-xs font-medium transition {{ $consultationTypeFilter === '' ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300' }}"
                 >
-                    <span class="font-bold">{{ $type->short_name }}</span>
-                    <span class="hidden sm:inline">{{ $type->name }}</span>
-                    @if(isset($typeCounts[$type->id]) && $typeCounts[$type->id] > 0)
-                        <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                            {{ $typeCounts[$type->id] }}
-                        </span>
-                    @endif
+                    {{ __('All') }} ({{ $typeCounts['all'] ?? 0 }})
                 </button>
-            @endforeach
-        </nav>
-    </div>
-
-    <!-- Currently Serving Display -->
-    @if($currentServing->isNotEmpty())
-        <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-900/20">
-            <div class="flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-200">
-                <flux:icon name="play-circle" class="h-5 w-5" />
-                {{ __('Currently Serving') }}
-            </div>
-            <div class="mt-3 flex flex-wrap gap-3">
-                @foreach($currentServing as $typeId => $queues)
-                    @foreach($queues as $queue)
-                        <div class="inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-white px-4 py-2 dark:border-emerald-700 dark:bg-emerald-900/30">
-                            <span class="text-lg font-bold text-emerald-800 dark:text-emerald-200">
-                                {{ $queue->formatted_number }}
-                            </span>
-                            <span class="text-xs text-emerald-600 dark:text-emerald-400">
-                                {{ $queue->consultationType?->short_name }}
-                            </span>
-                        </div>
-                    @endforeach
+                @foreach($consultationTypes as $type)
+                    @if(isset($typeCounts[$type->id]) && $typeCounts[$type->id] > 0)
+                        <button
+                            wire:click="setConsultationType('{{ $type->id }}')"
+                            class="rounded-full px-3 py-1 text-xs font-medium transition {{ $consultationTypeFilter == $type->id ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300' }}"
+                        >
+                            {{ $type->short_name }} ({{ $typeCounts[$type->id] }})
+                        </button>
+                    @endif
                 @endforeach
+
+                @if($statusCounts['waiting'] > 0 || $statusCounts['called'] > 0)
+                    <div class="ml-auto">
+                        <flux:button wire:click="serveNextAvailable" size="sm" variant="primary" icon="play">
+                            {{ __('Serve Next') }}
+                        </flux:button>
+                    </div>
+                @endif
             </div>
+
+            <!-- Queue Cards Grid -->
+            @if($queues->isNotEmpty())
+                <div class="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-4 xl:grid-cols-5">
+                    @foreach($queues as $queue)
+                        @php
+                            $isSelected = $selectedQueueId === $queue->id;
+                            $hasVitals = $queue->medicalRecord?->vital_signs_recorded_at !== null;
+                            $patientName = $queue->appointment
+                                ? $queue->appointment->patient_first_name
+                                : __('Walk-in');
+                        @endphp
+                        <button
+                            wire:click="selectQueue({{ $queue->id }})"
+                            wire:key="queue-card-{{ $queue->id }}"
+                            class="relative flex flex-col items-center justify-center rounded-lg border-2 p-3 text-center transition
+                                @if($isSelected) ring-2 ring-offset-2 dark:ring-offset-zinc-900
+                                    @if($queue->status === 'serving') ring-emerald-500 border-emerald-500 bg-emerald-500 text-white
+                                    @elseif($queue->status === 'waiting') ring-blue-500 border-blue-500 bg-blue-500 text-white
+                                    @elseif($queue->status === 'called') ring-purple-500 border-purple-500 bg-purple-500 text-white
+                                    @else ring-zinc-500 border-zinc-400 bg-zinc-400 text-white @endif
+                                @else
+                                    @if($queue->status === 'serving') border-emerald-400 bg-emerald-500 text-white hover:bg-emerald-600
+                                    @elseif($queue->status === 'waiting') border-blue-300 bg-blue-500 text-white hover:bg-blue-600
+                                    @elseif($queue->status === 'called') border-purple-300 bg-purple-500 text-white hover:bg-purple-600
+                                    @elseif($queue->status === 'skipped') border-zinc-300 bg-zinc-200 text-zinc-600 hover:bg-zinc-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-300
+                                    @else border-zinc-300 bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 @endif
+                                @endif"
+                        >
+                            <!-- Priority Badge -->
+                            @if($queue->priority === 'emergency')
+                                <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white">!</span>
+                            @elseif($queue->priority === 'urgent')
+                                <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[8px] font-bold text-white">U</span>
+                            @endif
+
+                            <!-- Vitals Indicator -->
+                            @if($queue->status === 'serving' && $hasVitals)
+                                <span class="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-emerald-600">
+                                    <flux:icon name="check-circle" class="h-3 w-3" />
+                                </span>
+                            @endif
+
+                            <!-- Queue Number -->
+                            <span class="text-xl font-bold leading-none">{{ $queue->formatted_number }}</span>
+
+                            <!-- Patient Name (truncated) -->
+                            <span class="mt-1 w-full truncate text-[10px] opacity-90">{{ $patientName }}</span>
+
+                            <!-- Time -->
+                            @if($queue->status === 'serving' && $queue->serving_started_at)
+                                <span class="mt-0.5 text-[9px] opacity-75">{{ $queue->serving_started_at->diffForHumans(short: true) }}</span>
+                            @endif
+                        </button>
+                    @endforeach
+                </div>
+            @else
+                <div class="rounded-lg border border-dashed border-zinc-300 p-8 text-center dark:border-zinc-600">
+                    <flux:icon name="queue-list" class="mx-auto h-8 w-8 text-zinc-400" />
+                    <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">{{ __('No patients in this queue') }}</p>
+                </div>
+            @endif
         </div>
-    @endif
 
-    <!-- Search & Status Filter -->
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <!-- Search -->
-        <div class="w-full lg:w-64">
-            <flux:input
-                wire:model.live.debounce.300ms="search"
-                type="search"
-                placeholder="{{ __('Search queue # or patient...') }}"
-                icon="magnifying-glass"
-            />
-        </div>
+        <!-- Right Panel: Selected Queue Detail -->
+        <div class="lg:col-span-1">
+            @if($selectedQueue)
+                @php
+                    $hasVitals = $selectedQueue->medicalRecord?->vital_signs_recorded_at !== null;
+                    $patientName = $selectedQueue->appointment
+                        ? $selectedQueue->appointment->patient_first_name . ' ' . $selectedQueue->appointment->patient_last_name
+                        : __('Walk-in Patient');
+                @endphp
+                <div class="sticky top-4 rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+                    <!-- Header -->
+                    <div class="flex items-start justify-between border-b border-zinc-200 p-4 dark:border-zinc-700">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-2xl font-bold
+                                    @if($selectedQueue->status === 'serving') text-emerald-600 dark:text-emerald-400
+                                    @elseif($selectedQueue->status === 'waiting') text-blue-600 dark:text-blue-400
+                                    @elseif($selectedQueue->status === 'called') text-purple-600 dark:text-purple-400
+                                    @else text-zinc-600 dark:text-zinc-400 @endif">
+                                    {{ $selectedQueue->formatted_number }}
+                                </span>
+                                @if($selectedQueue->priority === 'emergency')
+                                    <span class="rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700 dark:bg-red-900/50 dark:text-red-300">{{ __('EMERGENCY') }}</span>
+                                @elseif($selectedQueue->priority === 'urgent')
+                                    <span class="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">{{ __('URGENT') }}</span>
+                                @endif
+                            </div>
+                            <p class="mt-1 text-sm font-medium text-zinc-900 dark:text-white">{{ $patientName }}</p>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ $selectedQueue->consultationType?->name }}</p>
+                        </div>
+                        <button wire:click="clearSelection" class="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300">
+                            <flux:icon name="x-mark" class="h-5 w-5" />
+                        </button>
+                    </div>
 
-        <!-- Status Filter Pills -->
-        <div class="flex flex-wrap items-center gap-2">
-            <flux:button
-                wire:click="setStatus('waiting')"
-                :variant="$status === 'waiting' ? 'filled' : 'ghost'"
-                size="sm"
-            >
-                {{ __('Waiting') }}
-                @if($statusCounts['waiting'] > 0)
-                    <span class="ml-1 rounded-full bg-zinc-200 px-1.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-600 dark:text-zinc-200">{{ $statusCounts['waiting'] }}</span>
-                @endif
-            </flux:button>
-            <flux:button
-                wire:click="setStatus('called')"
-                :variant="$status === 'called' ? 'filled' : 'ghost'"
-                size="sm"
-            >
-                {{ __('Called') }}
-                @if($statusCounts['called'] > 0)
-                    <span class="ml-1 rounded-full bg-zinc-200 px-1.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-600 dark:text-zinc-200">{{ $statusCounts['called'] }}</span>
-                @endif
-            </flux:button>
-            <flux:button
-                wire:click="setStatus('serving')"
-                :variant="$status === 'serving' ? 'filled' : 'ghost'"
-                size="sm"
-            >
-                {{ __('Serving') }}
-                @if($statusCounts['serving'] > 0)
-                    <span class="ml-1 rounded-full bg-zinc-200 px-1.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-600 dark:text-zinc-200">{{ $statusCounts['serving'] }}</span>
-                @endif
-            </flux:button>
-            <flux:button
-                wire:click="setStatus('skipped')"
-                :variant="$status === 'skipped' ? 'filled' : 'ghost'"
-                size="sm"
-            >
-                {{ __('Skipped') }}
-                @if($statusCounts['skipped'] > 0)
-                    <span class="ml-1 rounded-full bg-zinc-200 px-1.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-600 dark:text-zinc-200">{{ $statusCounts['skipped'] }}</span>
-                @endif
-            </flux:button>
-            <flux:button
-                wire:click="setStatus('completed')"
-                :variant="$status === 'completed' ? 'filled' : 'ghost'"
-                size="sm"
-            >
-                {{ __('Completed') }}
-                @if($statusCounts['completed'] > 0)
-                    <span class="ml-1 rounded-full bg-zinc-200 px-1.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-600 dark:text-zinc-200">{{ $statusCounts['completed'] }}</span>
-                @endif
-            </flux:button>
-            <flux:button
-                wire:click="setStatus('all')"
-                :variant="$status === 'all' ? 'filled' : 'ghost'"
-                size="sm"
-            >
-                {{ __('All') }}
-                <span class="ml-1 rounded-full bg-zinc-200 px-1.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-600 dark:text-zinc-200">{{ $statusCounts['all'] }}</span>
-            </flux:button>
+                    <!-- Status -->
+                    <div class="border-b border-zinc-200 p-4 dark:border-zinc-700">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-medium uppercase text-zinc-500 dark:text-zinc-400">{{ __('Status') }}</span>
+                            @if($selectedQueue->status === 'waiting')
+                                <span class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                                    {{ __('Waiting') }}
+                                </span>
+                            @elseif($selectedQueue->status === 'called')
+                                <span class="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-semibold text-purple-800 dark:bg-purple-900/50 dark:text-purple-300">
+                                    <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-500"></span>
+                                    {{ __('Called') }}
+                                </span>
+                            @elseif($selectedQueue->status === 'serving')
+                                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">
+                                    <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"></span>
+                                    {{ __('Being Served') }}
+                                </span>
+                            @elseif($selectedQueue->status === 'skipped')
+                                <span class="inline-flex items-center gap-1 rounded-full bg-zinc-200 px-2.5 py-1 text-xs font-semibold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400">
+                                    {{ __('Skipped') }}
+                                </span>
+                            @elseif($selectedQueue->status === 'completed')
+                                <span class="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                                    <flux:icon name="check" class="h-3 w-3" />
+                                    {{ __('Forwarded') }}
+                                </span>
+                            @endif
+                        </div>
 
-            @if($statusCounts['waiting'] > 0 || $statusCounts['called'] > 0)
-                <flux:button wire:click="serveNextAvailable" variant="primary" icon="play">
-                    {{ __('Serve Next') }}
-                </flux:button>
+                        @if($selectedQueue->status === 'serving')
+                            <div class="mt-3 flex items-center gap-2">
+                                @if($hasVitals)
+                                    <span class="inline-flex items-center gap-1 rounded bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+                                        <flux:icon name="check-circle" class="h-3.5 w-3.5" />
+                                        {{ __('Vitals Recorded') }}
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
+                                        <flux:icon name="exclamation-circle" class="h-3.5 w-3.5" />
+                                        {{ __('Needs Interview & Vitals') }}
+                                    </span>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Patient Info Preview -->
+                    @if($selectedQueue->appointment)
+                        <div class="border-b border-zinc-200 p-4 dark:border-zinc-700">
+                            <p class="mb-2 text-xs font-medium uppercase text-zinc-500 dark:text-zinc-400">{{ __('Patient Info') }}</p>
+                            <dl class="space-y-1 text-sm">
+                                @if($selectedQueue->appointment->patient_date_of_birth)
+                                    <div class="flex justify-between">
+                                        <dt class="text-zinc-500 dark:text-zinc-400">{{ __('Age') }}</dt>
+                                        <dd class="font-medium text-zinc-900 dark:text-white">{{ $selectedQueue->appointment->patient_date_of_birth->age }} {{ __('yrs') }}</dd>
+                                    </div>
+                                @endif
+                                @if($selectedQueue->appointment->patient_gender)
+                                    <div class="flex justify-between">
+                                        <dt class="text-zinc-500 dark:text-zinc-400">{{ __('Gender') }}</dt>
+                                        <dd class="font-medium text-zinc-900 dark:text-white">{{ ucfirst($selectedQueue->appointment->patient_gender) }}</dd>
+                                    </div>
+                                @endif
+                                @if($selectedQueue->appointment->chief_complaints)
+                                    <div class="mt-2">
+                                        <dt class="text-zinc-500 dark:text-zinc-400">{{ __('Chief Complaint') }}</dt>
+                                        <dd class="mt-1 text-xs text-zinc-700 dark:text-zinc-300">{{ Str::limit($selectedQueue->appointment->chief_complaints, 100) }}</dd>
+                                    </div>
+                                @endif
+                            </dl>
+                        </div>
+                    @endif
+
+                    <!-- Actions -->
+                    <div class="space-y-2 p-4">
+                        @if($selectedQueue->status === 'waiting')
+                            <flux:button wire:click="callPatient({{ $selectedQueue->id }})" class="w-full" icon="megaphone">
+                                {{ __('Call Patient') }}
+                            </flux:button>
+                            <flux:button wire:click="startServing({{ $selectedQueue->id }})" class="w-full" variant="primary" icon="play">
+                                {{ __('Start Serving') }}
+                            </flux:button>
+                            <flux:button wire:click="openSkipModal({{ $selectedQueue->id }})" class="w-full" variant="ghost" icon="forward">
+                                {{ __('Skip') }}
+                            </flux:button>
+
+                        @elseif($selectedQueue->status === 'called')
+                            <flux:button wire:click="startServing({{ $selectedQueue->id }})" class="w-full" variant="primary" icon="play">
+                                {{ __('Start Serving') }}
+                            </flux:button>
+                            <flux:button wire:click="openSkipModal({{ $selectedQueue->id }})" class="w-full" variant="ghost" icon="forward">
+                                {{ __('Skip') }}
+                            </flux:button>
+
+                        @elseif($selectedQueue->status === 'serving')
+                            <flux:button wire:click="openInterviewModal({{ $selectedQueue->id }})" class="w-full" variant="{{ $hasVitals ? 'filled' : 'primary' }}" icon="clipboard-document-list">
+                                {{ __('Patient Interview') }}
+                            </flux:button>
+                            @if($hasVitals)
+                                <flux:button wire:click="forwardToDoctor({{ $selectedQueue->id }})" class="w-full" variant="primary" icon="arrow-right">
+                                    {{ __('Forward to Doctor') }}
+                                </flux:button>
+                            @endif
+                            <flux:button wire:click="openStopServingModal({{ $selectedQueue->id }})" class="w-full" variant="ghost" icon="x-mark">
+                                {{ __('Stop Serving') }}
+                            </flux:button>
+
+                        @elseif($selectedQueue->status === 'skipped')
+                            <flux:button wire:click="openRequeueModal({{ $selectedQueue->id }})" class="w-full" variant="primary" icon="arrow-path">
+                                {{ __('Requeue Patient') }}
+                            </flux:button>
+
+                        @elseif($selectedQueue->status === 'completed')
+                            <div class="rounded-lg bg-zinc-100 p-3 text-center text-sm text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                                <flux:icon name="check-circle" class="mx-auto h-8 w-8 text-emerald-500" />
+                                <p class="mt-2">{{ __('Patient has been forwarded to the doctor.') }}</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @else
+                <!-- Empty State -->
+                <div class="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center dark:border-zinc-600 dark:bg-zinc-800/50">
+                    <flux:icon name="cursor-arrow-rays" class="mx-auto h-10 w-10 text-zinc-400" />
+                    <p class="mt-3 text-sm font-medium text-zinc-600 dark:text-zinc-400">{{ __('Select a queue') }}</p>
+                    <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-500">{{ __('Click on a queue card to view details and take action') }}</p>
+                </div>
             @endif
         </div>
     </div>
 
-    <!-- Queue Table -->
-    @if($queues->isNotEmpty())
-        <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
-            <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
-                <thead class="bg-zinc-50 dark:bg-zinc-800">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                            {{ __('Queue #') }}
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                            {{ __('Patient') }}
-                        </th>
-                        @if($consultationTypeFilter === '')
-                            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                                {{ __('Type') }}
-                            </th>
-                        @endif
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                            {{ __('Priority') }}
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                            {{ __('Status') }}
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                            {{ __('Vitals') }}
-                        </th>
-                        <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                            {{ __('Actions') }}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
-                    @foreach($queues as $queue)
-                        @php
-                            $patientName = $queue->appointment
-                                ? $queue->appointment->patient_first_name . ' ' . $queue->appointment->patient_last_name
-                                : __('Walk-in');
-                            $hasVitals = $queue->medicalRecord?->vital_signs_recorded_at !== null;
-                        @endphp
-                        <tr wire:key="queue-{{ $queue->id }}" class="@if($queue->status === 'serving') bg-emerald-50 dark:bg-emerald-900/10 @elseif($queue->status === 'skipped') bg-zinc-100 dark:bg-zinc-800/50 @endif">
-                            <td class="whitespace-nowrap px-4 py-4">
-                                <span class="text-lg font-bold text-zinc-900 dark:text-white">
-                                    {{ $queue->formatted_number }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-4">
-                                <div class="text-sm font-medium text-zinc-900 dark:text-white">
-                                    {{ $patientName }}
-                                </div>
-                                @if($queue->source === 'walk-in')
-                                    <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Walk-in') }}</span>
-                                @endif
-                            </td>
-                            @if($consultationTypeFilter === '')
-                                <td class="whitespace-nowrap px-4 py-4">
-                                    <span class="inline-flex items-center rounded bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                                        {{ $queue->consultationType?->short_name ?? '-' }}
-                                    </span>
-                                </td>
-                            @endif
-                            <td class="whitespace-nowrap px-4 py-4">
-                                @if($queue->priority === 'emergency')
-                                    <span class="inline-flex items-center rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300">
-                                        {{ __('Emergency') }}
-                                    </span>
-                                @elseif($queue->priority === 'urgent')
-                                    <span class="inline-flex items-center rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
-                                        {{ __('Urgent') }}
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center rounded bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                                        {{ __('Normal') }}
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="whitespace-nowrap px-4 py-4">
-                                @if($queue->status === 'waiting')
-                                    <span class="inline-flex items-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                                        {{ __('Waiting') }}
-                                    </span>
-                                @elseif($queue->status === 'called')
-                                    <span class="inline-flex items-center rounded bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
-                                        {{ __('Called') }}
-                                    </span>
-                                @elseif($queue->status === 'serving')
-                                    <span class="inline-flex items-center rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
-                                        {{ __('Serving') }}
-                                    </span>
-                                @elseif($queue->status === 'skipped')
-                                    <span class="inline-flex items-center rounded bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400">
-                                        {{ __('Skipped') }}
-                                    </span>
-                                @elseif($queue->status === 'completed')
-                                    <span class="inline-flex items-center rounded bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                                        {{ __('Completed') }}
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="whitespace-nowrap px-4 py-4">
-                                @if($hasVitals)
-                                    <flux:icon name="check-circle" class="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                                @elseif($queue->status === 'serving')
-                                    <flux:icon name="exclamation-circle" class="h-5 w-5 text-amber-500" />
-                                @else
-                                    <flux:icon name="minus-circle" class="h-5 w-5 text-zinc-300 dark:text-zinc-600" />
-                                @endif
-                            </td>
-                            <td class="whitespace-nowrap px-4 py-4 text-right">
-                                <div class="flex items-center justify-end gap-2">
-                                    @if($queue->status === 'waiting')
-                                        <flux:button wire:click="callPatient({{ $queue->id }})" size="xs" variant="ghost" icon="megaphone">
-                                            {{ __('Call') }}
-                                        </flux:button>
-                                        <flux:button wire:click="startServing({{ $queue->id }})" size="xs" variant="primary" icon="play">
-                                            {{ __('Serve') }}
-                                        </flux:button>
-                                        <flux:button wire:click="openSkipModal({{ $queue->id }})" size="xs" variant="ghost" icon="forward">
-                                            {{ __('Skip') }}
-                                        </flux:button>
-                                    @elseif($queue->status === 'called')
-                                        <flux:button wire:click="startServing({{ $queue->id }})" size="xs" variant="primary" icon="play">
-                                            {{ __('Serve') }}
-                                        </flux:button>
-                                        <flux:button wire:click="openSkipModal({{ $queue->id }})" size="xs" variant="ghost" icon="forward">
-                                            {{ __('Skip') }}
-                                        </flux:button>
-                                    @elseif($queue->status === 'serving')
-                                        <flux:button wire:click="openStopServingModal({{ $queue->id }})" size="xs" variant="ghost" icon="x-mark">
-                                            {{ __('Stop') }}
-                                        </flux:button>
-                                        <flux:button wire:click="openVitalSignsModal({{ $queue->id }})" size="xs" variant="{{ $hasVitals ? 'ghost' : 'primary' }}" icon="heart">
-                                            {{ __('Vitals') }}
-                                        </flux:button>
-                                        @if($hasVitals)
-                                            <flux:button wire:click="forwardToDoctor({{ $queue->id }})" size="xs" variant="primary" icon="arrow-right">
-                                                {{ __('Forward') }}
-                                            </flux:button>
-                                        @endif
-                                    @elseif($queue->status === 'skipped')
-                                        <flux:button wire:click="openRequeueModal({{ $queue->id }})" size="xs" variant="ghost" icon="arrow-path">
-                                            {{ __('Requeue') }}
-                                        </flux:button>
-                                    @elseif($queue->status === 'completed')
-                                        <span class="text-xs text-zinc-500 dark:text-zinc-400">
-                                            {{ __('Forwarded') }}
-                                        </span>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @else
-        <div class="rounded-lg border border-zinc-200 bg-white p-8 text-center dark:border-zinc-700 dark:bg-zinc-900">
-            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-                <flux:icon name="queue-list" class="h-6 w-6 text-zinc-400" />
-            </div>
-            <h3 class="mt-4 text-sm font-medium text-zinc-900 dark:text-white">{{ __('No patients in queue') }}</h3>
-            <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                @if($status === 'waiting')
-                    {{ __('No patients are currently waiting.') }}
-                @elseif($status === 'serving')
-                    {{ __('No patients are currently being served.') }}
-                @elseif($status === 'skipped')
-                    {{ __('No skipped patients.') }}
-                @else
-                    {{ __('The queue is empty for this filter.') }}
-                @endif
-            </p>
-            <div class="mt-4">
-                <flux:button href="{{ route('nurse.walk-in') }}" wire:navigate variant="primary" icon="plus">
-                    {{ __('Register Walk-in') }}
-                </flux:button>
-            </div>
-        </div>
-    @endif
-
     <!-- Check-in Modal -->
-    <flux:modal wire:model="showCheckInModal" class="max-w-md">
+    <flux:modal wire:model="showCheckInModal" class="max-w-sm">
         <div class="space-y-4">
             <flux:heading size="lg">{{ __('Confirm Check-in') }}</flux:heading>
 
             @if($checkInAppointmentId)
-                @php
-                    $checkInAppt = $pendingCheckIns->firstWhere('id', $checkInAppointmentId);
-                @endphp
+                @php $checkInAppt = $pendingCheckIns->firstWhere('id', $checkInAppointmentId); @endphp
                 @if($checkInAppt)
-                    <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800">
-                        <dl class="space-y-2">
-                            <div class="flex justify-between">
-                                <dt class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Patient') }}</dt>
-                                <dd class="text-sm font-medium text-zinc-900 dark:text-white">
-                                    {{ $checkInAppt->patient_first_name }} {{ $checkInAppt->patient_last_name }}
-                                </dd>
-                            </div>
-                            <div class="flex justify-between">
-                                <dt class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Type') }}</dt>
-                                <dd class="text-sm font-medium text-zinc-900 dark:text-white">
-                                    {{ $checkInAppt->consultationType?->name }}
-                                </dd>
-                            </div>
-                            @if($checkInAppt->appointment_time)
-                                <div class="flex justify-between">
-                                    <dt class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Time') }}</dt>
-                                    <dd class="text-sm font-medium text-zinc-900 dark:text-white">
-                                        {{ $checkInAppt->appointment_time->format('h:i A') }}
-                                    </dd>
-                                </div>
-                            @endif
-                            @if($checkInAppt->queue)
-                                <div class="flex justify-between">
-                                    <dt class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Queue #') }}</dt>
-                                    <dd class="text-sm font-bold text-zinc-900 dark:text-white">
-                                        {{ $checkInAppt->queue->formatted_number }}
-                                    </dd>
-                                </div>
-                            @endif
-                        </dl>
+                    <div class="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800">
+                        <p class="font-medium text-zinc-900 dark:text-white">{{ $checkInAppt->patient_first_name }} {{ $checkInAppt->patient_last_name }}</p>
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $checkInAppt->consultationType?->name }}</p>
+                        @if($checkInAppt->queue)
+                            <p class="mt-2 text-lg font-bold text-zinc-900 dark:text-white">{{ __('Queue') }}: {{ $checkInAppt->queue->formatted_number }}</p>
+                        @endif
                     </div>
                 @endif
             @endif
 
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">
-                {{ __('Confirm that this patient has arrived.') }}
-            </p>
-
-            <div class="flex justify-end gap-3">
-                <flux:button wire:click="closeCheckInModal" variant="ghost">
-                    {{ __('Cancel') }}
-                </flux:button>
-                <flux:button wire:click="confirmCheckIn" variant="primary" icon="check">
-                    {{ __('Check In') }}
-                </flux:button>
+            <div class="flex justify-end gap-2">
+                <flux:button wire:click="closeCheckInModal" variant="ghost">{{ __('Cancel') }}</flux:button>
+                <flux:button wire:click="confirmCheckIn" variant="primary" icon="check">{{ __('Check In') }}</flux:button>
             </div>
         </div>
     </flux:modal>
 
-    <!-- Vital Signs Modal -->
-    <flux:modal wire:model="showVitalSignsModal" class="max-w-2xl">
+    <!-- Patient Interview Modal -->
+    <flux:modal wire:model="showInterviewModal" class="max-w-4xl">
         <div class="space-y-6">
-            <flux:heading size="lg">{{ __('Record Vital Signs') }}</flux:heading>
-
-            @if($vitalSignsQueueId)
-                @php
-                    $vsQueue = $queues->firstWhere('id', $vitalSignsQueueId);
-                    $consultationType = $vsQueue?->consultationType;
-                    $isOb = $consultationType?->short_name === 'O';
-                    $isPedia = $consultationType?->short_name === 'P';
-                @endphp
-
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <!-- Common Vitals -->
-                    <flux:field>
-                        <flux:label>{{ __('Temperature') }} (°C)</flux:label>
-                        <flux:input type="number" wire:model="temperature" step="0.1" min="30" max="45" placeholder="36.5" />
-                        <flux:error name="temperature" />
-                    </flux:field>
-
-                    <flux:field>
-                        <flux:label>{{ __('Blood Pressure') }} (mmHg)</flux:label>
-                        <flux:input wire:model="bloodPressure" placeholder="120/80" />
-                        <flux:error name="bloodPressure" />
-                    </flux:field>
-
-                    <flux:field>
-                        <flux:label>{{ __('Cardiac Rate') }} (bpm)</flux:label>
-                        <flux:input type="number" wire:model="cardiacRate" min="30" max="250" placeholder="72" />
-                        <flux:error name="cardiacRate" />
-                    </flux:field>
-
-                    <flux:field>
-                        <flux:label>{{ __('Respiratory Rate') }} (/min)</flux:label>
-                        <flux:input type="number" wire:model="respiratoryRate" min="5" max="60" placeholder="16" />
-                        <flux:error name="respiratoryRate" />
-                    </flux:field>
-
-                    <flux:field>
-                        <flux:label>{{ __('Weight') }} (kg)</flux:label>
-                        <flux:input type="number" wire:model="weight" step="0.01" min="0.1" max="500" placeholder="60.5" />
-                        <flux:error name="weight" />
-                    </flux:field>
-
-                    <flux:field>
-                        <flux:label>{{ __('Height') }} (cm)</flux:label>
-                        <flux:input type="number" wire:model="height" step="0.1" min="10" max="300" placeholder="165" />
-                        <flux:error name="height" />
-                    </flux:field>
-
-                    @if($isPedia)
-                        <!-- Pediatric Specific -->
-                        <flux:field>
-                            <flux:label>{{ __('Head Circumference') }} (cm)</flux:label>
-                            <flux:input type="number" wire:model="headCircumference" step="0.1" min="20" max="100" />
-                            <flux:error name="headCircumference" />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>{{ __('Chest Circumference') }} (cm)</flux:label>
-                            <flux:input type="number" wire:model="chestCircumference" step="0.1" min="20" max="200" />
-                            <flux:error name="chestCircumference" />
-                        </flux:field>
+            <div class="flex items-center justify-between">
+                <flux:heading size="lg">{{ __('Patient Interview') }}</flux:heading>
+                @if($interviewQueueId)
+                    @php $interviewQueue = $queues->firstWhere('id', $interviewQueueId); @endphp
+                    @if($interviewQueue)
+                        <span class="rounded-lg bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">
+                            {{ $interviewQueue->formatted_number }}
+                        </span>
                     @endif
-
-                    @if($isOb)
-                        <!-- OB Specific -->
-                        <flux:field>
-                            <flux:label>{{ __('Fetal Heart Tone') }} (bpm)</flux:label>
-                            <flux:input type="number" wire:model="fetalHeartTone" min="60" max="200" />
-                            <flux:error name="fetalHeartTone" />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>{{ __('Fundal Height') }} (cm)</flux:label>
-                            <flux:input type="number" wire:model="fundalHeight" step="0.1" min="5" max="50" />
-                            <flux:error name="fundalHeight" />
-                        </flux:field>
-
-                        <flux:field class="sm:col-span-2">
-                            <flux:label>{{ __('Last Menstrual Period') }}</flux:label>
-                            <flux:input type="date" wire:model="lastMenstrualPeriod" max="{{ now()->format('Y-m-d') }}" />
-                            <flux:error name="lastMenstrualPeriod" />
-                        </flux:field>
-                    @endif
-                </div>
-
-                <flux:field>
-                    <flux:label>{{ __('Updated Chief Complaints') }}</flux:label>
-                    <flux:textarea wire:model="chiefComplaintsUpdated" rows="2" placeholder="{{ __('Any additional symptoms...') }}" />
-                    <flux:error name="chiefComplaintsUpdated" />
-                </flux:field>
-            @endif
-
-            <div class="flex justify-end gap-3">
-                <flux:button wire:click="closeVitalSignsModal" variant="ghost">
-                    {{ __('Cancel') }}
-                </flux:button>
-                <flux:button wire:click="saveVitalSigns" variant="primary" icon="check">
-                    {{ __('Save') }}
-                </flux:button>
+                @endif
             </div>
-        </div>
-    </flux:modal>
 
-    <!-- Requeue Patient Modal -->
-    <flux:modal wire:model="showRequeueModal" class="max-w-md">
-        <div class="space-y-4">
-            <flux:heading size="lg">{{ __('Requeue Patient?') }}</flux:heading>
-
-            @if($requeueQueueId)
+            <!-- Step Indicator -->
+            <div class="flex items-center justify-between border-b border-zinc-200 pb-4 dark:border-zinc-700">
                 @php
-                    $requeueQueue = $queues->firstWhere('id', $requeueQueueId);
+                    $steps = [
+                        'patient' => ['icon' => 'user', 'label' => __('Patient')],
+                        'address' => ['icon' => 'map-pin', 'label' => __('Address')],
+                        'companion' => ['icon' => 'users', 'label' => __('Companion')],
+                        'medical' => ['icon' => 'heart', 'label' => __('Medical')],
+                        'vitals' => ['icon' => 'clipboard-document-list', 'label' => __('Vitals')],
+                    ];
+                    $stepKeys = array_keys($steps);
+                    $currentIndex = array_search($interviewStep, $stepKeys);
                 @endphp
-                @if($requeueQueue)
-                    <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800">
-                        <div class="flex items-center gap-3">
-                            <span class="text-2xl font-bold text-zinc-900 dark:text-white">
-                                {{ $requeueQueue->formatted_number }}
-                            </span>
-                            <div>
-                                <div class="text-sm font-medium text-zinc-900 dark:text-white">
-                                    {{ $requeueQueue->appointment?->patient_first_name }} {{ $requeueQueue->appointment?->patient_last_name }}
-                                </div>
-                                <div class="text-xs text-zinc-500 dark:text-zinc-400">
-                                    {{ $requeueQueue->consultationType?->name }}
-                                </div>
+                @foreach($steps as $key => $step)
+                    @php
+                        $stepIndex = array_search($key, $stepKeys);
+                        $isActive = $key === $interviewStep;
+                        $isCompleted = $stepIndex < $currentIndex;
+                    @endphp
+                    <button wire:click="setInterviewStep('{{ $key }}')" class="flex flex-col items-center gap-1 {{ $isActive ? 'text-zinc-900 dark:text-white' : ($isCompleted ? 'text-emerald-600' : 'text-zinc-400') }}">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-full {{ $isActive ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : ($isCompleted ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-zinc-100 dark:bg-zinc-800') }}">
+                            @if($isCompleted)
+                                <flux:icon name="check" class="h-4 w-4" />
+                            @else
+                                <flux:icon :name="$step['icon']" class="h-4 w-4" />
+                            @endif
+                        </div>
+                        <span class="hidden text-xs font-medium sm:block">{{ $step['label'] }}</span>
+                    </button>
+                    @if(!$loop->last)
+                        <div class="h-0.5 flex-1 {{ $isCompleted || $isActive ? 'bg-emerald-300 dark:bg-emerald-700' : 'bg-zinc-200 dark:bg-zinc-700' }}"></div>
+                    @endif
+                @endforeach
+            </div>
+
+            <!-- Step Content -->
+            <div class="min-h-[280px]">
+                @if($interviewStep === 'patient')
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <flux:field>
+                            <flux:label>{{ __('First Name') }} *</flux:label>
+                            <flux:input wire:model="patientFirstName" />
+                            <flux:error name="patientFirstName" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>{{ __('Middle Name') }}</flux:label>
+                            <flux:input wire:model="patientMiddleName" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>{{ __('Last Name') }} *</flux:label>
+                            <flux:input wire:model="patientLastName" />
+                            <flux:error name="patientLastName" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>{{ __('Date of Birth') }}</flux:label>
+                            <flux:input type="date" wire:model="patientDateOfBirth" max="{{ now()->format('Y-m-d') }}" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>{{ __('Gender') }}</flux:label>
+                            <flux:select wire:model="patientGender">
+                                <flux:select.option value="">{{ __('Select...') }}</flux:select.option>
+                                <flux:select.option value="male">{{ __('Male') }}</flux:select.option>
+                                <flux:select.option value="female">{{ __('Female') }}</flux:select.option>
+                            </flux:select>
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>{{ __('Contact Number') }}</flux:label>
+                            <flux:input wire:model="patientContactNumber" placeholder="09XX XXX XXXX" />
+                        </flux:field>
+                    </div>
+
+                @elseif($interviewStep === 'address')
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <flux:field>
+                            <flux:label>{{ __('Province') }}</flux:label>
+                            <flux:input wire:model="patientProvince" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>{{ __('Municipality/City') }}</flux:label>
+                            <flux:input wire:model="patientMunicipality" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>{{ __('Barangay') }}</flux:label>
+                            <flux:input wire:model="patientBarangay" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>{{ __('Zip Code') }}</flux:label>
+                            <flux:input wire:model="patientZipCode" />
+                        </flux:field>
+                        <flux:field class="sm:col-span-2">
+                            <flux:label>{{ __('Street Address') }}</flux:label>
+                            <flux:input wire:model="patientStreet" />
+                        </flux:field>
+                    </div>
+
+                @elseif($interviewStep === 'companion')
+                    <div class="space-y-4">
+                        <div>
+                            <p class="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('Companion') }}</p>
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                <flux:field>
+                                    <flux:label>{{ __('Name') }}</flux:label>
+                                    <flux:input wire:model="companionName" />
+                                </flux:field>
+                                <flux:field>
+                                    <flux:label>{{ __('Contact') }}</flux:label>
+                                    <flux:input wire:model="companionContact" />
+                                </flux:field>
+                                <flux:field>
+                                    <flux:label>{{ __('Relationship') }}</flux:label>
+                                    <flux:input wire:model="companionRelationship" />
+                                </flux:field>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('Emergency Contact') }}</p>
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                <flux:field>
+                                    <flux:label>{{ __('Name') }}</flux:label>
+                                    <flux:input wire:model="emergencyContactName" />
+                                </flux:field>
+                                <flux:field>
+                                    <flux:label>{{ __('Contact') }}</flux:label>
+                                    <flux:input wire:model="emergencyContactNumber" />
+                                </flux:field>
+                                <flux:field>
+                                    <flux:label>{{ __('Relationship') }}</flux:label>
+                                    <flux:input wire:model="emergencyContactRelationship" />
+                                </flux:field>
                             </div>
                         </div>
                     </div>
+
+                @elseif($interviewStep === 'medical')
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <flux:field>
+                            <flux:label>{{ __('Blood Type') }}</flux:label>
+                            <flux:select wire:model="patientBloodType">
+                                <flux:select.option value="">{{ __('Unknown') }}</flux:select.option>
+                                @foreach(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $bt)
+                                    <flux:select.option value="{{ $bt }}">{{ $bt }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>{{ __('Allergies') }}</flux:label>
+                            <flux:input wire:model="patientAllergies" placeholder="{{ __('e.g., Penicillin') }}" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>{{ __('Chronic Conditions') }}</flux:label>
+                            <flux:input wire:model="patientChronicConditions" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>{{ __('Current Medications') }}</flux:label>
+                            <flux:input wire:model="patientCurrentMedications" />
+                        </flux:field>
+                        <flux:field class="sm:col-span-2">
+                            <flux:label>{{ __('Past Medical History') }}</flux:label>
+                            <flux:textarea wire:model="patientPastMedicalHistory" rows="2" />
+                        </flux:field>
+                    </div>
+
+                @elseif($interviewStep === 'vitals')
+                    @php
+                        $consultationType = $interviewQueue?->consultationType;
+                        $isOb = $consultationType?->short_name === 'O';
+                        $isPedia = $consultationType?->short_name === 'P';
+                    @endphp
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                            <flux:field>
+                                <flux:label>{{ __('Temperature') }} (°C)</flux:label>
+                                <flux:input type="number" wire:model="temperature" step="0.1" placeholder="36.5" />
+                                <flux:error name="temperature" />
+                            </flux:field>
+                            <flux:field>
+                                <flux:label>{{ __('Blood Pressure') }}</flux:label>
+                                <flux:input wire:model="bloodPressure" placeholder="120/80" />
+                                <flux:error name="bloodPressure" />
+                            </flux:field>
+                            <flux:field>
+                                <flux:label>{{ __('Cardiac Rate') }}</flux:label>
+                                <flux:input type="number" wire:model="cardiacRate" placeholder="72" />
+                            </flux:field>
+                            <flux:field>
+                                <flux:label>{{ __('Respiratory Rate') }}</flux:label>
+                                <flux:input type="number" wire:model="respiratoryRate" placeholder="16" />
+                            </flux:field>
+                            <flux:field>
+                                <flux:label>{{ __('Weight') }} (kg)</flux:label>
+                                <flux:input type="number" wire:model="weight" step="0.1" />
+                            </flux:field>
+                            <flux:field>
+                                <flux:label>{{ __('Height') }} (cm)</flux:label>
+                                <flux:input type="number" wire:model="height" step="0.1" />
+                            </flux:field>
+                            @if($isPedia)
+                                <flux:field>
+                                    <flux:label>{{ __('Head Circ.') }} (cm)</flux:label>
+                                    <flux:input type="number" wire:model="headCircumference" step="0.1" />
+                                </flux:field>
+                            @endif
+                            @if($isOb)
+                                <flux:field>
+                                    <flux:label>{{ __('Fetal Heart Tone') }}</flux:label>
+                                    <flux:input type="number" wire:model="fetalHeartTone" />
+                                </flux:field>
+                                <flux:field>
+                                    <flux:label>{{ __('Fundal Height') }} (cm)</flux:label>
+                                    <flux:input type="number" wire:model="fundalHeight" step="0.1" />
+                                </flux:field>
+                                <flux:field>
+                                    <flux:label>{{ __('LMP') }}</flux:label>
+                                    <flux:input type="date" wire:model="lastMenstrualPeriod" />
+                                </flux:field>
+                            @endif
+                        </div>
+                        <flux:field>
+                            <flux:label>{{ __('Updated Chief Complaints') }}</flux:label>
+                            <flux:textarea wire:model="chiefComplaintsUpdated" rows="2" />
+                        </flux:field>
+                    </div>
                 @endif
-            @endif
+            </div>
 
-            <p class="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-200">
-                {{ __('Patient will be returned to waiting queue with the same queue number and will be next in line.') }}
-            </p>
-
-            <div class="flex justify-end gap-3">
-                <flux:button wire:click="closeRequeueModal" variant="ghost">
-                    {{ __('Cancel') }}
-                </flux:button>
-                <flux:button wire:click="confirmRequeue" variant="primary" icon="arrow-path">
-                    {{ __('Requeue Patient') }}
-                </flux:button>
+            <!-- Footer -->
+            <div class="flex items-center justify-between border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <div>
+                    @if($interviewStep !== 'patient')
+                        <flux:button wire:click="previousInterviewStep" variant="ghost" icon="arrow-left">{{ __('Back') }}</flux:button>
+                    @endif
+                </div>
+                <div class="flex gap-2">
+                    <flux:button wire:click="closeInterviewModal" variant="ghost">{{ __('Cancel') }}</flux:button>
+                    @if($interviewStep !== 'vitals')
+                        <flux:button wire:click="nextInterviewStep" variant="primary" icon-trailing="arrow-right">{{ __('Next') }}</flux:button>
+                    @else
+                        <flux:button wire:click="saveInterview" variant="primary" icon="check">{{ __('Save') }}</flux:button>
+                    @endif
+                </div>
             </div>
         </div>
     </flux:modal>
 
-    <!-- Skip Patient Modal -->
-    <flux:modal wire:model="showSkipModal" class="max-w-md">
+    <!-- Skip Modal -->
+    <flux:modal wire:model="showSkipModal" class="max-w-sm">
         <div class="space-y-4">
             @if(!$skipConfirmed)
-                {{-- Confirmation State --}}
                 <flux:heading size="lg">{{ __('Skip Patient?') }}</flux:heading>
-
-                @if($skipQueueId)
-                    @php
-                        $skipQueue = $queues->firstWhere('id', $skipQueueId);
-                    @endphp
-                    @if($skipQueue)
-                        <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl font-bold text-zinc-900 dark:text-white">
-                                    {{ $skipQueue->formatted_number }}
-                                </span>
-                                <div>
-                                    <div class="text-sm font-medium text-zinc-900 dark:text-white">
-                                        {{ $skipQueue->appointment?->patient_first_name }} {{ $skipQueue->appointment?->patient_last_name }}
-                                    </div>
-                                    <div class="text-xs text-zinc-500 dark:text-zinc-400">
-                                        {{ $skipQueue->consultationType?->name }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-                @endif
-
-                <p class="text-sm text-zinc-500 dark:text-zinc-400">
-                    {{ __('This patient will be moved to the skipped list. You can requeue them later when they arrive.') }}
-                </p>
-
-                <div class="flex justify-end gap-3">
-                    <flux:button wire:click="closeSkipModal" variant="ghost">
-                        {{ __('Cancel') }}
-                    </flux:button>
-                    <flux:button wire:click="confirmSkip" variant="filled" icon="forward">
-                        {{ __('Skip Patient') }}
-                    </flux:button>
+                <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Patient will be moved to skipped list. You can requeue them later.') }}</p>
+                <div class="flex justify-end gap-2">
+                    <flux:button wire:click="closeSkipModal" variant="ghost">{{ __('Cancel') }}</flux:button>
+                    <flux:button wire:click="confirmSkip" icon="forward">{{ __('Skip') }}</flux:button>
                 </div>
             @else
-                {{-- Success State with Requeue Option --}}
                 <div class="text-center">
-                    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-                        <flux:icon name="check" class="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
-                    </div>
-                    <flux:heading size="lg" class="mt-4">{{ __('Patient Skipped') }}</flux:heading>
-
-                    @if($skipQueueId)
-                        @php
-                            $skippedQueue = \App\Models\Queue::find($skipQueueId);
-                        @endphp
-                        @if($skippedQueue)
-                            <p class="mt-2 text-lg font-bold text-zinc-900 dark:text-white">
-                                {{ $skippedQueue->formatted_number }}
-                            </p>
-                        @endif
-                    @endif
-
-                    <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                        {{ __('Patient has been moved to the skipped list.') }}
-                    </p>
+                    <flux:icon name="check-circle" class="mx-auto h-10 w-10 text-zinc-400" />
+                    <p class="mt-2 font-medium text-zinc-900 dark:text-white">{{ __('Patient Skipped') }}</p>
                 </div>
-
-                <p class="rounded-lg border border-blue-200 bg-blue-50 p-3 text-center text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-200">
-                    {{ __('Did they just arrive? Requeue to put them next in line with the same queue number.') }}
-                </p>
-
-                <div class="flex justify-center gap-3">
-                    <flux:button wire:click="closeSkipModal" variant="ghost">
-                        {{ __('Close') }}
-                    </flux:button>
-                    <flux:button wire:click="requeueFromSkipModal" variant="primary" icon="arrow-path">
-                        {{ __('Requeue Now') }}
-                    </flux:button>
+                <div class="flex justify-center gap-2">
+                    <flux:button wire:click="closeSkipModal" variant="ghost">{{ __('Close') }}</flux:button>
+                    <flux:button wire:click="requeueFromSkipModal" variant="primary" icon="arrow-path">{{ __('Requeue') }}</flux:button>
                 </div>
             @endif
+        </div>
+    </flux:modal>
+
+    <!-- Requeue Modal -->
+    <flux:modal wire:model="showRequeueModal" class="max-w-sm">
+        <div class="space-y-4">
+            <flux:heading size="lg">{{ __('Requeue Patient?') }}</flux:heading>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Patient will return to waiting queue with the same number.') }}</p>
+            <div class="flex justify-end gap-2">
+                <flux:button wire:click="closeRequeueModal" variant="ghost">{{ __('Cancel') }}</flux:button>
+                <flux:button wire:click="confirmRequeue" variant="primary" icon="arrow-path">{{ __('Requeue') }}</flux:button>
+            </div>
         </div>
     </flux:modal>
 
     <!-- Stop Serving Modal -->
-    <flux:modal wire:model="showStopServingModal" class="max-w-md">
+    <flux:modal wire:model="showStopServingModal" class="max-w-sm">
         <div class="space-y-4">
-            <flux:heading size="lg">{{ __('Stop Serving Patient?') }}</flux:heading>
-
-            @if($stopServingQueueId)
-                @php
-                    $stopQueue = $queues->firstWhere('id', $stopServingQueueId);
-                @endphp
-                @if($stopQueue)
-                    <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800">
-                        <div class="flex items-center gap-3">
-                            <span class="text-2xl font-bold text-zinc-900 dark:text-white">
-                                {{ $stopQueue->formatted_number }}
-                            </span>
-                            <div>
-                                <div class="text-sm font-medium text-zinc-900 dark:text-white">
-                                    {{ $stopQueue->appointment?->patient_first_name }} {{ $stopQueue->appointment?->patient_last_name }}
-                                </div>
-                                <div class="text-xs text-zinc-500 dark:text-zinc-400">
-                                    {{ $stopQueue->consultationType?->name }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-            @endif
-
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">
-                {{ __('This patient will be returned to the waiting queue. Any unsaved vital signs will be discarded.') }}
-            </p>
-
-            <div class="flex justify-end gap-3">
-                <flux:button wire:click="closeStopServingModal" variant="ghost">
-                    {{ __('Cancel') }}
-                </flux:button>
-                <flux:button wire:click="confirmStopServing" variant="danger" icon="x-mark">
-                    {{ __('Stop Serving') }}
-                </flux:button>
+            <flux:heading size="lg">{{ __('Stop Serving?') }}</flux:heading>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Patient will return to waiting queue. Unsaved data will be lost.') }}</p>
+            <div class="flex justify-end gap-2">
+                <flux:button wire:click="closeStopServingModal" variant="ghost">{{ __('Cancel') }}</flux:button>
+                <flux:button wire:click="confirmStopServing" variant="danger" icon="x-mark">{{ __('Stop') }}</flux:button>
             </div>
         </div>
     </flux:modal>

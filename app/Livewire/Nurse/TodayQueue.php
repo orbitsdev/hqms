@@ -24,17 +24,15 @@ class TodayQueue extends Component
 
     public string $search = '';
 
+    // Selected queue for detail view
+    #[Locked]
+    public ?int $selectedQueueId = null;
+
     // Check-in modal
     public bool $showCheckInModal = false;
 
     #[Locked]
     public ?int $checkInAppointmentId = null;
-
-    // Vital signs modal
-    public bool $showVitalSignsModal = false;
-
-    #[Locked]
-    public ?int $vitalSignsQueueId = null;
 
     // Stop serving modal
     public bool $showStopServingModal = false;
@@ -55,6 +53,67 @@ class TodayQueue extends Component
 
     #[Locked]
     public ?int $requeueQueueId = null;
+
+    // Patient Interview Modal
+    public bool $showInterviewModal = false;
+
+    #[Locked]
+    public ?int $interviewQueueId = null;
+
+    public string $interviewStep = 'patient';
+
+    // Patient Information
+    public ?string $patientFirstName = null;
+
+    public ?string $patientMiddleName = null;
+
+    public ?string $patientLastName = null;
+
+    public ?string $patientDateOfBirth = null;
+
+    public ?string $patientGender = null;
+
+    public ?string $patientContactNumber = null;
+
+    public ?string $patientEmail = null;
+
+    // Address
+    public ?string $patientProvince = null;
+
+    public ?string $patientMunicipality = null;
+
+    public ?string $patientBarangay = null;
+
+    public ?string $patientStreet = null;
+
+    public ?string $patientZipCode = null;
+
+    // Companion Information
+    public ?string $companionName = null;
+
+    public ?string $companionContact = null;
+
+    public ?string $companionRelationship = null;
+
+    // Emergency Contact
+    public ?string $emergencyContactName = null;
+
+    public ?string $emergencyContactNumber = null;
+
+    public ?string $emergencyContactRelationship = null;
+
+    // Medical Background
+    public ?string $patientBloodType = null;
+
+    public ?string $patientAllergies = null;
+
+    public ?string $patientChronicConditions = null;
+
+    public ?string $patientCurrentMedications = null;
+
+    public ?string $patientPastMedicalHistory = null;
+
+    public ?string $patientFamilyMedicalHistory = null;
 
     // Vital signs data
     public ?string $temperature = null;
@@ -91,6 +150,17 @@ class TodayQueue extends Component
         $this->consultationTypeFilter = $typeId;
         // Reset to waiting status when changing type for better UX
         $this->status = 'waiting';
+        $this->selectedQueueId = null;
+    }
+
+    public function selectQueue(int $queueId): void
+    {
+        $this->selectedQueueId = $queueId;
+    }
+
+    public function clearSelection(): void
+    {
+        $this->selectedQueueId = null;
     }
 
     /** @return array<string, int> */
@@ -342,7 +412,7 @@ class TodayQueue extends Component
             ->today()
             ->whereIn('status', ['waiting', 'called'])
             ->when($this->consultationTypeFilter !== '', fn (Builder $q) => $q->where('consultation_type_id', $this->consultationTypeFilter))
-            ->orderByRaw("FIELD(priority, 'emergency', 'urgent', 'normal')")
+            ->orderByRaw("CASE priority WHEN 'emergency' THEN 1 WHEN 'urgent' THEN 2 WHEN 'normal' THEN 3 ELSE 4 END")
             ->orderBy('queue_number')
             ->first();
 
@@ -466,8 +536,8 @@ class TodayQueue extends Component
         $this->closeStopServingModal();
     }
 
-    // Vital Signs Methods
-    public function openVitalSignsModal(int $queueId): void
+    // Patient Interview Methods
+    public function openInterviewModal(int $queueId): void
     {
         $queue = Queue::with('medicalRecord')->find($queueId);
 
@@ -475,10 +545,46 @@ class TodayQueue extends Component
             return;
         }
 
-        $this->vitalSignsQueueId = $queueId;
+        $this->interviewQueueId = $queueId;
+        $this->interviewStep = 'patient';
 
         // Pre-fill with existing data if available
         if ($record = $queue->medicalRecord) {
+            // Patient Information
+            $this->patientFirstName = $record->patient_first_name;
+            $this->patientMiddleName = $record->patient_middle_name;
+            $this->patientLastName = $record->patient_last_name;
+            $this->patientDateOfBirth = $record->patient_date_of_birth?->format('Y-m-d');
+            $this->patientGender = $record->patient_gender;
+            $this->patientContactNumber = $record->patient_contact_number;
+            $this->patientEmail = $record->patient_email;
+
+            // Address
+            $this->patientProvince = $record->patient_province;
+            $this->patientMunicipality = $record->patient_municipality;
+            $this->patientBarangay = $record->patient_barangay;
+            $this->patientStreet = $record->patient_street;
+            $this->patientZipCode = $record->patient_zip_code;
+
+            // Companion
+            $this->companionName = $record->companion_name;
+            $this->companionContact = $record->companion_contact;
+            $this->companionRelationship = $record->companion_relationship;
+
+            // Emergency Contact
+            $this->emergencyContactName = $record->emergency_contact_name;
+            $this->emergencyContactNumber = $record->emergency_contact_number;
+            $this->emergencyContactRelationship = $record->emergency_contact_relationship;
+
+            // Medical Background
+            $this->patientBloodType = $record->patient_blood_type;
+            $this->patientAllergies = $record->patient_allergies;
+            $this->patientChronicConditions = $record->patient_chronic_conditions;
+            $this->patientCurrentMedications = $record->patient_current_medications;
+            $this->patientPastMedicalHistory = $record->patient_past_medical_history;
+            $this->patientFamilyMedicalHistory = $record->patient_family_medical_history;
+
+            // Vital Signs
             $this->temperature = $record->temperature;
             $this->bloodPressure = $record->blood_pressure;
             $this->cardiacRate = $record->cardiac_rate;
@@ -493,18 +599,79 @@ class TodayQueue extends Component
             $this->chiefComplaintsUpdated = $record->chief_complaints_updated;
         }
 
-        $this->showVitalSignsModal = true;
+        $this->showInterviewModal = true;
     }
 
-    public function closeVitalSignsModal(): void
+    public function closeInterviewModal(): void
     {
-        $this->showVitalSignsModal = false;
-        $this->vitalSignsQueueId = null;
-        $this->resetVitalSignsForm();
+        $this->showInterviewModal = false;
+        $this->interviewQueueId = null;
+        $this->interviewStep = 'patient';
+        $this->resetInterviewForm();
     }
 
-    protected function resetVitalSignsForm(): void
+    public function setInterviewStep(string $step): void
     {
+        $this->interviewStep = $step;
+    }
+
+    public function nextInterviewStep(): void
+    {
+        $steps = ['patient', 'address', 'companion', 'medical', 'vitals'];
+        $currentIndex = array_search($this->interviewStep, $steps);
+
+        if ($currentIndex !== false && $currentIndex < count($steps) - 1) {
+            $this->interviewStep = $steps[$currentIndex + 1];
+        }
+    }
+
+    public function previousInterviewStep(): void
+    {
+        $steps = ['patient', 'address', 'companion', 'medical', 'vitals'];
+        $currentIndex = array_search($this->interviewStep, $steps);
+
+        if ($currentIndex !== false && $currentIndex > 0) {
+            $this->interviewStep = $steps[$currentIndex - 1];
+        }
+    }
+
+    protected function resetInterviewForm(): void
+    {
+        // Patient Information
+        $this->patientFirstName = null;
+        $this->patientMiddleName = null;
+        $this->patientLastName = null;
+        $this->patientDateOfBirth = null;
+        $this->patientGender = null;
+        $this->patientContactNumber = null;
+        $this->patientEmail = null;
+
+        // Address
+        $this->patientProvince = null;
+        $this->patientMunicipality = null;
+        $this->patientBarangay = null;
+        $this->patientStreet = null;
+        $this->patientZipCode = null;
+
+        // Companion
+        $this->companionName = null;
+        $this->companionContact = null;
+        $this->companionRelationship = null;
+
+        // Emergency Contact
+        $this->emergencyContactName = null;
+        $this->emergencyContactNumber = null;
+        $this->emergencyContactRelationship = null;
+
+        // Medical Background
+        $this->patientBloodType = null;
+        $this->patientAllergies = null;
+        $this->patientChronicConditions = null;
+        $this->patientCurrentMedications = null;
+        $this->patientPastMedicalHistory = null;
+        $this->patientFamilyMedicalHistory = null;
+
+        // Vital Signs
         $this->temperature = null;
         $this->bloodPressure = null;
         $this->cardiacRate = null;
@@ -519,9 +686,33 @@ class TodayQueue extends Component
         $this->chiefComplaintsUpdated = null;
     }
 
-    public function saveVitalSigns(): void
+    public function saveInterview(): void
     {
         $this->validate([
+            'patientFirstName' => ['required', 'string', 'max:100'],
+            'patientLastName' => ['required', 'string', 'max:100'],
+            'patientMiddleName' => ['nullable', 'string', 'max:100'],
+            'patientDateOfBirth' => ['nullable', 'date', 'before_or_equal:today'],
+            'patientGender' => ['nullable', 'in:male,female'],
+            'patientContactNumber' => ['nullable', 'string', 'max:20'],
+            'patientEmail' => ['nullable', 'email', 'max:255'],
+            'patientProvince' => ['nullable', 'string', 'max:100'],
+            'patientMunicipality' => ['nullable', 'string', 'max:100'],
+            'patientBarangay' => ['nullable', 'string', 'max:100'],
+            'patientStreet' => ['nullable', 'string', 'max:255'],
+            'patientZipCode' => ['nullable', 'string', 'max:10'],
+            'companionName' => ['nullable', 'string', 'max:200'],
+            'companionContact' => ['nullable', 'string', 'max:20'],
+            'companionRelationship' => ['nullable', 'string', 'max:100'],
+            'emergencyContactName' => ['nullable', 'string', 'max:200'],
+            'emergencyContactNumber' => ['nullable', 'string', 'max:20'],
+            'emergencyContactRelationship' => ['nullable', 'string', 'max:100'],
+            'patientBloodType' => ['nullable', 'string', 'max:10'],
+            'patientAllergies' => ['nullable', 'string', 'max:1000'],
+            'patientChronicConditions' => ['nullable', 'string', 'max:1000'],
+            'patientCurrentMedications' => ['nullable', 'string', 'max:1000'],
+            'patientPastMedicalHistory' => ['nullable', 'string', 'max:2000'],
+            'patientFamilyMedicalHistory' => ['nullable', 'string', 'max:2000'],
             'temperature' => ['nullable', 'numeric', 'min:30', 'max:45'],
             'bloodPressure' => ['nullable', 'string', 'max:20', 'regex:/^\d{2,3}\/\d{2,3}$/'],
             'cardiacRate' => ['nullable', 'integer', 'min:30', 'max:250'],
@@ -538,16 +729,57 @@ class TodayQueue extends Component
             'bloodPressure.regex' => __('Blood pressure format: 120/80'),
         ]);
 
-        $queue = Queue::with('medicalRecord')->find($this->vitalSignsQueueId);
+        $queue = Queue::with('medicalRecord')->find($this->interviewQueueId);
 
         if (! $queue || ! $queue->medicalRecord) {
             Toaster::error(__('Medical record not found.'));
-            $this->closeVitalSignsModal();
+            $this->closeInterviewModal();
 
             return;
         }
 
+        // Check if vital signs were added
+        $hasVitals = $this->temperature || $this->bloodPressure || $this->cardiacRate || $this->respiratoryRate;
+        $vitalSignsRecordedAt = $hasVitals && ! $queue->medicalRecord->vital_signs_recorded_at
+            ? now()
+            : $queue->medicalRecord->vital_signs_recorded_at;
+
         $queue->medicalRecord->update([
+            // Patient Information
+            'patient_first_name' => $this->patientFirstName,
+            'patient_middle_name' => $this->patientMiddleName,
+            'patient_last_name' => $this->patientLastName,
+            'patient_date_of_birth' => $this->patientDateOfBirth,
+            'patient_gender' => $this->patientGender,
+            'patient_contact_number' => $this->patientContactNumber,
+            'patient_email' => $this->patientEmail,
+
+            // Address
+            'patient_province' => $this->patientProvince,
+            'patient_municipality' => $this->patientMunicipality,
+            'patient_barangay' => $this->patientBarangay,
+            'patient_street' => $this->patientStreet,
+            'patient_zip_code' => $this->patientZipCode,
+
+            // Companion
+            'companion_name' => $this->companionName,
+            'companion_contact' => $this->companionContact,
+            'companion_relationship' => $this->companionRelationship,
+
+            // Emergency Contact
+            'emergency_contact_name' => $this->emergencyContactName,
+            'emergency_contact_number' => $this->emergencyContactNumber,
+            'emergency_contact_relationship' => $this->emergencyContactRelationship,
+
+            // Medical Background
+            'patient_blood_type' => $this->patientBloodType,
+            'patient_allergies' => $this->patientAllergies,
+            'patient_chronic_conditions' => $this->patientChronicConditions,
+            'patient_current_medications' => $this->patientCurrentMedications,
+            'patient_past_medical_history' => $this->patientPastMedicalHistory,
+            'patient_family_medical_history' => $this->patientFamilyMedicalHistory,
+
+            // Vital Signs
             'temperature' => $this->temperature,
             'blood_pressure' => $this->bloodPressure,
             'cardiac_rate' => $this->cardiacRate,
@@ -560,12 +792,12 @@ class TodayQueue extends Component
             'fundal_height' => $this->fundalHeight,
             'last_menstrual_period' => $this->lastMenstrualPeriod,
             'chief_complaints_updated' => $this->chiefComplaintsUpdated,
-            'vital_signs_recorded_at' => now(),
+            'vital_signs_recorded_at' => $vitalSignsRecordedAt,
         ]);
 
-        Toaster::success(__('Vital signs saved successfully.'));
+        Toaster::success(__('Patient record updated successfully.'));
 
-        $this->closeVitalSignsModal();
+        $this->closeInterviewModal();
     }
 
     public function forwardToDoctor(int $queueId): void
@@ -643,7 +875,7 @@ class TodayQueue extends Component
                         });
                 });
             })
-            ->orderByRaw("FIELD(priority, 'emergency', 'urgent', 'normal')")
+            ->orderByRaw("CASE priority WHEN 'emergency' THEN 1 WHEN 'urgent' THEN 2 WHEN 'normal' THEN 3 ELSE 4 END")
             ->orderBy('queue_number')
             ->get();
 
@@ -666,6 +898,11 @@ class TodayQueue extends Component
             ->get()
             ->groupBy('consultation_type_id');
 
+        // Get the selected queue with full details
+        $selectedQueue = $this->selectedQueueId
+            ? $queues->firstWhere('id', $this->selectedQueueId)
+            : null;
+
         return view('livewire.nurse.today-queue', [
             'queues' => $queues,
             'pendingCheckIns' => $pendingCheckIns,
@@ -673,6 +910,7 @@ class TodayQueue extends Component
             'statusCounts' => $this->statusCounts,
             'typeCounts' => $this->typeCounts,
             'currentServing' => $currentServing,
+            'selectedQueue' => $selectedQueue,
         ])->layout('layouts.app');
     }
 }
