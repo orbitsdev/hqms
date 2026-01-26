@@ -267,31 +267,53 @@
             </div>
         @endif
 
-        {{-- Quick Actions --}}
-        <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
-            <flux:heading size="sm" class="mb-3">{{ __('Quick Actions') }}</flux:heading>
-            <div class="flex flex-wrap gap-2">
-                <flux:button wire:click="openAddScheduleModal" variant="ghost" size="sm" icon="calendar-days">
-                    {{ __('Add Weekly Schedule') }}
-                </flux:button>
-                <flux:button wire:click="openAddExceptionModal('annual_leave')" variant="ghost" size="sm" icon="briefcase">
-                    {{ __('Record Annual Leave') }}
-                </flux:button>
-                <flux:button wire:click="openAddExceptionModal('sick_leave')" variant="ghost" size="sm" icon="heart">
-                    {{ __('Record Sick Leave') }}
-                </flux:button>
-                <flux:button wire:click="openAddExceptionModal('extra_clinic')" variant="ghost" size="sm" icon="plus-circle">
-                    {{ __('Add Extra Clinic Day') }}
-                </flux:button>
-                <flux:button wire:click="openCopyModal" variant="ghost" size="sm" icon="document-duplicate">
-                    {{ __('Copy Schedule') }}
-                </flux:button>
-            </div>
-        </div>
     @endif
 
     {{-- ==================== WEEKLY SCHEDULE VIEW ==================== --}}
     @if($viewMode === 'weekly')
+        {{-- Doctors Without Schedules Alert --}}
+        @if($doctorsWithoutSchedule->isNotEmpty())
+            <div class="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20">
+                <div class="border-b border-amber-200 px-4 py-3 dark:border-amber-800">
+                    <div class="flex items-center gap-2">
+                        <flux:icon name="exclamation-triangle" class="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                        <flux:heading size="sm" class="text-amber-800 dark:text-amber-200">
+                            {{ trans_choice('{1} :count Doctor Without Schedule|[2,*] :count Doctors Without Schedules', $doctorsWithoutSchedule->count(), ['count' => $doctorsWithoutSchedule->count()]) }}
+                        </flux:heading>
+                    </div>
+                    <p class="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                        {{ __('These doctors cannot receive appointments until their schedules are set up.') }}
+                    </p>
+                </div>
+                <div class="divide-y divide-amber-200 dark:divide-amber-800">
+                    @foreach($doctorsWithoutSchedule as $doctor)
+                        <div wire:key="no-schedule-{{ $doctor->id }}" class="flex items-center justify-between px-4 py-3">
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-9 w-9 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/40">
+                                    <flux:icon name="user" class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                </div>
+                                <div>
+                                    <p class="font-medium text-zinc-900 dark:text-white">{{ $doctor->name }}</p>
+                                    @if($doctor->consultationTypes->isNotEmpty())
+                                        <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                                            {{ $doctor->consultationTypes->pluck('name')->join(', ') }}
+                                        </p>
+                                    @else
+                                        <p class="text-xs text-red-500 dark:text-red-400">
+                                            {{ __('No consultation types assigned') }}
+                                        </p>
+                                    @endif
+                                </div>
+                            </div>
+                            <flux:button wire:click="openAddScheduleModal({{ $doctor->id }})" size="sm" variant="filled" icon="plus">
+                                {{ __('Add Schedule') }}
+                            </flux:button>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         {{-- Filters --}}
         <div class="flex flex-wrap items-end gap-3">
             <div class="w-full sm:w-48">
@@ -340,7 +362,7 @@
                                         </flux:text>
                                     </div>
                                 </div>
-                                <flux:button wire:click="openAddExceptionModal" size="xs" variant="ghost" icon="plus">
+                                <flux:button wire:click="openAddExceptionModal(null, {{ $doctor->id }})" size="xs" variant="ghost" icon="plus">
                                     {{ __('Add Exception') }}
                                 </flux:button>
                             </div>
@@ -754,12 +776,57 @@
                     <flux:error name="exceptionConsultationType" />
                 </flux:field>
 
-                {{-- Date --}}
-                <flux:field>
-                    <flux:label>{{ __('Date') }} <span class="text-red-500">*</span></flux:label>
-                    <flux:input type="date" wire:model="exceptionDate" min="{{ now()->format('Y-m-d') }}" />
-                    <flux:error name="exceptionDate" />
-                </flux:field>
+                {{-- Date Mode Toggle (only for new exceptions) --}}
+                @unless($editExceptionId)
+                    <div class="flex items-center justify-between rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
+                        <div>
+                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('Multiple Days (Date Range)') }}</p>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                                {{ $exceptionUseDateRange ? __('Select start and end dates for vacation/leave period') : __('Enable to add exceptions for multiple days at once') }}
+                            </p>
+                        </div>
+                        <flux:switch wire:model.live="exceptionUseDateRange" />
+                    </div>
+                @endunless
+
+                {{-- Date Fields --}}
+                @if($exceptionUseDateRange && !$editExceptionId)
+                    {{-- Date Range Mode --}}
+                    <div class="grid grid-cols-2 gap-4">
+                        <flux:field>
+                            <flux:label>{{ __('From Date') }} <span class="text-red-500">*</span></flux:label>
+                            <flux:input type="date" wire:model.live="exceptionDate" min="{{ now()->format('Y-m-d') }}" />
+                            <flux:error name="exceptionDate" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>{{ __('To Date') }} <span class="text-red-500">*</span></flux:label>
+                            <flux:input type="date" wire:model.live="exceptionDateEnd" min="{{ $exceptionDate ?: now()->format('Y-m-d') }}" />
+                            <flux:error name="exceptionDateEnd" />
+                        </flux:field>
+                    </div>
+                    @if($dateRangeDaysCount > 0)
+                        <div class="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
+                            <p class="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300">
+                                <flux:icon name="information-circle" class="h-5 w-5" />
+                                <span>
+                                    {{ trans_choice('{1} This will create :count exception.|[2,*] This will create :count exceptions.', $dateRangeDaysCount, ['count' => $dateRangeDaysCount]) }}
+                                </span>
+                            </p>
+                            @if($dateRangeDaysCount > 14)
+                                <p class="mt-1 text-xs text-blue-600 dark:text-blue-400">
+                                    {{ __('Tip: For long periods, consider if all dates need exceptions or just weekdays.') }}
+                                </p>
+                            @endif
+                        </div>
+                    @endif
+                @else
+                    {{-- Single Date Mode --}}
+                    <flux:field>
+                        <flux:label>{{ __('Date') }} <span class="text-red-500">*</span></flux:label>
+                        <flux:input type="date" wire:model="exceptionDate" min="{{ now()->format('Y-m-d') }}" />
+                        <flux:error name="exceptionDate" />
+                    </flux:field>
+                @endif
 
                 {{-- Availability Toggle --}}
                 <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
@@ -810,7 +877,13 @@
             <div class="flex justify-end gap-3 border-t border-zinc-200 pt-4 dark:border-zinc-700">
                 <flux:button wire:click="closeExceptionModal" variant="ghost">{{ __('Cancel') }}</flux:button>
                 <flux:button wire:click="saveException" variant="primary" icon="check">
-                    {{ $editExceptionId ? __('Update Exception') : __('Save Exception') }}
+                    @if($editExceptionId)
+                        {{ __('Update Exception') }}
+                    @elseif($exceptionUseDateRange && $dateRangeDaysCount > 1)
+                        {{ __('Create :count Exceptions', ['count' => $dateRangeDaysCount]) }}
+                    @else
+                        {{ __('Save Exception') }}
+                    @endif
                 </flux:button>
             </div>
         </div>

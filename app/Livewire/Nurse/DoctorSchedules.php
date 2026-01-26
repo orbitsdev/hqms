@@ -53,6 +53,10 @@ class DoctorSchedules extends Component
 
     public string $exceptionDate = '';
 
+    public string $exceptionDateEnd = '';
+
+    public bool $exceptionUseDateRange = false;
+
     public bool $exceptionIsAvailable = false;
 
     public string $exceptionStartTime = '';
@@ -131,9 +135,14 @@ class DoctorSchedules extends Component
 
     // ==================== REGULAR SCHEDULE METHODS ====================
 
-    public function openAddScheduleModal(): void
+    public function openAddScheduleModal(?int $doctorId = null): void
     {
         $this->resetScheduleForm();
+
+        if ($doctorId) {
+            $this->scheduleDoctor = (string) $doctorId;
+        }
+
         $this->showScheduleModal = true;
     }
 
@@ -205,8 +214,12 @@ class DoctorSchedules extends Component
             ->where('schedule_type', 'regular')
             ->delete();
 
-        // Create new schedules for selected days
-        foreach ($this->scheduleDays as $dayOfWeek) {
+        // Sort days to ensure consistent order (0=Sun, 1=Mon, ... 6=Sat)
+        $sortedDays = $this->scheduleDays;
+        sort($sortedDays);
+
+        // Create new schedules for selected days in order
+        foreach ($sortedDays as $dayOfWeek) {
             DoctorSchedule::create([
                 'user_id' => $doctorId,
                 'consultation_type_id' => $consultationTypeId,
@@ -231,10 +244,14 @@ class DoctorSchedules extends Component
 
     // ==================== EXCEPTION METHODS ====================
 
-    public function openAddExceptionModal(?string $preset = null): void
+    public function openAddExceptionModal(?string $preset = null, ?int $doctorId = null): void
     {
         $this->resetExceptionForm();
         $this->exceptionDate = now()->addDay()->format('Y-m-d');
+
+        if ($doctorId) {
+            $this->exceptionDoctor = (string) $doctorId;
+        }
 
         if ($preset && isset($this->exceptionPresets[$preset])) {
             $this->exceptionPreset = $preset;
@@ -309,6 +326,8 @@ class DoctorSchedules extends Component
         $this->exceptionDoctor = '';
         $this->exceptionConsultationType = '';
         $this->exceptionDate = '';
+        $this->exceptionDateEnd = '';
+        $this->exceptionUseDateRange = false;
         $this->exceptionIsAvailable = false;
         $this->exceptionStartTime = '08:00';
         $this->exceptionEndTime = '17:00';
@@ -327,6 +346,11 @@ class DoctorSchedules extends Component
             'exceptionReason' => ['nullable', 'string', 'max:255'],
         ];
 
+        // Add date range validation if using date range
+        if ($this->exceptionUseDateRange && ! $this->editExceptionId) {
+            $rules['exceptionDateEnd'] = ['required', 'date', 'after_or_equal:exceptionDate'];
+        }
+
         if ($this->exceptionIsAvailable) {
             $rules['exceptionStartTime'] = ['nullable', 'date_format:H:i'];
             $rules['exceptionEndTime'] = ['nullable', 'date_format:H:i', 'after:exceptionStartTime'];
@@ -335,15 +359,19 @@ class DoctorSchedules extends Component
         $this->validate($rules, [
             'exceptionDoctor.required' => __('Please select a doctor.'),
             'exceptionConsultationType.required' => __('Please select a consultation type.'),
-            'exceptionDate.required' => __('Please select a date.'),
+            'exceptionDate.required' => __('Please select a start date.'),
+            'exceptionDateEnd.required' => __('Please select an end date.'),
+            'exceptionDateEnd.after_or_equal' => __('End date must be on or after start date.'),
             'exceptionEndTime.after' => __('End time must be after start time.'),
         ]);
 
-        $data = [
-            'user_id' => (int) $this->exceptionDoctor,
-            'consultation_type_id' => (int) $this->exceptionConsultationType,
+        $userId = (int) $this->exceptionDoctor;
+        $consultationTypeId = (int) $this->exceptionConsultationType;
+
+        $baseData = [
+            'user_id' => $userId,
+            'consultation_type_id' => $consultationTypeId,
             'schedule_type' => 'exception',
-            'date' => $this->exceptionDate,
             'is_available' => $this->exceptionIsAvailable,
             'start_time' => $this->exceptionIsAvailable ? ($this->exceptionStartTime ?: null) : null,
             'end_time' => $this->exceptionIsAvailable ? ($this->exceptionEndTime ?: null) : null,
@@ -351,25 +379,88 @@ class DoctorSchedules extends Component
         ];
 
         if ($this->editExceptionId) {
-            DoctorSchedule::where('id', $this->editExceptionId)->update($data);
+            // Update single exception
+            $baseData['date'] = $this->exceptionDate;
+            DoctorSchedule::where('id', $this->editExceptionId)->update($baseData);
             $message = __('Exception updated successfully.');
         } else {
-            // Check for duplicate
-            $exists = DoctorSchedule::query()
-                ->where('user_id', $data['user_id'])
-                ->where('consultation_type_id', $data['consultation_type_id'])
-                ->where('schedule_type', 'exception')
-                ->where('date', $data['date'])
-                ->exists();
+            // Create new exception(s)
+            if ($this->exceptionUseDateRange) {
+                // Date range mode - create multiple exceptions
+                $startDate = Carbon::parse($this->exceptionDate);
+                $endDate = Carbon::parse($this->exceptionDateEnd);
+                $daysCount = $startDate->diffInDays($endDate) + 1;
 
-            if ($exists) {
-                $this->addError('exceptionDate', __('An exception already exists for this doctor and date.'));
+                // Limit to prevent accidental huge ranges (max 60 days / ~2 months)
+                if ($daysCount > 60) {
+                    $this->addError('exceptionDateEnd', __('Date range cannot exceed 60 days.'));
 
-                return;
+                    return;
+                }
+
+                $createdCount = 0;
+                $skippedCount = 0;
+
+                for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+                    // Check if exception already exists for this date
+                    $exists = DoctorSchedule::query()
+                        ->where('user_id', $userId)
+                        ->where('consultation_type_id', $consultationTypeId)
+                        ->where('schedule_type', 'exception')
+                        ->where('date', $date->format('Y-m-d'))
+                        ->exists();
+
+                    if ($exists) {
+                        $skippedCount++;
+
+                        continue;
+                    }
+
+                    DoctorSchedule::create(array_merge($baseData, [
+                        'date' => $date->format('Y-m-d'),
+                    ]));
+                    $createdCount++;
+                }
+
+                if ($createdCount === 0) {
+                    $this->addError('exceptionDate', __('All dates in this range already have exceptions.'));
+
+                    return;
+                }
+
+                $message = trans_choice(
+                    '{1} :count exception created successfully.|[2,*] :count exceptions created successfully.',
+                    $createdCount,
+                    ['count' => $createdCount]
+                );
+
+                if ($skippedCount > 0) {
+                    $message .= ' '.trans_choice(
+                        '{1} :count date skipped (already exists).|[2,*] :count dates skipped (already exist).',
+                        $skippedCount,
+                        ['count' => $skippedCount]
+                    );
+                }
+            } else {
+                // Single date mode
+                $exists = DoctorSchedule::query()
+                    ->where('user_id', $userId)
+                    ->where('consultation_type_id', $consultationTypeId)
+                    ->where('schedule_type', 'exception')
+                    ->where('date', $this->exceptionDate)
+                    ->exists();
+
+                if ($exists) {
+                    $this->addError('exceptionDate', __('An exception already exists for this doctor and date.'));
+
+                    return;
+                }
+
+                DoctorSchedule::create(array_merge($baseData, [
+                    'date' => $this->exceptionDate,
+                ]));
+                $message = __('Exception added successfully.');
             }
-
-            DoctorSchedule::create($data);
-            $message = __('Exception added successfully.');
         }
 
         $this->closeExceptionModal();
@@ -545,6 +636,14 @@ class DoctorSchedules extends Component
             $grouped[$doctorId]['schedules'][$typeId]['days'][$schedule->day_of_week] = $schedule;
         }
 
+        // Sort by doctor name for consistent display order
+        uasort($grouped, fn ($a, $b) => strcasecmp($a['doctor']->name, $b['doctor']->name));
+
+        // Sort each doctor's consultation types by name
+        foreach ($grouped as $doctorId => $data) {
+            uasort($grouped[$doctorId]['schedules'], fn ($a, $b) => strcasecmp($a['consultation_type']->name, $b['consultation_type']->name));
+        }
+
         return $grouped;
     }
 
@@ -611,6 +710,21 @@ class DoctorSchedules extends Component
                 ->where('date', '>=', now()->startOfDay())
                 ->count(),
         ];
+    }
+
+    /** @return \Illuminate\Database\Eloquent\Collection<int, User> */
+    #[Computed]
+    public function doctorsWithoutSchedule()
+    {
+        $doctorIdsWithSchedule = DoctorSchedule::where('schedule_type', 'regular')
+            ->distinct()
+            ->pluck('user_id');
+
+        return User::role('doctor')
+            ->whereNotIn('id', $doctorIdsWithSchedule)
+            ->with('personalInformation')
+            ->orderBy('first_name')
+            ->get();
     }
 
     /**
@@ -709,6 +823,30 @@ class DoctorSchedules extends Component
         return $this->dayNames;
     }
 
+    /**
+     * Calculate the number of days in the selected date range
+     */
+    #[Computed]
+    public function dateRangeDaysCount(): int
+    {
+        if (! $this->exceptionUseDateRange || ! $this->exceptionDate || ! $this->exceptionDateEnd) {
+            return 0;
+        }
+
+        try {
+            $start = Carbon::parse($this->exceptionDate);
+            $end = Carbon::parse($this->exceptionDateEnd);
+
+            if ($end->lt($start)) {
+                return 0;
+            }
+
+            return $start->diffInDays($end) + 1;
+        } catch (\Exception $e) {
+            return 0;
+        }
+    }
+
     /** @return array<string, array{label: string, available: bool, reason: string}> */
     public function getExceptionPresetsProperty(): array
     {
@@ -727,6 +865,8 @@ class DoctorSchedules extends Component
             'weekCalendar' => $this->weekCalendar,
             'dayNames' => $this->dayNames,
             'exceptionPresets' => $this->exceptionPresets,
+            'dateRangeDaysCount' => $this->dateRangeDaysCount,
+            'doctorsWithoutSchedule' => $this->doctorsWithoutSchedule,
         ])->layout('layouts.app');
     }
 }
