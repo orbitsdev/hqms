@@ -65,6 +65,9 @@
                         <flux:sidebar.item icon="queue-list" :href="route('nurse.queue')" :current="request()->routeIs('nurse.queue')" wire:navigate>
                             {{ __('Today\'s Queue') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="clipboard-document-list" :href="route('nurse.medical-records')" :current="request()->routeIs('nurse.medical-records')" wire:navigate>
+                            {{ __('Medical Records') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="cog" :href="route('profile.edit')" :current="request()->routeIs('profile.edit')" wire:navigate>
                             {{ __('Settings') }}
                         </flux:sidebar.item>

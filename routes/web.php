@@ -4,6 +4,7 @@ use App\Livewire\Nurse\Appointments as NurseAppointments;
 use App\Livewire\Nurse\AppointmentShow as NurseAppointmentShow;
 use App\Livewire\Nurse\Dashboard as NurseDashboard;
 use App\Livewire\Nurse\DoctorSchedules as NurseDoctorSchedules;
+use App\Livewire\Nurse\MedicalRecords as NurseMedicalRecords;
 use App\Livewire\Nurse\TodayQueue as NurseTodayQueue;
 use App\Livewire\Nurse\WalkInRegistration as NurseWalkIn;
 use App\Livewire\Patient\Appointments;
@@ -53,6 +54,7 @@ Route::prefix('nurse')->name('nurse.')->middleware(['auth', 'role:nurse'])->grou
     Route::get('/appointments/{appointment}', NurseAppointmentShow::class)->name('appointments.show');
     Route::get('/queue', NurseTodayQueue::class)->name('queue');
     Route::get('/walk-in', NurseWalkIn::class)->name('walk-in');
+    Route::get('/medical-records', NurseMedicalRecords::class)->name('medical-records');
 });
 
 require __DIR__.'/settings.php';
