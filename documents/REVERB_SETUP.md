@@ -4,6 +4,70 @@ A step-by-step guide to set up Laravel Reverb (WebSockets) for real-time feature
 
 ---
 
+## HQMS Project Credentials
+
+These are the credentials used in this project. Copy these to your `.env` file:
+
+```env
+# Broadcasting driver
+BROADCAST_CONNECTION=reverb
+
+# Laravel Reverb (WebSockets)
+REVERB_APP_ID=hqms
+REVERB_APP_KEY=hqms-key
+REVERB_APP_SECRET=hqms-secret
+REVERB_HOST=127.0.0.1
+REVERB_PORT=8080
+REVERB_SCHEME=http
+
+# Vite (Frontend) - These are exposed to JavaScript
+VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
+VITE_REVERB_HOST="127.0.0.1"
+VITE_REVERB_PORT="${REVERB_PORT}"
+VITE_REVERB_SCHEME="${REVERB_SCHEME}"
+```
+
+### Quick Start (After Cloning)
+
+```bash
+# 1. Copy environment file
+cp .env.example .env
+
+# 2. Add the Reverb credentials above to .env
+
+# 3. Install dependencies
+composer install
+npm install
+
+# 4. Generate app key
+php artisan key:generate
+
+# 5. Run migrations
+php artisan migrate
+
+# 6. Clear config cache
+php artisan config:clear
+
+# 7. Start development (runs Laravel, Reverb, and Vite)
+composer run dev
+```
+
+Or run services separately:
+```bash
+# Terminal 1: Reverb WebSocket server
+php artisan reverb:start --debug
+
+# Terminal 2: Vite dev server
+npm run dev
+
+# Terminal 3: (Optional) Queue worker - NOT needed for broadcasts
+# php artisan queue:listen
+```
+
+**Note:** Queue worker is NOT required for real-time broadcasts because we use `ShouldBroadcastNow` (immediate broadcast) instead of `ShouldBroadcast` (queued).
+
+---
+
 ## 1. Installation
 
 ```bash
@@ -410,6 +474,93 @@ VITE_REVERB_SCHEME="https"
 | Public | `new Channel('name')` | Anyone can listen |
 | Private | `new PrivateChannel('name')` | Auth required |
 | Presence | `new PresenceChannel('name')` | Track who's online |
+
+---
+
+## HQMS-Specific Implementation
+
+### Event: QueueUpdated
+
+Location: `app/Events/QueueUpdated.php`
+
+```php
+// Uses ShouldBroadcastNow for immediate broadcast (no queue worker needed)
+class QueueUpdated implements ShouldBroadcastNow
+{
+    public Queue $queueEntry;  // Note: NOT $queue (conflicts with Laravel)
+    public string $action;
+
+    public function broadcastOn(): array
+    {
+        return [
+            new Channel('queue.display.'.$this->queueEntry->consultation_type_id),
+            new Channel('queue.display.all'),
+            new PrivateChannel('queue.staff'),
+        ];
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'queue.updated';
+    }
+}
+```
+
+### Listening in Livewire Components
+
+```php
+// In Display/QueueMonitor.php
+#[On('echo:queue.display.{consultationTypeId},queue.updated')]
+public function refreshOnQueueUpdate(): void
+{
+    // Component auto re-renders
+}
+
+#[On('echo:queue.display.all,queue.updated')]
+public function refreshOnAllQueueUpdate(): void
+{
+    // For /display (all services)
+}
+
+// JavaScript fallback listener
+#[On('refreshFromEcho')]
+public function refreshFromEcho($event = null): void
+{
+    // Triggered by JavaScript Echo listener
+}
+```
+
+### JavaScript Echo Listener (Fallback)
+
+In `resources/views/layouts/display.blade.php`:
+
+```javascript
+window.Echo.channel('queue.display.all')
+    .listen('.queue.updated', (e) => {
+        console.log('📡 Received:', e);
+        Livewire.dispatch('refreshFromEcho', { event: e });
+    });
+```
+
+### Connection Status Indicator
+
+The display shows a colored dot next to "HQMS":
+- 🟡 Yellow = Connecting
+- 🟢 Green = Connected (Reverb working)
+- 🔴 Red = Disconnected
+
+### Test Broadcasting
+
+```bash
+# Test if Reverb is receiving broadcasts
+php artisan app:test-broadcast --sync
+```
+
+### Display Routes
+
+- `/display` - All services queue display
+- `/display/1` - Specific consultation type (e.g., Pediatrics)
+- `/display/2` - Another consultation type (e.g., Obstetrics)
 
 ---
 
