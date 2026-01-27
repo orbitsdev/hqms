@@ -98,11 +98,6 @@
                 </flux:sidebar.nav>
             @endunless
 
-            {{-- Desktop Notification Bell --}}
-            <div class="hidden lg:flex items-center justify-center px-3 py-2">
-                <livewire:notification-dropdown />
-            </div>
-
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
 
@@ -146,6 +141,11 @@
                 </nav>
             </div>
         @endif
+
+        <!-- Desktop Notification - Upper Right Corner -->
+        <div class="hidden lg:block fixed top-4 right-4 z-50">
+            <livewire:notification-dropdown />
+        </div>
 
         <!-- Mobile User Menu -->
         <flux:header class="lg:hidden">
