@@ -15,6 +15,11 @@ class QueueUpdated implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
+     * The queue entry that was updated.
+     */
+    public Queue $queueEntry;
+
+    /**
      * The action that triggered the event.
      */
     public string $action;
@@ -23,9 +28,10 @@ class QueueUpdated implements ShouldBroadcast
      * Create a new event instance.
      */
     public function __construct(
-        public Queue $queue,
+        Queue $queueEntry,
         string $action = 'updated'
     ) {
+        $this->queueEntry = $queueEntry;
         $this->action = $action;
     }
 
@@ -38,14 +44,14 @@ class QueueUpdated implements ShouldBroadcast
     {
         $channels = [
             // Public channel for queue displays in waiting area
-            new Channel('queue.display.'.$this->queue->consultation_type_id),
+            new Channel('queue.display.'.$this->queueEntry->consultation_type_id),
             // Private channel for staff dashboard
             new PrivateChannel('queue.staff'),
         ];
 
         // If patient has a user account, notify them directly
-        if ($this->queue->user_id) {
-            $channels[] = new PrivateChannel('queue.patient.'.$this->queue->user_id);
+        if ($this->queueEntry->user_id) {
+            $channels[] = new PrivateChannel('queue.patient.'.$this->queueEntry->user_id);
         }
 
         return $channels;
@@ -61,14 +67,14 @@ class QueueUpdated implements ShouldBroadcast
         return [
             'action' => $this->action,
             'queue' => [
-                'id' => $this->queue->id,
-                'queue_number' => $this->queue->queue_number,
-                'status' => $this->queue->status,
-                'priority' => $this->queue->priority,
-                'consultation_type_id' => $this->queue->consultation_type_id,
-                'doctor_id' => $this->queue->doctor_id,
-                'called_at' => $this->queue->called_at?->toIso8601String(),
-                'serving_started_at' => $this->queue->serving_started_at?->toIso8601String(),
+                'id' => $this->queueEntry->id,
+                'queue_number' => $this->queueEntry->queue_number,
+                'status' => $this->queueEntry->status,
+                'priority' => $this->queueEntry->priority,
+                'consultation_type_id' => $this->queueEntry->consultation_type_id,
+                'doctor_id' => $this->queueEntry->doctor_id,
+                'called_at' => $this->queueEntry->called_at?->toIso8601String(),
+                'serving_started_at' => $this->queueEntry->serving_started_at?->toIso8601String(),
             ],
         ];
     }

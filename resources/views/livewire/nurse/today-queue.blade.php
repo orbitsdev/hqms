@@ -351,16 +351,18 @@
     </flux:modal>
 
     <!-- Patient Interview Modal -->
-    <flux:modal wire:model="showInterviewModal" class="max-w-4xl">
-        <div class="space-y-6">
-            <div class="flex items-center justify-between">
-                <flux:heading size="lg">{{ __('Patient Interview') }}</flux:heading>
-                @if($this->interviewQueue)
-                    <span class="rounded-lg bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">
-                        {{ $this->interviewQueue->formatted_number }}
-                    </span>
-                @endif
-            </div>
+    <flux:modal wire:model="showInterviewModal" class="max-w-5xl">
+        <div class="flex gap-6">
+            {{-- Main Interview Form --}}
+            <div class="flex-1 space-y-6">
+                <div class="flex items-center justify-between">
+                    <flux:heading size="lg">{{ __('Patient Interview') }}</flux:heading>
+                    @if($this->interviewQueue)
+                        <span class="rounded-lg bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">
+                            {{ $this->interviewQueue->formatted_number }}
+                        </span>
+                    @endif
+                </div>
 
             <!-- Step Indicator -->
             <div class="flex items-center justify-between border-b border-zinc-200 pb-4 dark:border-zinc-700">
@@ -458,38 +460,49 @@
                     </div>
 
                 @elseif($interviewStep === 'companion')
-                    <div class="space-y-4">
-                        <div>
-                            <p class="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('Companion') }}</p>
+                    <div class="space-y-6">
+                        {{-- Companion Section --}}
+                        <div class="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
+                            <div class="mb-3 flex items-center gap-2">
+                                <flux:icon name="user" class="h-4 w-4 text-zinc-500" />
+                                <p class="text-sm font-medium text-zinc-900 dark:text-white">{{ __('Companion') }}</p>
+                                <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('(Person accompanying the patient today)') }}</span>
+                            </div>
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
                                 <flux:field>
-                                    <flux:label>{{ __('Name') }}</flux:label>
-                                    <flux:input wire:model="companionName" />
+                                    <flux:label>{{ __('Companion Name') }}</flux:label>
+                                    <flux:input wire:model="companionName" placeholder="{{ __('Full name') }}" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('Contact') }}</flux:label>
-                                    <flux:input wire:model="companionContact" />
+                                    <flux:label>{{ __('Companion Contact') }}</flux:label>
+                                    <flux:input wire:model="companionContact" placeholder="{{ __('Phone number') }}" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('Relationship') }}</flux:label>
-                                    <flux:input wire:model="companionRelationship" />
+                                    <flux:label>{{ __('Relationship to Patient') }}</flux:label>
+                                    <flux:input wire:model="companionRelationship" placeholder="{{ __('e.g., Mother, Spouse') }}" />
                                 </flux:field>
                             </div>
                         </div>
-                        <div>
-                            <p class="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('Emergency Contact') }}</p>
+
+                        {{-- Emergency Contact Section --}}
+                        <div class="rounded-lg border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-800 dark:bg-amber-900/10">
+                            <div class="mb-3 flex items-center gap-2">
+                                <flux:icon name="phone" class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                <p class="text-sm font-medium text-zinc-900 dark:text-white">{{ __('Emergency Contact') }}</p>
+                                <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('(Person to contact in case of emergency)') }}</span>
+                            </div>
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
                                 <flux:field>
-                                    <flux:label>{{ __('Name') }}</flux:label>
-                                    <flux:input wire:model="emergencyContactName" />
+                                    <flux:label>{{ __('Emergency Contact Name') }}</flux:label>
+                                    <flux:input wire:model="emergencyContactName" placeholder="{{ __('Full name') }}" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('Contact') }}</flux:label>
-                                    <flux:input wire:model="emergencyContactNumber" />
+                                    <flux:label>{{ __('Emergency Contact Number') }}</flux:label>
+                                    <flux:input wire:model="emergencyContactNumber" placeholder="{{ __('Phone number') }}" />
                                 </flux:field>
                                 <flux:field>
-                                    <flux:label>{{ __('Relationship') }}</flux:label>
-                                    <flux:input wire:model="emergencyContactRelationship" />
+                                    <flux:label>{{ __('Relationship to Patient') }}</flux:label>
+                                    <flux:input wire:model="emergencyContactRelationship" placeholder="{{ __('e.g., Father, Sibling') }}" />
                                 </flux:field>
                             </div>
                         </div>
@@ -529,26 +542,73 @@
                         $consultationType = $this->interviewQueue?->consultationType;
                         $isOb = $consultationType?->short_name === 'O';
                         $isPedia = $consultationType?->short_name === 'P';
+                        $vitalAlerts = $this->vitalAlerts;
                     @endphp
+
+                    {{-- Vital Signs Alerts Banner --}}
+                    @if(count($vitalAlerts) > 0)
+                        <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
+                            <div class="flex items-start gap-2">
+                                <flux:icon name="exclamation-triangle" class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+                                <div>
+                                    <p class="text-sm font-medium text-amber-800 dark:text-amber-200">{{ __('Abnormal Vital Signs Detected') }}</p>
+                                    <ul class="mt-1 list-inside list-disc text-xs text-amber-700 dark:text-amber-300">
+                                        @foreach($vitalAlerts as $field => $alert)
+                                            <li>{{ $alert['message'] }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
                             <flux:field>
-                                <flux:label>{{ __('Temperature') }} (°C)</flux:label>
-                                <flux:input type="number" wire:model="temperature" step="0.1" placeholder="36.5" />
+                                <flux:label class="flex items-center gap-2">
+                                    {{ __('Temperature') }} (°C)
+                                    @if(isset($vitalAlerts['temperature']))
+                                        <span class="rounded px-1.5 py-0.5 text-[10px] font-bold {{ $vitalAlerts['temperature']['level'] === 'danger' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' }}">
+                                            {{ $vitalAlerts['temperature']['message'] }}
+                                        </span>
+                                    @endif
+                                </flux:label>
+                                <flux:input type="number" wire:model.live.debounce.500ms="temperature" step="0.1" placeholder="36.5" class="{{ isset($vitalAlerts['temperature']) ? ($vitalAlerts['temperature']['level'] === 'danger' ? 'border-red-500! ring-red-500!' : 'border-amber-500! ring-amber-500!') : '' }}" />
                                 <flux:error name="temperature" />
                             </flux:field>
                             <flux:field>
-                                <flux:label>{{ __('Blood Pressure') }}</flux:label>
-                                <flux:input wire:model="bloodPressure" placeholder="120/80" />
+                                <flux:label class="flex items-center gap-2">
+                                    {{ __('Blood Pressure') }}
+                                    @if(isset($vitalAlerts['bloodPressure']))
+                                        <span class="rounded px-1.5 py-0.5 text-[10px] font-bold {{ $vitalAlerts['bloodPressure']['level'] === 'danger' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' }}">
+                                            {{ $vitalAlerts['bloodPressure']['message'] }}
+                                        </span>
+                                    @endif
+                                </flux:label>
+                                <flux:input wire:model.live.debounce.500ms="bloodPressure" placeholder="120/80" class="{{ isset($vitalAlerts['bloodPressure']) ? ($vitalAlerts['bloodPressure']['level'] === 'danger' ? 'border-red-500! ring-red-500!' : 'border-amber-500! ring-amber-500!') : '' }}" />
                                 <flux:error name="bloodPressure" />
                             </flux:field>
                             <flux:field>
-                                <flux:label>{{ __('Cardiac Rate') }}</flux:label>
-                                <flux:input type="number" wire:model="cardiacRate" placeholder="72" />
+                                <flux:label class="flex items-center gap-2">
+                                    {{ __('Cardiac Rate') }}
+                                    @if(isset($vitalAlerts['cardiacRate']))
+                                        <span class="rounded px-1.5 py-0.5 text-[10px] font-bold {{ $vitalAlerts['cardiacRate']['level'] === 'danger' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' }}">
+                                            {{ $vitalAlerts['cardiacRate']['message'] }}
+                                        </span>
+                                    @endif
+                                </flux:label>
+                                <flux:input type="number" wire:model.live.debounce.500ms="cardiacRate" placeholder="72" class="{{ isset($vitalAlerts['cardiacRate']) ? ($vitalAlerts['cardiacRate']['level'] === 'danger' ? 'border-red-500! ring-red-500!' : 'border-amber-500! ring-amber-500!') : '' }}" />
                             </flux:field>
                             <flux:field>
-                                <flux:label>{{ __('Respiratory Rate') }}</flux:label>
-                                <flux:input type="number" wire:model="respiratoryRate" placeholder="16" />
+                                <flux:label class="flex items-center gap-2">
+                                    {{ __('Respiratory Rate') }}
+                                    @if(isset($vitalAlerts['respiratoryRate']))
+                                        <span class="rounded px-1.5 py-0.5 text-[10px] font-bold {{ $vitalAlerts['respiratoryRate']['level'] === 'danger' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' }}">
+                                            {{ $vitalAlerts['respiratoryRate']['message'] }}
+                                        </span>
+                                    @endif
+                                </flux:label>
+                                <flux:input type="number" wire:model.live.debounce.500ms="respiratoryRate" placeholder="16" class="{{ isset($vitalAlerts['respiratoryRate']) ? ($vitalAlerts['respiratoryRate']['level'] === 'danger' ? 'border-red-500! ring-red-500!' : 'border-amber-500! ring-amber-500!') : '' }}" />
                             </flux:field>
                             <flux:field>
                                 <flux:label>{{ __('Weight') }} (kg)</flux:label>
@@ -566,8 +626,15 @@
                             @endif
                             @if($isOb)
                                 <flux:field>
-                                    <flux:label>{{ __('Fetal Heart Tone') }}</flux:label>
-                                    <flux:input type="number" wire:model="fetalHeartTone" />
+                                    <flux:label class="flex items-center gap-2">
+                                        {{ __('Fetal Heart Tone') }}
+                                        @if(isset($vitalAlerts['fetalHeartTone']))
+                                            <span class="rounded px-1.5 py-0.5 text-[10px] font-bold {{ $vitalAlerts['fetalHeartTone']['level'] === 'danger' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' }}">
+                                                {{ $vitalAlerts['fetalHeartTone']['message'] }}
+                                            </span>
+                                        @endif
+                                    </flux:label>
+                                    <flux:input type="number" wire:model.live.debounce.500ms="fetalHeartTone" class="{{ isset($vitalAlerts['fetalHeartTone']) ? ($vitalAlerts['fetalHeartTone']['level'] === 'danger' ? 'border-red-500! ring-red-500!' : 'border-amber-500! ring-amber-500!') : '' }}" />
                                 </flux:field>
                                 <flux:field>
                                     <flux:label>{{ __('Fundal Height') }} (cm)</flux:label>
@@ -587,22 +654,81 @@
                 @endif
             </div>
 
-            <!-- Footer -->
-            <div class="flex items-center justify-between border-t border-zinc-200 pt-4 dark:border-zinc-700">
-                <div>
-                    @if($interviewStep !== 'patient')
-                        <flux:button wire:click="previousInterviewStep" variant="ghost" icon="arrow-left">{{ __('Back') }}</flux:button>
-                    @endif
-                </div>
-                <div class="flex gap-2">
-                    <flux:button wire:click="closeInterviewModal" variant="ghost">{{ __('Cancel') }}</flux:button>
-                    @if($interviewStep !== 'vitals')
-                        <flux:button wire:click="nextInterviewStep" variant="primary" icon-trailing="arrow-right">{{ __('Next') }}</flux:button>
-                    @else
-                        <flux:button wire:click="saveInterview" variant="primary" icon="check">{{ __('Save') }}</flux:button>
-                    @endif
+            <!-- Validation Errors -->
+                @if($errors->any())
+                    <div class="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
+                        <div class="flex items-start gap-2">
+                            <flux:icon name="exclamation-circle" class="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
+                            <div>
+                                <p class="text-sm font-medium text-red-800 dark:text-red-200">{{ __('Please fix the following errors:') }}</p>
+                                <ul class="mt-1 list-inside list-disc text-xs text-red-700 dark:text-red-300">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Footer -->
+                <div class="flex items-center justify-between border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                    <div>
+                        @if($interviewStep !== 'patient')
+                            <flux:button wire:click="previousInterviewStep" variant="ghost" icon="arrow-left">{{ __('Back') }}</flux:button>
+                        @endif
+                    </div>
+                    <div class="flex gap-2">
+                        <flux:button wire:click="closeInterviewModal" variant="ghost">{{ __('Cancel') }}</flux:button>
+                        @if($interviewStep !== 'vitals')
+                            <flux:button wire:click="nextInterviewStep" variant="primary" icon-trailing="arrow-right">{{ __('Next') }}</flux:button>
+                        @else
+                            <flux:button wire:click="saveInterview" wire:loading.attr="disabled" variant="primary" icon="check">
+                                <span wire:loading.remove wire:target="saveInterview">{{ __('Save') }}</span>
+                                <span wire:loading wire:target="saveInterview">{{ __('Saving...') }}</span>
+                            </flux:button>
+                        @endif
+                    </div>
                 </div>
             </div>
+
+            {{-- Patient History Sidebar --}}
+            @if($this->patientHistory->isNotEmpty())
+                <div class="hidden w-64 shrink-0 border-l border-zinc-200 pl-6 dark:border-zinc-700 lg:block">
+                    <h3 class="mb-3 text-sm font-medium text-zinc-900 dark:text-white">{{ __('Previous Visits') }}</h3>
+                    <div class="space-y-3">
+                        @foreach($this->patientHistory as $record)
+                            <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-2.5 text-xs dark:border-zinc-700 dark:bg-zinc-800">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium text-zinc-900 dark:text-white">{{ $record->visit_date?->format('M d, Y') }}</span>
+                                    <span class="rounded bg-zinc-200 px-1.5 py-0.5 text-[10px] font-bold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
+                                        {{ $record->consultationType?->short_name }}
+                                    </span>
+                                </div>
+                                @if($record->chief_complaints_initial || $record->chief_complaints_updated)
+                                    <p class="mt-1.5 text-zinc-600 dark:text-zinc-400">
+                                        {{ Str::limit($record->chief_complaints_updated ?? $record->chief_complaints_initial, 60) }}
+                                    </p>
+                                @endif
+                                <div class="mt-2 grid grid-cols-2 gap-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+                                    @if($record->temperature)
+                                        <div>T: {{ $record->temperature }}°C</div>
+                                    @endif
+                                    @if($record->blood_pressure)
+                                        <div>BP: {{ $record->blood_pressure }}</div>
+                                    @endif
+                                    @if($record->cardiac_rate)
+                                        <div>HR: {{ $record->cardiac_rate }}</div>
+                                    @endif
+                                    @if($record->respiratory_rate)
+                                        <div>RR: {{ $record->respiratory_rate }}</div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
     </flux:modal>
 

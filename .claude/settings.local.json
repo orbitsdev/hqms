@@ -20,7 +20,8 @@
       "Bash(composer require:*)",
       "Bash(php:*)",
       "Bash(find:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(tasklist:*)"
     ]
   }
 }

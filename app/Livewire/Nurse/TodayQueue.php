@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Nurse;
 
+use App\Events\QueueUpdated;
 use App\Models\Appointment;
 use App\Models\ConsultationType;
 use App\Models\MedicalRecord;
@@ -13,11 +14,21 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Masmerise\Toaster\Toaster;
 
 class TodayQueue extends Component
 {
+    /**
+     * Refresh queue when updates come in via Echo.
+     */
+    #[On('echo-private:queue.staff,queue.updated')]
+    public function refreshOnQueueUpdate(): void
+    {
+        // Component will automatically re-render
+    }
+
     public string $status = 'waiting';
 
     public string $consultationTypeFilter = '';
@@ -216,6 +227,121 @@ class TodayQueue extends Component
             ->find($this->interviewQueueId);
     }
 
+    /**
+     * Get vital signs alerts based on current values.
+     *
+     * @return array<string, array{level: string, message: string}>
+     */
+    public function getVitalAlertsProperty(): array
+    {
+        $alerts = [];
+
+        // Temperature checks
+        if ($this->temperature !== null && $this->temperature !== '') {
+            $temp = (float) $this->temperature;
+            if ($temp >= 39.0) {
+                $alerts['temperature'] = ['level' => 'danger', 'message' => __('High fever')];
+            } elseif ($temp >= 38.0) {
+                $alerts['temperature'] = ['level' => 'warning', 'message' => __('Fever')];
+            } elseif ($temp <= 35.0) {
+                $alerts['temperature'] = ['level' => 'danger', 'message' => __('Hypothermia')];
+            } elseif ($temp <= 36.0) {
+                $alerts['temperature'] = ['level' => 'warning', 'message' => __('Low temperature')];
+            }
+        }
+
+        // Blood pressure checks
+        if ($this->bloodPressure !== null && $this->bloodPressure !== '') {
+            if (preg_match('/^(\d+)\/(\d+)$/', $this->bloodPressure, $matches)) {
+                $systolic = (int) $matches[1];
+                $diastolic = (int) $matches[2];
+
+                if ($systolic >= 180 || $diastolic >= 120) {
+                    $alerts['bloodPressure'] = ['level' => 'danger', 'message' => __('Hypertensive crisis')];
+                } elseif ($systolic >= 140 || $diastolic >= 90) {
+                    $alerts['bloodPressure'] = ['level' => 'warning', 'message' => __('High BP')];
+                } elseif ($systolic <= 90 || $diastolic <= 60) {
+                    $alerts['bloodPressure'] = ['level' => 'warning', 'message' => __('Low BP')];
+                }
+            }
+        }
+
+        // Heart rate checks
+        if ($this->cardiacRate !== null) {
+            if ($this->cardiacRate >= 120) {
+                $alerts['cardiacRate'] = ['level' => 'danger', 'message' => __('Tachycardia')];
+            } elseif ($this->cardiacRate >= 100) {
+                $alerts['cardiacRate'] = ['level' => 'warning', 'message' => __('Elevated HR')];
+            } elseif ($this->cardiacRate <= 50) {
+                $alerts['cardiacRate'] = ['level' => 'danger', 'message' => __('Bradycardia')];
+            } elseif ($this->cardiacRate <= 60) {
+                $alerts['cardiacRate'] = ['level' => 'warning', 'message' => __('Low HR')];
+            }
+        }
+
+        // Respiratory rate checks
+        if ($this->respiratoryRate !== null) {
+            if ($this->respiratoryRate >= 25) {
+                $alerts['respiratoryRate'] = ['level' => 'danger', 'message' => __('Tachypnea')];
+            } elseif ($this->respiratoryRate >= 20) {
+                $alerts['respiratoryRate'] = ['level' => 'warning', 'message' => __('Elevated RR')];
+            } elseif ($this->respiratoryRate <= 10) {
+                $alerts['respiratoryRate'] = ['level' => 'danger', 'message' => __('Bradypnea')];
+            } elseif ($this->respiratoryRate <= 12) {
+                $alerts['respiratoryRate'] = ['level' => 'warning', 'message' => __('Low RR')];
+            }
+        }
+
+        // Fetal heart tone checks (for OB)
+        if ($this->fetalHeartTone !== null) {
+            if ($this->fetalHeartTone >= 180) {
+                $alerts['fetalHeartTone'] = ['level' => 'danger', 'message' => __('Fetal tachycardia')];
+            } elseif ($this->fetalHeartTone >= 160) {
+                $alerts['fetalHeartTone'] = ['level' => 'warning', 'message' => __('Elevated FHT')];
+            } elseif ($this->fetalHeartTone <= 100) {
+                $alerts['fetalHeartTone'] = ['level' => 'danger', 'message' => __('Fetal bradycardia')];
+            } elseif ($this->fetalHeartTone <= 110) {
+                $alerts['fetalHeartTone'] = ['level' => 'warning', 'message' => __('Low FHT')];
+            }
+        }
+
+        return $alerts;
+    }
+
+    /**
+     * Get patient's previous medical records for history preview.
+     *
+     * @return \Illuminate\Support\Collection<int, MedicalRecord>
+     */
+    public function getPatientHistoryProperty(): \Illuminate\Support\Collection
+    {
+        if (! $this->interviewQueueId) {
+            return collect();
+        }
+
+        $queue = Queue::with('appointment')->find($this->interviewQueueId);
+
+        if (! $queue || ! $queue->appointment) {
+            return collect();
+        }
+
+        // Try to find previous records by matching patient name and DOB
+        $firstName = $queue->appointment->patient_first_name;
+        $lastName = $queue->appointment->patient_last_name;
+        $dob = $queue->appointment->patient_date_of_birth;
+
+        return MedicalRecord::query()
+            ->where('patient_first_name', $firstName)
+            ->where('patient_last_name', $lastName)
+            ->when($dob, fn ($q) => $q->where('patient_date_of_birth', $dob))
+            ->where('id', '!=', $queue->medicalRecord?->id ?? 0)
+            ->whereNotNull('vital_signs_recorded_at')
+            ->with('consultationType')
+            ->orderByDesc('visit_date')
+            ->limit(5)
+            ->get();
+    }
+
     // Check-in Methods
     public function openCheckInModal(int $appointmentId): void
     {
@@ -269,6 +395,9 @@ class TodayQueue extends Component
             'status' => 'called',
             'called_at' => now(),
         ]);
+
+        // Broadcast queue update
+        event(new QueueUpdated($queue->fresh(), 'called'));
 
         if ($queue->appointment?->user) {
             $queue->appointment->user->notify(new GenericNotification([
@@ -342,6 +471,9 @@ class TodayQueue extends Component
             }
         });
 
+        // Broadcast queue update
+        event(new QueueUpdated($queue->fresh(), 'serving'));
+
         Toaster::success(__('Now serving patient: :number', ['number' => $queue->formatted_number]));
     }
 
@@ -385,6 +517,9 @@ class TodayQueue extends Component
             'status' => 'skipped',
         ]);
 
+        // Broadcast queue update
+        event(new QueueUpdated($queue->fresh(), 'skipped'));
+
         // Show success state with requeue option
         $this->skipConfirmed = true;
     }
@@ -410,6 +545,9 @@ class TodayQueue extends Component
             'status' => 'waiting',
             'called_at' => null,
         ]);
+
+        // Broadcast queue update
+        event(new QueueUpdated($queue->fresh(), 'requeued'));
 
         Toaster::success(__('Patient requeued: :number', ['number' => $formattedNumber]));
 
@@ -477,6 +615,9 @@ class TodayQueue extends Component
             'called_at' => null,
         ]);
 
+        // Broadcast queue update
+        event(new QueueUpdated($queue->fresh(), 'requeued'));
+
         Toaster::success(__('Patient requeued: :number', ['number' => $formattedNumber]));
 
         $this->closeRequeueModal();
@@ -540,6 +681,9 @@ class TodayQueue extends Component
                 'called_at' => null,
             ]);
         });
+
+        // Broadcast queue update
+        event(new QueueUpdated($queue->fresh(), 'stopped'));
 
         Toaster::success(__('Stopped serving patient: :number', ['number' => $formattedNumber]));
 
@@ -748,13 +892,13 @@ class TodayQueue extends Component
             return;
         }
 
-        try {
-            // Check if vital signs were added
-            $hasVitals = $this->temperature || $this->bloodPressure || $this->cardiacRate || $this->respiratoryRate;
-            $vitalSignsRecordedAt = $hasVitals && ! $queue->medicalRecord->vital_signs_recorded_at
-                ? now()
-                : $queue->medicalRecord->vital_signs_recorded_at;
+        // Check if vital signs were added
+        $hasVitals = $this->temperature || $this->bloodPressure || $this->cardiacRate || $this->respiratoryRate;
+        $vitalSignsRecordedAt = $hasVitals && ! $queue->medicalRecord->vital_signs_recorded_at
+            ? now()
+            : $queue->medicalRecord->vital_signs_recorded_at;
 
+        try {
             $queue->medicalRecord->update([
                 // Patient Information
                 'patient_first_name' => $this->patientFirstName,
@@ -863,6 +1007,9 @@ class TodayQueue extends Component
                 ]));
             }
         });
+
+        // Broadcast queue update
+        event(new QueueUpdated($queue->fresh(), 'forwarded'));
 
         Toaster::success(__('Patient forwarded to doctor successfully.'));
     }
