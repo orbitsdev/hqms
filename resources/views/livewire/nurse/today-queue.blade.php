@@ -275,6 +275,18 @@
 
                     <!-- Actions -->
                     <div class="space-y-2 p-4">
+                        {{-- Priority & Print Actions (shown for all non-completed statuses) --}}
+                        @if($selectedQueue->status !== 'completed')
+                            <div class="flex gap-2 mb-3 pb-3 border-b border-zinc-200 dark:border-zinc-700">
+                                <flux:button wire:click="openPriorityModal({{ $selectedQueue->id }})" size="sm" variant="ghost" icon="flag" class="flex-1">
+                                    {{ __('Priority') }}
+                                </flux:button>
+                                <flux:button wire:click="openPrintTicketModal({{ $selectedQueue->id }})" size="sm" variant="ghost" icon="printer" class="flex-1">
+                                    {{ __('Print') }}
+                                </flux:button>
+                            </div>
+                        @endif
+
                         @if($selectedQueue->status === 'waiting')
                             <flux:button wire:click="callPatient({{ $selectedQueue->id }})" class="w-full" icon="megaphone">
                                 {{ __('Call Patient') }}
@@ -784,6 +796,70 @@
             <div class="flex justify-end gap-2">
                 <flux:button wire:click="closeStopServingModal" variant="ghost">{{ __('Cancel') }}</flux:button>
                 <flux:button wire:click="confirmStopServing" variant="danger" icon="x-mark">{{ __('Stop') }}</flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
+    <!-- Priority Modal -->
+    <flux:modal wire:model="showPriorityModal" class="max-w-sm">
+        <div class="space-y-4">
+            <flux:heading size="lg">{{ __('Set Priority') }}</flux:heading>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Higher priority patients will be served first.') }}</p>
+
+            <div class="space-y-2">
+                <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 {{ $selectedPriority === 'normal' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-zinc-200 dark:border-zinc-700' }}">
+                    <input type="radio" wire:model="selectedPriority" value="normal" class="text-blue-600">
+                    <div>
+                        <p class="font-medium text-zinc-900 dark:text-white">{{ __('Normal') }}</p>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Regular queue order') }}</p>
+                    </div>
+                </label>
+
+                <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 {{ $selectedPriority === 'urgent' ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'border-zinc-200 dark:border-zinc-700' }}">
+                    <input type="radio" wire:model="selectedPriority" value="urgent" class="text-amber-600">
+                    <div class="flex items-center gap-2">
+                        <div>
+                            <p class="font-medium text-zinc-900 dark:text-white">{{ __('Urgent') }}</p>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Needs attention soon') }}</p>
+                        </div>
+                        <span class="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-700">U</span>
+                    </div>
+                </label>
+
+                <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 {{ $selectedPriority === 'emergency' ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-zinc-200 dark:border-zinc-700' }}">
+                    <input type="radio" wire:model="selectedPriority" value="emergency" class="text-red-600">
+                    <div class="flex items-center gap-2">
+                        <div>
+                            <p class="font-medium text-zinc-900 dark:text-white">{{ __('Emergency') }}</p>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Immediate attention required') }}</p>
+                        </div>
+                        <span class="rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700">!</span>
+                    </div>
+                </label>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <flux:button wire:click="closePriorityModal" variant="ghost">{{ __('Cancel') }}</flux:button>
+                <flux:button wire:click="savePriority" variant="primary" icon="flag">{{ __('Save Priority') }}</flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
+    <!-- Print Ticket Modal -->
+    <flux:modal wire:model="showPrintTicketModal" class="max-w-sm">
+        <div class="space-y-4">
+            <flux:heading size="lg">{{ __('Queue Ticket') }}</flux:heading>
+
+            @if($this->printTicketQueue)
+                <x-queue-ticket :queue="$this->printTicketQueue" />
+            @else
+                <div class="py-8 text-center text-zinc-500">
+                    {{ __('Loading ticket...') }}
+                </div>
+            @endif
+
+            <div class="flex justify-end border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <flux:button wire:click="closePrintTicketModal" variant="ghost">{{ __('Close') }}</flux:button>
             </div>
         </div>
     </flux:modal>

@@ -42,8 +42,13 @@ class Appointments extends Component
 
     public bool $showCancelModal = false;
 
+    public bool $showPrintTicketModal = false;
+
     #[Locked]
     public ?int $selectedAppointmentId = null;
+
+    #[Locked]
+    public ?int $printTicketQueueId = null;
 
     public string $cancelReason = '';
 
@@ -317,6 +322,37 @@ class Appointments extends Component
         $this->closeViewModal();
 
         Toaster::success(__('Appointment cancelled.'));
+    }
+
+    // Print Ticket Methods
+    public function openPrintTicketModal(int $queueId): void
+    {
+        $queue = Queue::find($queueId);
+
+        if (! $queue) {
+            Toaster::error(__('Queue not found.'));
+
+            return;
+        }
+
+        $this->printTicketQueueId = $queueId;
+        $this->showPrintTicketModal = true;
+    }
+
+    public function closePrintTicketModal(): void
+    {
+        $this->showPrintTicketModal = false;
+        $this->printTicketQueueId = null;
+    }
+
+    public function getPrintTicketQueueProperty(): ?Queue
+    {
+        if (! $this->printTicketQueueId) {
+            return null;
+        }
+
+        return Queue::with(['appointment', 'consultationType'])
+            ->find($this->printTicketQueueId);
     }
 
     protected function generateQueueNumber(Appointment $appointment): int

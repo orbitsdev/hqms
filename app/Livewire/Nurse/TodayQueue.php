@@ -65,6 +65,20 @@ class TodayQueue extends Component
     #[Locked]
     public ?int $requeueQueueId = null;
 
+    // Priority modal
+    public bool $showPriorityModal = false;
+
+    #[Locked]
+    public ?int $priorityQueueId = null;
+
+    public string $selectedPriority = 'normal';
+
+    // Print ticket modal
+    public bool $showPrintTicketModal = false;
+
+    #[Locked]
+    public ?int $printTicketQueueId = null;
+
     // Patient Interview Modal
     public bool $showInterviewModal = false;
 
@@ -980,6 +994,127 @@ class TodayQueue extends Component
         } catch (\Exception $e) {
             Toaster::error(__('Failed to save: ').$e->getMessage());
         }
+    }
+
+    // Priority Methods
+    public function openPriorityModal(int $queueId): void
+    {
+        $queue = Queue::find($queueId);
+
+        if (! $queue || $queue->status === 'completed') {
+            Toaster::error(__('Cannot change priority for this patient.'));
+
+            return;
+        }
+
+        $this->priorityQueueId = $queueId;
+        $this->selectedPriority = $queue->priority ?? 'normal';
+        $this->showPriorityModal = true;
+    }
+
+    public function closePriorityModal(): void
+    {
+        $this->showPriorityModal = false;
+        $this->priorityQueueId = null;
+        $this->selectedPriority = 'normal';
+    }
+
+    public function savePriority(): void
+    {
+        if (! $this->priorityQueueId) {
+            return;
+        }
+
+        $queue = Queue::find($this->priorityQueueId);
+
+        if (! $queue || $queue->status === 'completed') {
+            Toaster::error(__('Cannot change priority for this patient.'));
+            $this->closePriorityModal();
+
+            return;
+        }
+
+        $oldPriority = $queue->priority;
+        $queue->update(['priority' => $this->selectedPriority]);
+
+        // Broadcast queue update
+        event(new QueueUpdated($queue->fresh(), 'priority_changed'));
+
+        $priorityLabels = [
+            'normal' => __('Normal'),
+            'urgent' => __('Urgent'),
+            'emergency' => __('Emergency'),
+        ];
+
+        Toaster::success(__('Priority changed to :priority for :number', [
+            'priority' => $priorityLabels[$this->selectedPriority] ?? $this->selectedPriority,
+            'number' => $queue->formatted_number,
+        ]));
+
+        $this->closePriorityModal();
+    }
+
+    public function markUrgent(int $queueId): void
+    {
+        $queue = Queue::find($queueId);
+
+        if (! $queue || $queue->status === 'completed') {
+            Toaster::error(__('Cannot change priority for this patient.'));
+
+            return;
+        }
+
+        $queue->update(['priority' => 'urgent']);
+        event(new QueueUpdated($queue->fresh(), 'priority_changed'));
+
+        Toaster::success(__('Patient :number marked as Urgent', ['number' => $queue->formatted_number]));
+    }
+
+    public function markEmergency(int $queueId): void
+    {
+        $queue = Queue::find($queueId);
+
+        if (! $queue || $queue->status === 'completed') {
+            Toaster::error(__('Cannot change priority for this patient.'));
+
+            return;
+        }
+
+        $queue->update(['priority' => 'emergency']);
+        event(new QueueUpdated($queue->fresh(), 'priority_changed'));
+
+        Toaster::success(__('Patient :number marked as Emergency', ['number' => $queue->formatted_number]));
+    }
+
+    // Print Ticket Methods
+    public function openPrintTicketModal(int $queueId): void
+    {
+        $queue = Queue::find($queueId);
+
+        if (! $queue) {
+            Toaster::error(__('Queue not found.'));
+
+            return;
+        }
+
+        $this->printTicketQueueId = $queueId;
+        $this->showPrintTicketModal = true;
+    }
+
+    public function closePrintTicketModal(): void
+    {
+        $this->showPrintTicketModal = false;
+        $this->printTicketQueueId = null;
+    }
+
+    public function getPrintTicketQueueProperty(): ?Queue
+    {
+        if (! $this->printTicketQueueId) {
+            return null;
+        }
+
+        return Queue::with(['appointment', 'consultationType'])
+            ->find($this->printTicketQueueId);
     }
 
     public function forwardToDoctor(int $queueId): void

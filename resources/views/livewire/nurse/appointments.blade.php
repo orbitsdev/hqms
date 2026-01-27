@@ -318,6 +318,11 @@
                                 {{ __('Cancel') }}
                             </flux:button>
                         @elseif($apt->status === 'approved')
+                            @if($apt->queue)
+                                <flux:button wire:click="openPrintTicketModal({{ $apt->queue->id }})" variant="filled" icon="printer">
+                                    {{ __('Print Ticket') }}
+                                </flux:button>
+                            @endif
                             <flux:button wire:click="openCancelModal({{ $apt->id }})" variant="danger" icon="x-circle">
                                 {{ __('Cancel') }}
                             </flux:button>
@@ -375,6 +380,25 @@
                 <flux:button wire:click="cancelAppointment" variant="danger" icon="x-circle">
                     {{ __('Cancel Appointment') }}
                 </flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
+    {{-- Print Ticket Modal --}}
+    <flux:modal wire:model="showPrintTicketModal" class="max-w-sm">
+        <div class="space-y-4">
+            <flux:heading size="lg">{{ __('Queue Ticket') }}</flux:heading>
+
+            @if($this->printTicketQueue)
+                <x-queue-ticket :queue="$this->printTicketQueue" />
+            @else
+                <div class="py-8 text-center text-zinc-500">
+                    {{ __('Loading ticket...') }}
+                </div>
+            @endif
+
+            <div class="flex justify-end border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <flux:button wire:click="closePrintTicketModal" variant="ghost">{{ __('Close') }}</flux:button>
             </div>
         </div>
     </flux:modal>
