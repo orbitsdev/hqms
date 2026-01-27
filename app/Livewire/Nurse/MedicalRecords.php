@@ -558,12 +558,29 @@ class MedicalRecords extends Component
             return null;
         }
 
-        $filename = 'medical-record-'.$record->record_number.'.pdf';
+        try {
+            $filename = 'medical-record-'.$record->record_number.'.pdf';
+            $tempPath = storage_path('app/temp/'.$filename);
 
-        return Pdf::view('pdf.medical-record', ['record' => $record])
-            ->format('a4')
-            ->name($filename)
-            ->download();
+            // Ensure temp directory exists
+            if (! is_dir(storage_path('app/temp'))) {
+                mkdir(storage_path('app/temp'), 0755, true);
+            }
+
+            // Generate PDF and save to temp file
+            Pdf::view('pdf.medical-record', ['record' => $record])
+                ->format('a4')
+                ->save($tempPath);
+
+            // Return download response and delete temp file after
+            return response()->download($tempPath, $filename, [
+                'Content-Type' => 'application/pdf',
+            ])->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            Toaster::error(__('Failed to generate PDF: ').$e->getMessage());
+
+            return null;
+        }
     }
 
     // ==================== COMPUTED PROPERTIES ====================

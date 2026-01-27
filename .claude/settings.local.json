@@ -19,7 +19,8 @@
       "Bash(xxd:*)",
       "Bash(composer require:*)",
       "Bash(php:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npm install:*)"
     ]
   }
 }
