@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Display\QueueMonitor;
 use App\Livewire\Nurse\Appointments as NurseAppointments;
 use App\Livewire\Nurse\AppointmentShow as NurseAppointmentShow;
 use App\Livewire\Nurse\Dashboard as NurseDashboard;
@@ -17,6 +18,12 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+// Queue Display Routes (Public - No Auth Required)
+Route::prefix('display')->name('display.')->group(function () {
+    Route::get('/', QueueMonitor::class)->name('all');
+    Route::get('/{type}', QueueMonitor::class)->name('type');
+});
 
 Route::get('dashboard', function () {
     // redire base on role
