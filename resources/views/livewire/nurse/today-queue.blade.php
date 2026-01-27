@@ -19,8 +19,14 @@
         </div>
         <button wire:click="setStatus('waiting')" class="flex items-center gap-2 rounded-lg border px-3 py-2 transition {{ $status === 'waiting' ? 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/30' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}">
             <span class="h-2 w-2 rounded-full bg-blue-500"></span>
-            <span class="text-sm font-semibold">{{ $statusCounts['waiting'] }}</span>
-            <span class="text-xs text-zinc-600 dark:text-zinc-400">{{ __('Waiting') }}</span>
+            <span class="text-sm font-semibold">{{ $statusCounts['waiting'] + $statusCounts['called'] }}</span>
+            <span class="text-xs text-zinc-600 dark:text-zinc-400">{{ __('In Queue') }}</span>
+            @if($statusCounts['called'] > 0)
+                <span class="ml-1 flex items-center gap-1 rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-medium text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">
+                    <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-500"></span>
+                    {{ $statusCounts['called'] }} {{ __('called') }}
+                </span>
+            @endif
         </button>
         <button wire:click="setStatus('serving')" class="flex items-center gap-2 rounded-lg border px-3 py-2 transition {{ $status === 'serving' ? 'border-emerald-500 bg-emerald-50 dark:border-emerald-400 dark:bg-emerald-900/30' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}">
             <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>

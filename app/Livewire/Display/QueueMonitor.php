@@ -42,16 +42,27 @@ class QueueMonitor extends Component
     }
 
     /**
-     * Get the currently called queue (most recent).
+     * Refresh from JavaScript Echo listener (fallback method).
      */
-    public function getCalledQueueProperty(): ?Queue
+    #[On('refreshFromEcho')]
+    public function refreshFromEcho($event = null): void
+    {
+        // Component will automatically re-render
+        // This is triggered by JavaScript when Echo receives an event
+    }
+
+    /**
+     * Get all currently called queues (for multiple nurses calling).
+     */
+    public function getCalledQueuesProperty(): \Illuminate\Database\Eloquent\Collection
     {
         return Queue::query()
             ->today()
             ->when($this->consultationTypeId, fn ($q) => $q->where('consultation_type_id', $this->consultationTypeId))
             ->where('status', 'called')
             ->orderByDesc('called_at')
-            ->first();
+            ->limit(3) // Show max 3 called at once
+            ->get();
     }
 
     /**
@@ -98,7 +109,7 @@ class QueueMonitor extends Component
     public function render(): View
     {
         return view('livewire.display.queue-monitor', [
-            'calledQueue' => $this->calledQueue,
+            'calledQueues' => $this->calledQueues,
             'servingQueues' => $this->servingQueues,
             'nextQueues' => $this->nextQueues,
             'waitingCount' => $this->waitingCount,

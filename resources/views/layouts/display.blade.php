@@ -48,6 +48,53 @@
     {{ $slot }}
 
     <script>
+        // Connection status indicator
+        document.addEventListener('DOMContentLoaded', function() {
+            const indicator = document.getElementById('connection-status');
+
+            if (typeof window.Echo !== 'undefined') {
+                // Monitor connection state
+                window.Echo.connector.pusher.connection.bind('connected', () => {
+                    console.log('✅ Reverb connected');
+                    if (indicator) {
+                        indicator.className = 'h-2 w-2 rounded-full bg-green-500';
+                        indicator.title = 'Live (Reverb)';
+                    }
+                });
+
+                window.Echo.connector.pusher.connection.bind('disconnected', () => {
+                    console.log('❌ Reverb disconnected');
+                    if (indicator) {
+                        indicator.className = 'h-2 w-2 rounded-full bg-red-500';
+                        indicator.title = 'Disconnected';
+                    }
+                });
+
+                window.Echo.connector.pusher.connection.bind('error', (error) => {
+                    console.error('Reverb error:', error);
+                });
+
+                // Subscribe to channels and log
+                const typeId = window.consultationTypeId;
+
+                window.Echo.channel('queue.display.all')
+                    .listen('.queue.updated', (e) => {
+                        console.log('📡 Received on queue.display.all:', e);
+                        Livewire.dispatch('refreshFromEcho', { event: e });
+                    });
+
+                if (typeId) {
+                    window.Echo.channel('queue.display.' + typeId)
+                        .listen('.queue.updated', (e) => {
+                            console.log('📡 Received on queue.display.' + typeId + ':', e);
+                            Livewire.dispatch('refreshFromEcho', { event: e });
+                        });
+                }
+            } else {
+                console.warn('Echo not initialized');
+            }
+        });
+
         // Generate chime sound using Web Audio API (no file needed)
         function playChime() {
             try {

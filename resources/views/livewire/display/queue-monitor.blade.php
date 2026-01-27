@@ -1,4 +1,6 @@
-<div class="flex min-h-screen flex-col" wire:poll.5s>
+<div class="flex min-h-screen flex-col" wire:poll.10s>
+    {{-- Pass consultation type ID to JavaScript --}}
+    <script>window.consultationTypeId = {{ $consultationTypeId ?? 'null' }};</script>
     {{-- Header --}}
     <header class="border-b border-zinc-800 bg-zinc-900 px-8 py-4">
         <div class="flex items-center justify-between">
@@ -16,7 +18,10 @@
                             {{ __('All Services') }}
                         @endif
                     </h1>
-                    <p class="text-sm text-zinc-400">{{ config('app.name') }}</p>
+                    <div class="flex items-center gap-2">
+                        <p class="text-sm text-zinc-400">{{ config('app.name') }}</p>
+                        <span id="connection-status" class="h-2 w-2 rounded-full bg-yellow-500" title="Connecting..."></span>
+                    </div>
                 </div>
             </div>
             <div class="text-right">
@@ -28,9 +33,9 @@
 
     {{-- Main Content --}}
     <main class="flex flex-1 flex-col items-center justify-center p-8">
-        @if($calledQueue)
+        @if($calledQueues->isNotEmpty())
             {{-- Someone is being called --}}
-            <div class="animate-fade-in-up text-center" data-called-id="{{ $calledQueue->id }}">
+            <div class="animate-fade-in-up text-center" data-called-id="{{ $calledQueues->first()->id }}">
                 <div class="mb-4 inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-2">
                     <svg class="h-6 w-6 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -38,11 +43,25 @@
                     <span class="text-xl font-semibold uppercase tracking-wider">{{ __('Now Calling') }}</span>
                 </div>
 
-                <div class="animate-pulse-scale rounded-3xl border-4 border-emerald-500 bg-gradient-to-b from-emerald-900/50 to-zinc-900 px-24 py-16 shadow-2xl shadow-emerald-500/20">
-                    <div class="text-[12rem] font-bold leading-none tracking-tight text-white">
-                        {{ $calledQueue->formatted_number }}
+                @if($calledQueues->count() === 1)
+                    {{-- Single called patient - show big --}}
+                    <div class="animate-pulse-scale rounded-3xl border-4 border-emerald-500 bg-gradient-to-b from-emerald-900/50 to-zinc-900 px-24 py-16 shadow-2xl shadow-emerald-500/20">
+                        <div class="text-[12rem] font-bold leading-none tracking-tight text-white">
+                            {{ $calledQueues->first()->formatted_number }}
+                        </div>
                     </div>
-                </div>
+                @else
+                    {{-- Multiple called patients - show side by side --}}
+                    <div class="flex flex-wrap items-center justify-center gap-6">
+                        @foreach($calledQueues as $index => $queue)
+                            <div class="animate-pulse-scale rounded-3xl border-4 border-emerald-500 bg-gradient-to-b from-emerald-900/50 to-zinc-900 shadow-2xl shadow-emerald-500/20 {{ $index === 0 ? 'px-16 py-12' : 'px-10 py-8' }}">
+                                <div class="{{ $index === 0 ? 'text-[10rem]' : 'text-7xl' }} font-bold leading-none tracking-tight text-white">
+                                    {{ $queue->formatted_number }}
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
 
                 <p class="mt-8 text-2xl text-zinc-300">
                     {{ __('Please proceed to the nurse station') }}

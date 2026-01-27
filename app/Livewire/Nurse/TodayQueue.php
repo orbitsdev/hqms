@@ -1025,7 +1025,15 @@ class TodayQueue extends Component
                 'servedBy',
             ])
             ->today()
-            ->when($this->status !== 'all', fn (Builder $q) => $q->where('status', $this->status))
+            ->when($this->status !== 'all', function (Builder $q) {
+                // Show both 'waiting' and 'called' when viewing waiting tab
+                // so nurse can see patients they've called
+                if ($this->status === 'waiting') {
+                    $q->whereIn('status', ['waiting', 'called']);
+                } else {
+                    $q->where('status', $this->status);
+                }
+            })
             ->when($this->consultationTypeFilter !== '', fn (Builder $q) => $q->where('consultation_type_id', $this->consultationTypeFilter))
             ->when($this->search !== '', function (Builder $q) {
                 $search = '%'.$this->search.'%';
