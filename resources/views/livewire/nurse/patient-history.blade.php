@@ -4,7 +4,7 @@
         <div class="space-y-1">
             <flux:heading size="xl" level="1">{{ __('Patient History') }}</flux:heading>
             <flux:text class="text-sm text-zinc-500 dark:text-zinc-400">
-                {{ __('Search for a patient to view their complete visit history.') }}
+                {{ __('View patient visit history. Use search to filter by name or contact number.') }}
             </flux:text>
         </div>
         @if($selectedPatient)
@@ -21,7 +21,7 @@
                 <flux:input
                     wire:model.live.debounce.300ms="search"
                     type="search"
-                    placeholder="{{ __('Search by patient name or contact number...') }}"
+                    placeholder="{{ __('Search by patient or account holder name...') }}"
                     icon="magnifying-glass"
                     autofocus
                 />
@@ -80,24 +80,37 @@
                         </button>
                     @endforeach
                 </div>
-            @elseif(strlen($search) >= 2)
-                <div class="rounded-lg border border-zinc-200 bg-white p-8 text-center dark:border-zinc-700 dark:bg-zinc-900">
-                    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-                        <flux:icon name="user" class="h-6 w-6 text-zinc-400" />
+
+                <!-- Pagination -->
+                @if($patients->hasPages())
+                    <div class="mt-6">
+                        {{ $patients->links() }}
                     </div>
+                @endif
+            @elseif(strlen($search) >= 2)
+                <!-- No search results -->
+                <div class="rounded-lg border border-zinc-200 bg-white p-8 text-center dark:border-zinc-700 dark:bg-zinc-900">
+                    <img
+                        src="{{ asset('images/undraw_file-search_cbur.svg') }}"
+                        alt="No results"
+                        class="mx-auto h-40 w-40"
+                    />
                     <h3 class="mt-4 text-sm font-medium text-zinc-900 dark:text-white">{{ __('No patients found') }}</h3>
                     <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                        {{ __('Try a different search term.') }}
+                        {{ __('No patients match your search. Try a different name or contact number.') }}
                     </p>
                 </div>
             @else
+                <!-- No patients in database -->
                 <div class="rounded-lg border border-zinc-200 bg-white p-8 text-center dark:border-zinc-700 dark:bg-zinc-900">
-                    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-                        <flux:icon name="magnifying-glass" class="h-6 w-6 text-zinc-400" />
-                    </div>
-                    <h3 class="mt-4 text-sm font-medium text-zinc-900 dark:text-white">{{ __('Search for a patient') }}</h3>
+                    <img
+                        src="{{ asset('images/undraw_my-documents_ltqk.svg') }}"
+                        alt="No patients"
+                        class="mx-auto h-40 w-40"
+                    />
+                    <h3 class="mt-4 text-sm font-medium text-zinc-900 dark:text-white">{{ __('No patient records yet') }}</h3>
                     <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                        {{ __('Enter a patient\'s name or contact number to view their history.') }}
+                        {{ __('Patient history will appear here once medical records are created.') }}
                     </p>
                 </div>
             @endif
@@ -202,6 +215,14 @@
                                             @if($record->doctor)
                                                 <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
                                                     {{ __('Dr.') }} {{ $record->doctor->personalInformation?->full_name ?? $record->doctor->name }}
+                                                </p>
+                                            @endif
+                                            @if($record->user)
+                                                <p class="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
+                                                    <span class="inline-flex items-center gap-1">
+                                                        <flux:icon name="user-circle" class="h-3 w-3" />
+                                                        {{ __('Account:') }} {{ $record->user->personalInformation?->full_name ?? $record->user->name }}
+                                                    </span>
                                                 </p>
                                             @endif
                                             @if($record->diagnosis)
@@ -357,8 +378,12 @@
                                 </dl>
                             </div>
                             <div class="space-y-4">
-                                <h4 class="text-sm font-semibold text-zinc-900 dark:text-white">{{ __('Staff') }}</h4>
+                                <h4 class="text-sm font-semibold text-zinc-900 dark:text-white">{{ __('Staff & Account') }}</h4>
                                 <dl class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <dt class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Account Holder') }}</dt>
+                                        <dd class="text-sm font-medium text-zinc-900 dark:text-white">{{ $record->user?->personalInformation?->full_name ?? $record->user?->name ?? '-' }}</dd>
+                                    </div>
                                     <div class="flex justify-between">
                                         <dt class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Nurse') }}</dt>
                                         <dd class="text-sm font-medium text-zinc-900 dark:text-white">{{ $record->nurse?->name ?? '-' }}</dd>

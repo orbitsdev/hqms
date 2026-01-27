@@ -25,26 +25,46 @@ class PatientHistory extends Component
     public string $viewTab = 'patient';
 
     /**
-     * Get unique patients based on search criteria.
-     *
-     * @return Collection<int, array<string, mixed>>
+     * Reset pagination when search changes.
      */
-    public function getPatientsProperty(): Collection
+    public function updatedSearch(): void
     {
-        if (strlen($this->search) < 2) {
-            return collect();
-        }
+        $this->resetPage();
+    }
 
-        $searchTerm = '%'.$this->search.'%';
+    /**
+     * Get unique patients with pagination.
+     * Shows recent patients by default when no search term.
+     * Searches by patient name, contact, OR account holder (user) name.
+     *
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function getPatientsProperty()
+    {
+        $query = MedicalRecord::query();
 
-        // Get distinct patients grouped by name + DOB
-        return MedicalRecord::query()
-            ->where(function ($q) use ($searchTerm) {
+        // Apply search filter if provided (minimum 2 characters)
+        if (strlen($this->search) >= 2) {
+            $searchTerm = '%'.$this->search.'%';
+            $query->where(function ($q) use ($searchTerm) {
+                // Search by patient name
                 $q->whereRaw("(patient_first_name || ' ' || COALESCE(patient_middle_name, '') || ' ' || patient_last_name) LIKE ?", [$searchTerm])
                     ->orWhere('patient_first_name', 'like', $searchTerm)
                     ->orWhere('patient_last_name', 'like', $searchTerm)
-                    ->orWhere('patient_contact_number', 'like', $searchTerm);
-            })
+                    // Search by account holder (user) name
+                    ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
+                        $userQuery->where('name', 'like', $searchTerm)
+                            ->orWhereHas('personalInformation', function ($piQuery) use ($searchTerm) {
+                                $piQuery->whereRaw("(first_name || ' ' || COALESCE(middle_name, '') || ' ' || last_name) LIKE ?", [$searchTerm])
+                                    ->orWhere('first_name', 'like', $searchTerm)
+                                    ->orWhere('last_name', 'like', $searchTerm);
+                            });
+                    });
+            });
+        }
+
+        // Get distinct patients grouped by name + DOB with pagination
+        $paginated = $query
             ->selectRaw('
                 patient_first_name,
                 patient_middle_name,
@@ -65,34 +85,37 @@ class PatientHistory extends Component
                 'patient_contact_number',
             ])
             ->orderByDesc('last_visit')
-            ->limit(20)
-            ->get()
-            ->map(function ($patient) {
-                $fullName = trim(implode(' ', array_filter([
-                    $patient->patient_first_name,
-                    $patient->patient_middle_name,
-                    $patient->patient_last_name,
-                ])));
+            ->paginate(12);
 
-                $key = md5($patient->patient_first_name.$patient->patient_last_name.$patient->patient_date_of_birth);
+        // Transform the items
+        $paginated->getCollection()->transform(function ($patient) {
+            $fullName = trim(implode(' ', array_filter([
+                $patient->patient_first_name,
+                $patient->patient_middle_name,
+                $patient->patient_last_name,
+            ])));
 
-                return [
-                    'key' => $key,
-                    'full_name' => $fullName,
-                    'first_name' => $patient->patient_first_name,
-                    'middle_name' => $patient->patient_middle_name,
-                    'last_name' => $patient->patient_last_name,
-                    'date_of_birth' => $patient->patient_date_of_birth,
-                    'gender' => $patient->patient_gender,
-                    'contact_number' => $patient->patient_contact_number,
-                    'visit_count' => $patient->visit_count,
-                    'last_visit' => $patient->last_visit,
-                    'first_visit' => $patient->first_visit,
-                    'age' => $patient->patient_date_of_birth
-                        ? now()->diffInYears($patient->patient_date_of_birth)
-                        : null,
-                ];
-            });
+            $key = md5($patient->patient_first_name.$patient->patient_last_name.$patient->patient_date_of_birth);
+
+            return [
+                'key' => $key,
+                'full_name' => $fullName,
+                'first_name' => $patient->patient_first_name,
+                'middle_name' => $patient->patient_middle_name,
+                'last_name' => $patient->patient_last_name,
+                'date_of_birth' => $patient->patient_date_of_birth,
+                'gender' => $patient->patient_gender,
+                'contact_number' => $patient->patient_contact_number,
+                'visit_count' => $patient->visit_count,
+                'last_visit' => $patient->last_visit,
+                'first_visit' => $patient->first_visit,
+                'age' => $patient->patient_date_of_birth
+                    ? now()->diffInYears($patient->patient_date_of_birth)
+                    : null,
+            ];
+        });
+
+        return $paginated;
     }
 
     /**
@@ -106,7 +129,7 @@ class PatientHistory extends Component
             return null;
         }
 
-        return $this->patients->firstWhere('key', $this->selectedPatientKey);
+        return $this->patients->getCollection()->firstWhere('key', $this->selectedPatientKey);
     }
 
     /**
@@ -121,7 +144,7 @@ class PatientHistory extends Component
         }
 
         return MedicalRecord::query()
-            ->with(['consultationType', 'doctor', 'nurse'])
+            ->with(['consultationType', 'doctor', 'nurse', 'user.personalInformation'])
             ->where('patient_first_name', $this->selectedPatient['first_name'])
             ->where('patient_last_name', $this->selectedPatient['last_name'])
             ->when($this->selectedPatient['date_of_birth'], function ($q) {
@@ -142,7 +165,7 @@ class PatientHistory extends Component
         }
 
         return MedicalRecord::query()
-            ->with(['consultationType', 'doctor', 'nurse'])
+            ->with(['consultationType', 'doctor', 'nurse', 'user.personalInformation'])
             ->find($this->viewingRecordId);
     }
 
