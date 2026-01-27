@@ -48,6 +48,10 @@
     {{ $slot }}
 
     <script>
+        // Audio context for chime (needs user interaction to start)
+        let audioContext = null;
+        let audioEnabled = false;
+
         // Connection status indicator
         document.addEventListener('DOMContentLoaded', function() {
             const indicator = document.getElementById('connection-status');
@@ -95,11 +99,54 @@
             }
         });
 
-        // Generate chime sound using Web Audio API (no file needed)
-        function playChime() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // Enable audio on first click (browsers require user interaction)
+        function enableAudio() {
+            if (audioEnabled) return;
 
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                audioEnabled = true;
+
+                // Update sound button
+                const soundBtn = document.getElementById('sound-toggle');
+                if (soundBtn) {
+                    soundBtn.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>';
+                    soundBtn.title = 'Sound enabled';
+                    soundBtn.classList.remove('bg-zinc-700');
+                    soundBtn.classList.add('bg-emerald-600');
+                }
+
+                // Play test chime to confirm
+                playChime();
+                console.log('🔊 Audio enabled');
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+
+        // Toggle audio on/off
+        function toggleAudio() {
+            const soundBtn = document.getElementById('sound-toggle');
+
+            if (!audioEnabled) {
+                enableAudio();
+            } else {
+                audioEnabled = false;
+                if (soundBtn) {
+                    soundBtn.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>';
+                    soundBtn.title = 'Sound disabled (click to enable)';
+                    soundBtn.classList.remove('bg-emerald-600');
+                    soundBtn.classList.add('bg-zinc-700');
+                }
+                console.log('🔇 Audio disabled');
+            }
+        }
+
+        // Generate chime sound using Web Audio API
+        function playChime() {
+            if (!audioEnabled || !audioContext) return;
+
+            try {
                 // Create a pleasant two-tone chime
                 const frequencies = [880, 1108.73]; // A5 and C#6 - pleasant interval
 
@@ -124,7 +171,7 @@
                     oscillator.stop(startTime + duration);
                 });
             } catch (e) {
-                console.log('Audio not supported');
+                console.log('Audio playback failed');
             }
         }
 
