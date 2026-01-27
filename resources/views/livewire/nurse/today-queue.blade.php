@@ -290,6 +290,9 @@
                             <flux:button wire:click="startServing({{ $selectedQueue->id }})" class="w-full" variant="primary" icon="play">
                                 {{ __('Start Serving') }}
                             </flux:button>
+                            <flux:button wire:click="requeueCalled({{ $selectedQueue->id }})" class="w-full" variant="filled" icon="arrow-path">
+                                {{ __('Requeue') }}
+                            </flux:button>
                             <flux:button wire:click="openSkipModal({{ $selectedQueue->id }})" class="w-full" variant="ghost" icon="forward">
                                 {{ __('Skip') }}
                             </flux:button>

@@ -415,6 +415,29 @@ class TodayQueue extends Component
         Toaster::success(__('Patient called: :number', ['number' => $queue->formatted_number]));
     }
 
+    public function requeueCalled(int $queueId): void
+    {
+        $queue = Queue::find($queueId);
+
+        if (! $queue || $queue->status !== 'called') {
+            Toaster::error(__('Cannot requeue this patient.'));
+
+            return;
+        }
+
+        $formattedNumber = $queue->formatted_number;
+
+        $queue->update([
+            'status' => 'waiting',
+            'called_at' => null,
+        ]);
+
+        // Broadcast queue update
+        event(new QueueUpdated($queue->fresh(), 'requeued'));
+
+        Toaster::success(__('Patient requeued: :number', ['number' => $formattedNumber]));
+    }
+
     public function startServing(int $queueId): void
     {
         $queue = Queue::with(['appointment', 'consultationType'])->find($queueId);
