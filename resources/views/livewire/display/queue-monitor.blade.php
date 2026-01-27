@@ -1,6 +1,7 @@
 <div class="flex min-h-screen flex-col" wire:poll.10s>
     {{-- Pass consultation type ID to JavaScript --}}
     <script>window.consultationTypeId = {{ $consultationTypeId ?? 'null' }};</script>
+
     {{-- Header --}}
     <header class="border-b border-zinc-800 bg-zinc-900 px-8 py-4">
         <div class="flex items-center justify-between">
@@ -32,100 +33,110 @@
     </header>
 
     {{-- Main Content --}}
-    <main class="flex flex-1 flex-col items-center justify-center p-8">
-        @if($calledQueues->isNotEmpty())
-            {{-- Someone is being called --}}
-            <div class="animate-fade-in-up text-center" data-called-id="{{ $calledQueues->first()->id }}">
-                <div class="mb-4 inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-2">
-                    <svg class="h-6 w-6 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    <span class="text-xl font-semibold uppercase tracking-wider">{{ __('Now Calling') }}</span>
-                </div>
+    <main class="flex flex-1">
+        {{-- Left Panel: NOW CALLING (Big & Clear) --}}
+        <div class="flex w-3/5 flex-col items-center justify-center border-r border-zinc-800 p-8">
+            @if($calledQueues->isNotEmpty())
+                @php $mainCalled = $calledQueues->first(); @endphp
+                <div class="animate-fade-in-up text-center" data-called-id="{{ $mainCalled->id }}">
+                    <div class="mb-6 inline-flex items-center gap-3 rounded-full bg-emerald-600 px-8 py-3">
+                        <svg class="h-8 w-8 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        <span class="text-2xl font-bold uppercase tracking-wider">{{ __('Now Calling') }}</span>
+                    </div>
 
-                @if($calledQueues->count() === 1)
-                    {{-- Single called patient - show big --}}
-                    <div class="animate-pulse-scale rounded-3xl border-4 border-emerald-500 bg-gradient-to-b from-emerald-900/50 to-zinc-900 px-24 py-16 shadow-2xl shadow-emerald-500/20">
-                        <div class="text-[12rem] font-bold leading-none tracking-tight text-white">
-                            {{ $calledQueues->first()->formatted_number }}
+                    <div class="animate-pulse-scale rounded-3xl border-4 border-emerald-500 bg-gradient-to-b from-emerald-900/50 to-zinc-900 px-20 py-12 shadow-2xl shadow-emerald-500/20">
+                        <div class="text-[14rem] font-bold leading-none tracking-tight text-white">
+                            {{ $mainCalled->formatted_number }}
                         </div>
                     </div>
-                @else
-                    {{-- Multiple called patients - show side by side --}}
-                    <div class="flex flex-wrap items-center justify-center gap-6">
-                        @foreach($calledQueues as $index => $queue)
-                            <div class="animate-pulse-scale rounded-3xl border-4 border-emerald-500 bg-gradient-to-b from-emerald-900/50 to-zinc-900 shadow-2xl shadow-emerald-500/20 {{ $index === 0 ? 'px-16 py-12' : 'px-10 py-8' }}">
-                                <div class="{{ $index === 0 ? 'text-[10rem]' : 'text-7xl' }} font-bold leading-none tracking-tight text-white">
+
+                    <p class="mt-8 text-3xl text-zinc-300">
+                        {{ __('Please proceed to the nurse station') }}
+                    </p>
+
+                    {{-- Other called numbers --}}
+                    @if($calledQueues->count() > 1)
+                        <div class="mt-8 flex items-center justify-center gap-4">
+                            <span class="text-xl text-zinc-400">{{ __('Also calling:') }}</span>
+                            @foreach($calledQueues->skip(1) as $queue)
+                                <span class="rounded-xl bg-emerald-600 px-6 py-3 text-4xl font-bold text-white">
                                     {{ $queue->formatted_number }}
+                                </span>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            @else
+                {{-- No one being called - show friendly message --}}
+                <div class="text-center">
+                    <div class="mb-8 inline-flex h-32 w-32 items-center justify-center rounded-full bg-zinc-800">
+                        <svg class="h-16 w-16 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-5xl font-bold text-zinc-400">{{ __('Please Wait') }}</h2>
+                    <p class="mt-4 text-2xl text-zinc-500">{{ __('Your number will be called soon') }}</p>
+                </div>
+            @endif
+        </div>
+
+        {{-- Right Panel: NOW SERVING + NEXT --}}
+        <div class="flex w-2/5 flex-col bg-zinc-900/50">
+            {{-- Now Serving Section --}}
+            <div class="flex-1 border-b border-zinc-800 p-6">
+                <div class="mb-4 flex items-center gap-3">
+                    <div class="h-4 w-4 rounded-full bg-blue-500"></div>
+                    <h2 class="text-2xl font-bold uppercase tracking-wider text-blue-400">{{ __('Now Serving') }}</h2>
+                </div>
+
+                @if($servingQueues->isNotEmpty())
+                    <div class="space-y-4">
+                        @foreach($servingQueues as $queue)
+                            <div class="flex items-center gap-4 rounded-2xl bg-blue-900/30 p-4">
+                                <div class="text-6xl font-bold text-white">
+                                    {{ $queue->formatted_number }}
+                                </div>
+                                <div class="text-xl text-blue-200">
+                                    → {{ __('Nurse Station') }}
                                 </div>
                             </div>
                         @endforeach
                     </div>
+                @else
+                    <div class="flex h-32 items-center justify-center rounded-2xl border-2 border-dashed border-zinc-700">
+                        <p class="text-2xl text-zinc-500">{{ __('No one yet') }}</p>
+                    </div>
                 @endif
-
-                <p class="mt-8 text-2xl text-zinc-300">
-                    {{ __('Please proceed to the nurse station') }}
-                </p>
             </div>
-        @elseif($servingQueues->isNotEmpty())
-            {{-- Currently serving (no one being called) --}}
-            <div class="text-center">
-                <div class="mb-4 inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-2">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <span class="text-xl font-semibold uppercase tracking-wider">{{ __('Now Serving') }}</span>
-                </div>
 
-                <div class="flex flex-wrap items-center justify-center gap-6">
-                    @foreach($servingQueues as $queue)
-                        <div class="rounded-2xl border-2 border-blue-500/50 bg-blue-900/30 px-12 py-8">
-                            <div class="text-7xl font-bold text-white">
-                                {{ $queue->formatted_number }}
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-
-                <p class="mt-8 text-xl text-zinc-400">
-                    {{ __('Please wait for your number to be called') }}
-                </p>
-            </div>
-        @else
-            {{-- No one in queue --}}
-            <div class="text-center">
-                <div class="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full bg-zinc-800">
-                    <svg class="h-12 w-12 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <h2 class="text-3xl font-medium text-zinc-400">{{ __('Waiting for patients') }}</h2>
-                <p class="mt-2 text-xl text-zinc-600">{{ __('The queue will appear here') }}</p>
-            </div>
-        @endif
-    </main>
-
-    {{-- Footer: Next in Queue --}}
-    @if($nextQueues->isNotEmpty())
-        <footer class="border-t border-zinc-800 bg-zinc-900/80 px-8 py-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <span class="text-lg font-medium text-zinc-400">{{ __('Next') }}:</span>
+            {{-- Next in Queue Section --}}
+            <div class="flex-1 p-6">
+                <div class="mb-4 flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        @foreach($nextQueues as $queue)
-                            <span class="rounded-lg bg-zinc-800 px-4 py-2 text-xl font-bold text-white {{ $queue->priority === 'emergency' ? 'border-2 border-red-500 bg-red-900/30' : ($queue->priority === 'urgent' ? 'border-2 border-amber-500 bg-amber-900/30' : '') }}">
-                                {{ $queue->formatted_number }}
-                            </span>
+                        <div class="h-4 w-4 rounded-full bg-amber-500"></div>
+                        <h2 class="text-2xl font-bold uppercase tracking-wider text-amber-400">{{ __('Next') }}</h2>
+                    </div>
+                    <span class="rounded-full bg-zinc-800 px-4 py-2 text-lg font-medium text-zinc-300">
+                        {{ $waitingCount }} {{ __('waiting') }}
+                    </span>
+                </div>
+
+                @if($nextQueues->isNotEmpty())
+                    <div class="flex flex-wrap gap-3">
+                        @foreach($nextQueues as $index => $queue)
+                            <div class="rounded-xl px-5 py-3 {{ $index === 0 ? 'bg-amber-600 text-white' : 'bg-zinc-800 text-zinc-300' }} {{ $queue->priority === 'emergency' ? 'ring-4 ring-red-500' : ($queue->priority === 'urgent' ? 'ring-4 ring-amber-400' : '') }}">
+                                <span class="text-4xl font-bold">{{ $queue->formatted_number }}</span>
+                            </div>
                         @endforeach
                     </div>
-                </div>
-                <div class="flex items-center gap-2 text-zinc-400">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <span class="text-lg">{{ $waitingCount }} {{ __('waiting') }}</span>
-                </div>
+                @else
+                    <div class="flex h-32 items-center justify-center rounded-2xl border-2 border-dashed border-zinc-700">
+                        <p class="text-2xl text-zinc-500">{{ __('Queue is empty') }}</p>
+                    </div>
+                @endif
             </div>
-        </footer>
-    @endif
+        </div>
+    </main>
 </div>
