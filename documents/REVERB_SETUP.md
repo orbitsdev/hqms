@@ -68,6 +68,47 @@ npm run dev
 
 ---
 
+## Using Laravel Herd
+
+If you're using **Laravel Herd** (recommended for local development), you don't need `php artisan serve` because Herd automatically serves your app at `http://hqms.test`.
+
+**Why Reverb still needs to be started manually:**
+- Herd only handles HTTP requests (your web server)
+- Reverb is a **separate WebSocket server** that runs on port 8080
+- WebSocket connections are persistent and require their own process
+
+### With Herd, you only need to run:
+
+```bash
+# Terminal 1: Reverb WebSocket server (REQUIRED)
+php artisan reverb:start --debug
+
+# Terminal 2: Vite dev server (REQUIRED for frontend)
+npm run dev
+
+# Terminal 3: Queue worker (OPTIONAL - only if using ShouldBroadcast)
+# php artisan queue:listen
+```
+
+### Or use composer script:
+
+```bash
+composer run dev
+```
+
+This runs all services, but the `php artisan serve` part is redundant when using Herd.
+
+| Service | Herd | composer run dev |
+|---------|------|------------------|
+| Web server (HTTP) | Automatic (`hqms.test`) | `php artisan serve` |
+| Reverb (WebSocket) | Manual start required | Included |
+| Vite (Frontend) | Manual start required | Included |
+| Queue worker | Manual start required | Included |
+
+**Summary:** With Herd, your app is always available. You just need to start Reverb and Vite.
+
+---
+
 ## 1. Installation
 
 ```bash

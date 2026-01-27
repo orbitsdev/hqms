@@ -21,7 +21,16 @@
       "Bash(php:*)",
       "Bash(find:*)",
       "Bash(npm install:*)",
-      "Bash(tasklist:*)"
+      "Bash(tasklist:*)",
+      "Bash(npm ls:*)",
+      "Bash(dir node_modulespuppeteer)",
+      "Bash(dir:*)",
+      "Bash(node:*)",
+      "Bash(test:*)",
+      "Bash(npm --version:*)",
+      "Bash(where npm:*)",
+      "Bash(cmd.exe /c \"npm install\")",
+      "Bash(/c/Program Files/nodejs/npm install)"
     ]
   }
 }
