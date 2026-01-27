@@ -762,6 +762,7 @@ class TodayQueue extends Component
         $this->interviewQueueId = null;
         $this->interviewStep = 'patient';
         $this->resetInterviewForm();
+        $this->resetValidation();
     }
 
     public function setInterviewStep(string $step): void

@@ -364,6 +364,23 @@
                     @endif
                 </div>
 
+                {{-- Validation Errors at Top --}}
+                @if($errors->any())
+                    <div class="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
+                        <div class="flex items-start gap-2">
+                            <flux:icon name="exclamation-circle" class="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
+                            <div>
+                                <p class="text-sm font-medium text-red-800 dark:text-red-200">{{ __('Please fix the following errors:') }}</p>
+                                <ul class="mt-1 list-inside list-disc text-xs text-red-700 dark:text-red-300">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
             <!-- Step Indicator -->
             <div class="flex items-center justify-between border-b border-zinc-200 pb-4 dark:border-zinc-700">
                 @php
@@ -654,24 +671,7 @@
                 @endif
             </div>
 
-            <!-- Validation Errors -->
-                @if($errors->any())
-                    <div class="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
-                        <div class="flex items-start gap-2">
-                            <flux:icon name="exclamation-circle" class="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
-                            <div>
-                                <p class="text-sm font-medium text-red-800 dark:text-red-200">{{ __('Please fix the following errors:') }}</p>
-                                <ul class="mt-1 list-inside list-disc text-xs text-red-700 dark:text-red-300">
-                                    @foreach($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                <!-- Footer -->
+            <!-- Footer -->
                 <div class="flex items-center justify-between border-t border-zinc-200 pt-4 dark:border-zinc-700">
                     <div>
                         @if($interviewStep !== 'patient')
