@@ -24,10 +24,19 @@ class QueueMonitor extends Component
     }
 
     /**
-     * Refresh when queue updates come in via Echo.
+     * Refresh when queue updates come in via Echo (specific consultation type).
      */
     #[On('echo:queue.display.{consultationTypeId},queue.updated')]
     public function refreshOnQueueUpdate(): void
+    {
+        // Component will automatically re-render
+    }
+
+    /**
+     * Refresh when queue updates come in via Echo (all services display).
+     */
+    #[On('echo:queue.display.all,queue.updated')]
+    public function refreshOnAllQueueUpdate(): void
     {
         // Component will automatically re-render
     }

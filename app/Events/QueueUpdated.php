@@ -43,8 +43,10 @@ class QueueUpdated implements ShouldBroadcast
     public function broadcastOn(): array
     {
         $channels = [
-            // Public channel for queue displays in waiting area
+            // Public channel for queue displays in waiting area (specific type)
             new Channel('queue.display.'.$this->queueEntry->consultation_type_id),
+            // Public channel for all queue displays (shows all services)
+            new Channel('queue.display.all'),
             // Private channel for staff dashboard
             new PrivateChannel('queue.staff'),
         ];
