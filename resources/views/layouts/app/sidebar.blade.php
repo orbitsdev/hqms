@@ -86,7 +86,7 @@
 
             <flux:spacer />
 
-            @unless($isPatient)
+            {{-- @unless($isPatient)
                 <flux:sidebar.nav>
                     <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
                         {{ __('Repository') }}
@@ -96,7 +96,7 @@
                         {{ __('Documentation') }}
                     </flux:sidebar.item>
                 </flux:sidebar.nav>
-            @endunless
+            @endunless --}}
 
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
