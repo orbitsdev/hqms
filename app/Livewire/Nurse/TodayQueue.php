@@ -206,6 +206,16 @@ class TodayQueue extends Component
         ];
     }
 
+    public function getInterviewQueueProperty(): ?Queue
+    {
+        if (! $this->interviewQueueId) {
+            return null;
+        }
+
+        return Queue::with(['medicalRecord', 'consultationType', 'appointment'])
+            ->find($this->interviewQueueId);
+    }
+
     // Check-in Methods
     public function openCheckInModal(int $appointmentId): void
     {
@@ -738,66 +748,70 @@ class TodayQueue extends Component
             return;
         }
 
-        // Check if vital signs were added
-        $hasVitals = $this->temperature || $this->bloodPressure || $this->cardiacRate || $this->respiratoryRate;
-        $vitalSignsRecordedAt = $hasVitals && ! $queue->medicalRecord->vital_signs_recorded_at
-            ? now()
-            : $queue->medicalRecord->vital_signs_recorded_at;
+        try {
+            // Check if vital signs were added
+            $hasVitals = $this->temperature || $this->bloodPressure || $this->cardiacRate || $this->respiratoryRate;
+            $vitalSignsRecordedAt = $hasVitals && ! $queue->medicalRecord->vital_signs_recorded_at
+                ? now()
+                : $queue->medicalRecord->vital_signs_recorded_at;
 
-        $queue->medicalRecord->update([
-            // Patient Information
-            'patient_first_name' => $this->patientFirstName,
-            'patient_middle_name' => $this->patientMiddleName,
-            'patient_last_name' => $this->patientLastName,
-            'patient_date_of_birth' => $this->patientDateOfBirth,
-            'patient_gender' => $this->patientGender,
-            'patient_contact_number' => $this->patientContactNumber,
-            'patient_email' => $this->patientEmail,
+            $queue->medicalRecord->update([
+                // Patient Information
+                'patient_first_name' => $this->patientFirstName,
+                'patient_middle_name' => $this->patientMiddleName,
+                'patient_last_name' => $this->patientLastName,
+                'patient_date_of_birth' => $this->patientDateOfBirth ?: null,
+                'patient_gender' => $this->patientGender ?: null,
+                'patient_contact_number' => $this->patientContactNumber,
+                'patient_email' => $this->patientEmail,
 
-            // Address
-            'patient_province' => $this->patientProvince,
-            'patient_municipality' => $this->patientMunicipality,
-            'patient_barangay' => $this->patientBarangay,
-            'patient_street' => $this->patientStreet,
-            'patient_zip_code' => $this->patientZipCode,
+                // Address
+                'patient_province' => $this->patientProvince,
+                'patient_municipality' => $this->patientMunicipality,
+                'patient_barangay' => $this->patientBarangay,
+                'patient_street' => $this->patientStreet,
+                'patient_zip_code' => $this->patientZipCode,
 
-            // Companion
-            'companion_name' => $this->companionName,
-            'companion_contact' => $this->companionContact,
-            'companion_relationship' => $this->companionRelationship,
+                // Companion
+                'companion_name' => $this->companionName,
+                'companion_contact' => $this->companionContact,
+                'companion_relationship' => $this->companionRelationship,
 
-            // Emergency Contact
-            'emergency_contact_name' => $this->emergencyContactName,
-            'emergency_contact_number' => $this->emergencyContactNumber,
-            'emergency_contact_relationship' => $this->emergencyContactRelationship,
+                // Emergency Contact
+                'emergency_contact_name' => $this->emergencyContactName,
+                'emergency_contact_number' => $this->emergencyContactNumber,
+                'emergency_contact_relationship' => $this->emergencyContactRelationship,
 
-            // Medical Background
-            'patient_blood_type' => $this->patientBloodType,
-            'patient_allergies' => $this->patientAllergies,
-            'patient_chronic_conditions' => $this->patientChronicConditions,
-            'patient_current_medications' => $this->patientCurrentMedications,
-            'patient_past_medical_history' => $this->patientPastMedicalHistory,
-            'patient_family_medical_history' => $this->patientFamilyMedicalHistory,
+                // Medical Background
+                'patient_blood_type' => $this->patientBloodType ?: null,
+                'patient_allergies' => $this->patientAllergies,
+                'patient_chronic_conditions' => $this->patientChronicConditions,
+                'patient_current_medications' => $this->patientCurrentMedications,
+                'patient_past_medical_history' => $this->patientPastMedicalHistory,
+                'patient_family_medical_history' => $this->patientFamilyMedicalHistory,
 
-            // Vital Signs
-            'temperature' => $this->temperature,
-            'blood_pressure' => $this->bloodPressure,
-            'cardiac_rate' => $this->cardiacRate,
-            'respiratory_rate' => $this->respiratoryRate,
-            'weight' => $this->weight,
-            'height' => $this->height,
-            'head_circumference' => $this->headCircumference,
-            'chest_circumference' => $this->chestCircumference,
-            'fetal_heart_tone' => $this->fetalHeartTone,
-            'fundal_height' => $this->fundalHeight,
-            'last_menstrual_period' => $this->lastMenstrualPeriod,
-            'chief_complaints_updated' => $this->chiefComplaintsUpdated,
-            'vital_signs_recorded_at' => $vitalSignsRecordedAt,
-        ]);
+                // Vital Signs
+                'temperature' => $this->temperature ?: null,
+                'blood_pressure' => $this->bloodPressure ?: null,
+                'cardiac_rate' => $this->cardiacRate ?: null,
+                'respiratory_rate' => $this->respiratoryRate ?: null,
+                'weight' => $this->weight ?: null,
+                'height' => $this->height ?: null,
+                'head_circumference' => $this->headCircumference ?: null,
+                'chest_circumference' => $this->chestCircumference ?: null,
+                'fetal_heart_tone' => $this->fetalHeartTone ?: null,
+                'fundal_height' => $this->fundalHeight ?: null,
+                'last_menstrual_period' => $this->lastMenstrualPeriod ?: null,
+                'chief_complaints_updated' => $this->chiefComplaintsUpdated,
+                'vital_signs_recorded_at' => $vitalSignsRecordedAt,
+            ]);
 
-        Toaster::success(__('Patient record updated successfully.'));
+            Toaster::success(__('Patient record updated successfully.'));
 
-        $this->closeInterviewModal();
+            $this->closeInterviewModal();
+        } catch (\Exception $e) {
+            Toaster::error(__('Failed to save: ').$e->getMessage());
+        }
     }
 
     public function forwardToDoctor(int $queueId): void

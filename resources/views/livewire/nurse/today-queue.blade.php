@@ -355,13 +355,10 @@
         <div class="space-y-6">
             <div class="flex items-center justify-between">
                 <flux:heading size="lg">{{ __('Patient Interview') }}</flux:heading>
-                @if($interviewQueueId)
-                    @php $interviewQueue = $queues->firstWhere('id', $interviewQueueId); @endphp
-                    @if($interviewQueue)
-                        <span class="rounded-lg bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">
-                            {{ $interviewQueue->formatted_number }}
-                        </span>
-                    @endif
+                @if($this->interviewQueue)
+                    <span class="rounded-lg bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">
+                        {{ $this->interviewQueue->formatted_number }}
+                    </span>
                 @endif
             </div>
 
@@ -529,7 +526,7 @@
 
                 @elseif($interviewStep === 'vitals')
                     @php
-                        $consultationType = $interviewQueue?->consultationType;
+                        $consultationType = $this->interviewQueue?->consultationType;
                         $isOb = $consultationType?->short_name === 'O';
                         $isPedia = $consultationType?->short_name === 'P';
                     @endphp

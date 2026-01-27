@@ -18,7 +18,8 @@
       "Bash(php dispatch_sms.php:*)",
       "Bash(xxd:*)",
       "Bash(composer require:*)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(find:*)"
     ]
   }
 }

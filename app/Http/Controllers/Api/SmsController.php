@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Helpers\ApiResponse;
-use App\Jobs\SendSmsJob;
+// use App\Jobs\SendSmsJob;
 use App\Models\SmsLog;
 use App\Services\SmsService;
 use Illuminate\Http\JsonResponse;
@@ -44,13 +44,14 @@ class SmsController extends Controller
             $userId = $request->input('user_id');
             $senderId = $request->input('sender_id');
 
-            SendSmsJob::dispatch(
-                $phone,
-                $message,
-                $context,
-                $userId,
-                $senderId
-            );
+            // TODO: Uncomment when SMS is ready
+            // SendSmsJob::dispatch(
+            //     $phone,
+            //     $message,
+            //     $context,
+            //     $userId,
+            //     $senderId
+            // );
 
             return ApiResponse::success([
                 'phone' => $phone,
@@ -58,9 +59,9 @@ class SmsController extends Controller
                 'context' => $context,
                 'user_id' => $userId,
                 'sender_id' => $senderId,
-                'status' => 'queued',
-                'note' => 'SMS has been queued for sending. Check /api/sms/logs for results.',
-            ], 'SMS queued successfully');
+                'status' => 'disabled',
+                'note' => 'SMS functionality is currently disabled.',
+            ], 'SMS functionality is currently disabled');
 
         } catch (\Exception $e) {
             return ApiResponse::error(
