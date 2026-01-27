@@ -22,6 +22,10 @@ class LoginResponse implements LoginResponseContract
             return redirect()->intended(route('nurse.dashboard'));
         }
 
+        if ($user?->isDoctor()) {
+            return redirect()->intended(route('doctor.dashboard'));
+        }
+
         return redirect()->intended(route('dashboard'));
     }
 

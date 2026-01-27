@@ -1,6 +1,11 @@
 <?php
 
 use App\Livewire\Display\QueueMonitor;
+use App\Livewire\Doctor\Dashboard as DoctorDashboard;
+use App\Livewire\Doctor\Examination as DoctorExamination;
+use App\Livewire\Doctor\MySchedule as DoctorMySchedule;
+use App\Livewire\Doctor\PatientHistory as DoctorPatientHistory;
+use App\Livewire\Doctor\PatientQueue as DoctorPatientQueue;
 use App\Livewire\Nurse\Appointments as NurseAppointments;
 use App\Livewire\Nurse\AppointmentShow as NurseAppointmentShow;
 use App\Livewire\Nurse\Dashboard as NurseDashboard;
@@ -27,9 +32,13 @@ Route::prefix('display')->name('display.')->group(function () {
 });
 
 Route::get('dashboard', function () {
-    // redire base on role
+    // redirect based on role
     if (auth()->user()->isPatient()) {
         return redirect()->route('patient.dashboard');
+    }
+
+    if (auth()->user()->isDoctor()) {
+        return redirect()->route('doctor.dashboard');
     }
 
     if (auth()->user()->isNurse()) {
@@ -64,6 +73,16 @@ Route::prefix('nurse')->name('nurse.')->middleware(['auth', 'role:nurse'])->grou
     Route::get('/walk-in', NurseWalkIn::class)->name('walk-in');
     Route::get('/medical-records', NurseMedicalRecords::class)->name('medical-records');
     Route::get('/patient-history', NursePatientHistory::class)->name('patient-history');
+});
+
+// doctor portal routes
+Route::prefix('doctor')->name('doctor.')->middleware(['auth', 'role:doctor'])->group(function () {
+    Route::get('/', DoctorDashboard::class)->name('dashboard');
+    Route::redirect('/dashboard', '/doctor')->name('dashboard.redirect');
+    Route::get('/queue', DoctorPatientQueue::class)->name('queue');
+    Route::get('/examine/{medicalRecord}', DoctorExamination::class)->name('examine');
+    Route::get('/patient-history', DoctorPatientHistory::class)->name('patient-history');
+    Route::get('/schedule', DoctorMySchedule::class)->name('schedule');
 });
 
 require __DIR__.'/settings.php';

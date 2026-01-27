@@ -51,6 +51,24 @@
                             {{ __('Settings') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>
+                @elseif($user?->isDoctor())
+                    <flux:sidebar.group :heading="$portalLabel" class="grid">
+                        <flux:sidebar.item icon="home" :href="route('doctor.dashboard')" :current="request()->routeIs('doctor.dashboard')" wire:navigate>
+                            {{ __('Dashboard') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="queue-list" :href="route('doctor.queue')" :current="request()->routeIs('doctor.queue') || request()->routeIs('doctor.examine')" wire:navigate>
+                            {{ __('Patient Queue') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="clipboard-document-list" :href="route('doctor.patient-history')" :current="request()->routeIs('doctor.patient-history')" wire:navigate>
+                            {{ __('Patient History') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="calendar-days" :href="route('doctor.schedule')" :current="request()->routeIs('doctor.schedule')" wire:navigate>
+                            {{ __('My Schedule') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="cog" :href="route('profile.edit')" :current="request()->routeIs('profile.edit')" wire:navigate>
+                            {{ __('Settings') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
                 @elseif($user?->isNurse())
                     <flux:sidebar.group :heading="$portalLabel" class="grid">
                         <flux:sidebar.item icon="home" :href="route('nurse.dashboard')" :current="request()->routeIs('nurse.dashboard')" wire:navigate>
