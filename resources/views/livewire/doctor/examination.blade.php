@@ -9,6 +9,9 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
+            <flux:button wire:click="downloadPdf" variant="ghost" icon="arrow-down-tray">
+                {{ __('PDF') }}
+            </flux:button>
             <flux:button wire:click="saveDraft" variant="ghost" icon="bookmark">
                 {{ __('Save Draft') }}
             </flux:button>
@@ -346,14 +349,14 @@
     </flux:modal>
 
     {{-- Complete Modal --}}
-    <flux:modal wire:model="showCompleteModal" class="max-w-sm">
+    <flux:modal wire:model="showCompleteModal" class="max-w-md">
         <div class="space-y-4">
             <flux:heading size="lg">{{ __('Complete Examination') }}</flux:heading>
             <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('Select the next step for this patient:') }}</p>
 
             <div class="space-y-2">
                 <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 {{ $completionAction === 'for_billing' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-zinc-200 dark:border-zinc-700' }}">
-                    <input type="radio" wire:model="completionAction" value="for_billing" class="text-blue-600">
+                    <input type="radio" wire:model.live="completionAction" value="for_billing" class="text-blue-600">
                     <div>
                         <p class="font-medium text-zinc-900 dark:text-white">{{ __('For Billing') }}</p>
                         <p class="text-xs text-zinc-500">{{ __('Patient proceeds to cashier') }}</p>
@@ -361,7 +364,7 @@
                 </label>
 
                 <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 {{ $completionAction === 'for_admission' ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'border-zinc-200 dark:border-zinc-700' }}">
-                    <input type="radio" wire:model="completionAction" value="for_admission" class="text-amber-600">
+                    <input type="radio" wire:model.live="completionAction" value="for_admission" class="text-amber-600">
                     <div>
                         <p class="font-medium text-zinc-900 dark:text-white">{{ __('For Admission') }}</p>
                         <p class="text-xs text-zinc-500">{{ __('Patient needs to be admitted') }}</p>
@@ -369,13 +372,57 @@
                 </label>
 
                 <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 {{ $completionAction === 'completed' ? 'border-zinc-500 bg-zinc-100 dark:bg-zinc-700' : 'border-zinc-200 dark:border-zinc-700' }}">
-                    <input type="radio" wire:model="completionAction" value="completed" class="text-zinc-600">
+                    <input type="radio" wire:model.live="completionAction" value="completed" class="text-zinc-600">
                     <div>
                         <p class="font-medium text-zinc-900 dark:text-white">{{ __('Completed') }}</p>
                         <p class="text-xs text-zinc-500">{{ __('Follow-up, no billing needed') }}</p>
                     </div>
                 </label>
             </div>
+
+            {{-- Admission Fields (shown when for_admission is selected) --}}
+            @if($completionAction === 'for_admission')
+                <div class="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
+                    <p class="text-xs font-medium uppercase text-amber-700 dark:text-amber-300">{{ __('Admission Details') }}</p>
+
+                    <flux:field>
+                        <flux:label>{{ __('Reason for Admission') }} <span class="text-red-500">*</span></flux:label>
+                        <flux:textarea wire:model="admissionReason" rows="2" placeholder="{{ __('Enter reason for admission...') }}" />
+                        <flux:error name="admissionReason" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>{{ __('Urgency') }} <span class="text-red-500">*</span></flux:label>
+                        <div class="flex gap-2">
+                            <label class="flex-1">
+                                <input type="radio" wire:model="admissionUrgency" value="routine" class="peer sr-only">
+                                <span class="flex cursor-pointer items-center justify-center rounded-lg border p-2 text-sm transition peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700 dark:peer-checked:bg-green-900/30">
+                                    {{ __('Routine') }}
+                                </span>
+                            </label>
+                            <label class="flex-1">
+                                <input type="radio" wire:model="admissionUrgency" value="urgent" class="peer sr-only">
+                                <span class="flex cursor-pointer items-center justify-center rounded-lg border p-2 text-sm transition peer-checked:border-amber-500 peer-checked:bg-amber-50 peer-checked:text-amber-700 dark:peer-checked:bg-amber-900/30">
+                                    {{ __('Urgent') }}
+                                </span>
+                            </label>
+                            <label class="flex-1">
+                                <input type="radio" wire:model="admissionUrgency" value="emergency" class="peer sr-only">
+                                <span class="flex cursor-pointer items-center justify-center rounded-lg border p-2 text-sm transition peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-700 dark:peer-checked:bg-red-900/30">
+                                    {{ __('Emergency') }}
+                                </span>
+                            </label>
+                        </div>
+                        <flux:error name="admissionUrgency" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>{{ __('Additional Notes') }}</flux:label>
+                        <flux:textarea wire:model="admissionNotes" rows="2" placeholder="{{ __('Special instructions for admissions desk...') }}" />
+                        <flux:error name="admissionNotes" />
+                    </flux:field>
+                </div>
+            @endif
 
             <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
                 <flux:button wire:click="closeCompleteModal" variant="ghost">{{ __('Cancel') }}</flux:button>

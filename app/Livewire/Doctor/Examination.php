@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Doctor;
 
+use App\Models\Admission;
 use App\Models\HospitalDrug;
 use App\Models\MedicalRecord;
 use App\Models\Prescription;
@@ -14,6 +15,7 @@ use Livewire\Attributes\Locked;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Masmerise\Toaster\Toaster;
+use Spatie\LaravelPdf\Facades\Pdf;
 
 class Examination extends Component
 {
@@ -74,6 +76,13 @@ class Examination extends Component
     public bool $showCompleteModal = false;
 
     public string $completionAction = 'for_billing';
+
+    // Admission fields (when for_admission is selected)
+    public string $admissionReason = '';
+
+    public string $admissionUrgency = 'routine';
+
+    public string $admissionNotes = '';
 
     // Patient history modal
     public bool $showHistoryModal = false;
@@ -306,24 +315,38 @@ class Examination extends Component
             return;
         }
 
+        // Pre-fill admission reason with diagnosis
+        $this->admissionReason = $this->diagnosis;
         $this->showCompleteModal = true;
     }
 
     public function closeCompleteModal(): void
     {
         $this->showCompleteModal = false;
+        $this->admissionReason = '';
+        $this->admissionUrgency = 'routine';
+        $this->admissionNotes = '';
     }
 
     public function completeExamination(): void
     {
-        $this->validate([
+        $rules = [
             'pertinentHpiPe' => 'nullable|string|max:5000',
             'diagnosis' => 'required|string|max:2000',
             'plan' => 'nullable|string|max:2000',
             'proceduresDone' => 'nullable|string|max:2000',
             'prescriptionNotes' => 'nullable|string|max:2000',
             'completionAction' => 'required|in:for_billing,for_admission,completed',
-        ]);
+        ];
+
+        // Additional validation for admission
+        if ($this->completionAction === 'for_admission') {
+            $rules['admissionReason'] = 'required|string|max:2000';
+            $rules['admissionUrgency'] = 'required|in:routine,urgent,emergency';
+            $rules['admissionNotes'] = 'nullable|string|max:1000';
+        }
+
+        $this->validate($rules);
 
         DB::transaction(function (): void {
             $this->medicalRecord->update([
@@ -338,12 +361,35 @@ class Examination extends Component
                 'status' => $this->completionAction,
             ]);
 
+            // Create admission record if for_admission
+            if ($this->completionAction === 'for_admission') {
+                $admissionNumber = 'ADM-'.date('Y').'-'.str_pad(
+                    Admission::whereYear('created_at', date('Y'))->count() + 1,
+                    5,
+                    '0',
+                    STR_PAD_LEFT
+                );
+
+                Admission::create([
+                    'user_id' => $this->medicalRecord->user_id,
+                    'medical_record_id' => $this->medicalRecord->id,
+                    'admitted_by' => Auth::id(),
+                    'admission_number' => $admissionNumber,
+                    'admission_date' => now(),
+                    'reason_for_admission' => $this->admissionReason,
+                    'notes' => $this->admissionNotes
+                        ? "Urgency: {$this->admissionUrgency}\n{$this->admissionNotes}"
+                        : "Urgency: {$this->admissionUrgency}",
+                    'status' => 'active',
+                ]);
+            }
+
             // Notify patient if they have an account
             $patientUser = $this->medicalRecord->user;
             if ($patientUser && $patientUser->hasRole('patient')) {
                 $statusMessage = match ($this->completionAction) {
                     'for_billing' => __('Please proceed to the cashier for billing.'),
-                    'for_admission' => __('You have been recommended for admission.'),
+                    'for_admission' => __('You have been recommended for admission. Please proceed to the admissions desk.'),
                     default => __('Your consultation is complete.'),
                 };
 
@@ -373,6 +419,33 @@ class Examination extends Component
     public function closeHistoryModal(): void
     {
         $this->showHistoryModal = false;
+    }
+
+    // PDF Download
+    public function downloadPdf(): mixed
+    {
+        $record = $this->medicalRecord;
+
+        try {
+            $filename = 'medical-record-'.$record->record_number.'.pdf';
+            $tempPath = storage_path('app/temp/'.$filename);
+
+            if (! file_exists(storage_path('app/temp'))) {
+                mkdir(storage_path('app/temp'), 0755, true);
+            }
+
+            Pdf::view('pdf.medical-record', ['record' => $record])
+                ->format('a4')
+                ->save($tempPath);
+
+            return response()->download($tempPath, $filename, [
+                'Content-Type' => 'application/pdf',
+            ])->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            Toaster::error(__('Failed to generate PDF: ').$e->getMessage());
+
+            return null;
+        }
     }
 
     public function render(): View

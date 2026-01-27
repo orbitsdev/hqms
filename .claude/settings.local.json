@@ -31,7 +31,8 @@
       "Bash(where npm:*)",
       "Bash(cmd.exe /c \"npm install\")",
       "Bash(/c/Program Files/nodejs/npm install)",
-      "Bash(./vendor/bin/pint:*)"
+      "Bash(./vendor/bin/pint:*)",
+      "Bash(ls:*)"
     ]
   }
 }

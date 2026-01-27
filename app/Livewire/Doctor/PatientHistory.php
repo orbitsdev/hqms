@@ -8,6 +8,8 @@ use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Masmerise\Toaster\Toaster;
+use Spatie\LaravelPdf\Facades\Pdf;
 
 class PatientHistory extends Component
 {
@@ -34,6 +36,39 @@ class PatientHistory extends Component
     {
         $this->showDetailModal = false;
         $this->selectedRecordId = null;
+    }
+
+    public function downloadPdf(int $recordId): mixed
+    {
+        $record = MedicalRecord::with(['consultationType', 'doctor', 'nurse', 'prescriptions'])
+            ->find($recordId);
+
+        if (! $record) {
+            Toaster::error(__('Record not found.'));
+
+            return null;
+        }
+
+        try {
+            $filename = 'medical-record-'.$record->record_number.'.pdf';
+            $tempPath = storage_path('app/temp/'.$filename);
+
+            if (! file_exists(storage_path('app/temp'))) {
+                mkdir(storage_path('app/temp'), 0755, true);
+            }
+
+            Pdf::view('pdf.medical-record', ['record' => $record])
+                ->format('a4')
+                ->save($tempPath);
+
+            return response()->download($tempPath, $filename, [
+                'Content-Type' => 'application/pdf',
+            ])->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            Toaster::error(__('Failed to generate PDF: ').$e->getMessage());
+
+            return null;
+        }
     }
 
     #[Computed]

@@ -92,7 +92,7 @@ class PatientQueue extends Component
             ->whereIn('consultation_type_id', $consultationTypeIds)
             ->when($this->consultationTypeFilter !== '', fn ($q) => $q->where('consultation_type_id', $this->consultationTypeFilter))
             ->whereHas('medicalRecord', fn ($q) => $q->where('status', 'in_progress')->whereNull('examined_at'))
-            ->orderByRaw("FIELD(priority, 'emergency', 'urgent', 'normal')")
+            ->orderByRaw("CASE priority WHEN 'emergency' THEN 1 WHEN 'urgent' THEN 2 WHEN 'normal' THEN 3 END")
             ->orderBy('serving_ended_at')
             ->first();
 
@@ -172,7 +172,7 @@ class PatientQueue extends Component
                 ->whereIn('consultation_type_id', $consultationTypeIds)
                 ->when($this->consultationTypeFilter !== '', fn ($q) => $q->where('consultation_type_id', $this->consultationTypeFilter))
                 ->whereHas('medicalRecord', fn ($q) => $q->where('status', 'in_progress')->whereNull('examined_at'))
-                ->orderByRaw("FIELD(priority, 'emergency', 'urgent', 'normal')")
+                ->orderByRaw("CASE priority WHEN 'emergency' THEN 1 WHEN 'urgent' THEN 2 WHEN 'normal' THEN 3 END")
                 ->orderBy('serving_ended_at')
                 ->get();
         } elseif ($this->status === 'examining') {

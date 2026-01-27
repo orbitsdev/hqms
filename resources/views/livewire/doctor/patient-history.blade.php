@@ -63,9 +63,12 @@
                                     {{ $record->doctor?->name ?? '-' }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-right">
-                                    <flux:button wire:click="viewRecord({{ $record->id }})" size="xs" variant="ghost" icon="eye">
-                                        {{ __('View') }}
-                                    </flux:button>
+                                    <div class="flex items-center justify-end gap-1">
+                                        <flux:button wire:click="viewRecord({{ $record->id }})" size="xs" variant="ghost" icon="eye">
+                                            {{ __('View') }}
+                                        </flux:button>
+                                        <flux:button wire:click="downloadPdf({{ $record->id }})" size="xs" variant="ghost" icon="arrow-down-tray" title="{{ __('Download PDF') }}" />
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
@@ -247,7 +250,10 @@
                     </div>
                 @endif
 
-                <div class="flex justify-end border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <div class="flex justify-end gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                    <flux:button wire:click="downloadPdf({{ $r->id }})" variant="ghost" icon="arrow-down-tray">
+                        {{ __('Download PDF') }}
+                    </flux:button>
                     <flux:button wire:click="closeDetailModal" variant="ghost">{{ __('Close') }}</flux:button>
                 </div>
             </div>
