@@ -302,8 +302,12 @@ class UserManagement extends Component
             ->when($this->statusFilter === 'inactive', fn ($q) => $q->onlyTrashed())
             ->when($this->roleFilter, fn ($q) => $q->role($this->roleFilter))
             ->when($this->search, fn ($q) => $q
-                ->where('name', 'like', "%{$this->search}%")
-                ->orWhere('email', 'like', "%{$this->search}%"))
+                ->where(function ($query) {
+                    $query->where('first_name', 'like', "%{$this->search}%")
+                        ->orWhere('last_name', 'like', "%{$this->search}%")
+                        ->orWhere('middle_name', 'like', "%{$this->search}%")
+                        ->orWhere('email', 'like', "%{$this->search}%");
+                }))
             ->orderByDesc('created_at')
             ->paginate(15);
 
