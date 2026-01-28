@@ -62,6 +62,9 @@
                         <flux:sidebar.item icon="clipboard-document-list" :href="route('doctor.patient-history')" :current="request()->routeIs('doctor.patient-history')" wire:navigate>
                             {{ __('Patient History') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="building-office-2" :href="route('doctor.admissions')" :current="request()->routeIs('doctor.admissions')" wire:navigate>
+                            {{ __('Admissions') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="calendar-days" :href="route('doctor.schedule')" :current="request()->routeIs('doctor.schedule')" wire:navigate>
                             {{ __('My Schedule') }}
                         </flux:sidebar.item>

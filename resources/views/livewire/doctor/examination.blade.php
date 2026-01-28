@@ -349,33 +349,36 @@
     </flux:modal>
 
     {{-- Complete Modal --}}
-    <flux:modal wire:model="showCompleteModal" class="max-w-md">
+    <flux:modal wire:model="showCompleteModal" class="max-w-2xl">
         <div class="space-y-4">
             <flux:heading size="lg">{{ __('Complete Examination') }}</flux:heading>
             <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('Select the next step for this patient:') }}</p>
 
-            <div class="space-y-2">
-                <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 {{ $completionAction === 'for_billing' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-zinc-200 dark:border-zinc-700' }}">
-                    <input type="radio" wire:model.live="completionAction" value="for_billing" class="text-blue-600">
-                    <div>
-                        <p class="font-medium text-zinc-900 dark:text-white">{{ __('For Billing') }}</p>
-                        <p class="text-xs text-zinc-500">{{ __('Patient proceeds to cashier') }}</p>
+            <div class="grid grid-cols-3 gap-2">
+                <label class="cursor-pointer">
+                    <input type="radio" wire:model.live="completionAction" value="for_billing" class="peer sr-only">
+                    <div class="flex flex-col items-center gap-1 rounded-lg border p-3 text-center transition hover:bg-zinc-50 dark:hover:bg-zinc-800 peer-checked:border-zinc-900 peer-checked:bg-zinc-100 dark:peer-checked:border-white dark:peer-checked:bg-zinc-800 {{ $completionAction === 'for_billing' ? 'border-zinc-900 dark:border-white' : 'border-zinc-200 dark:border-zinc-700' }}">
+                        <flux:icon name="banknotes" class="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
+                        <p class="text-sm font-medium text-zinc-900 dark:text-white">{{ __('For Billing') }}</p>
+                        <p class="text-xs text-zinc-500">{{ __('To cashier') }}</p>
                     </div>
                 </label>
 
-                <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 {{ $completionAction === 'for_admission' ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'border-zinc-200 dark:border-zinc-700' }}">
-                    <input type="radio" wire:model.live="completionAction" value="for_admission" class="text-amber-600">
-                    <div>
-                        <p class="font-medium text-zinc-900 dark:text-white">{{ __('For Admission') }}</p>
-                        <p class="text-xs text-zinc-500">{{ __('Patient needs to be admitted') }}</p>
+                <label class="cursor-pointer">
+                    <input type="radio" wire:model.live="completionAction" value="for_admission" class="peer sr-only">
+                    <div class="flex flex-col items-center gap-1 rounded-lg border p-3 text-center transition hover:bg-zinc-50 dark:hover:bg-zinc-800 peer-checked:border-zinc-900 peer-checked:bg-zinc-100 dark:peer-checked:border-white dark:peer-checked:bg-zinc-800 {{ $completionAction === 'for_admission' ? 'border-zinc-900 dark:border-white' : 'border-zinc-200 dark:border-zinc-700' }}">
+                        <flux:icon name="building-office-2" class="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
+                        <p class="text-sm font-medium text-zinc-900 dark:text-white">{{ __('For Admission') }}</p>
+                        <p class="text-xs text-zinc-500">{{ __('Admit patient') }}</p>
                     </div>
                 </label>
 
-                <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 {{ $completionAction === 'completed' ? 'border-zinc-500 bg-zinc-100 dark:bg-zinc-700' : 'border-zinc-200 dark:border-zinc-700' }}">
-                    <input type="radio" wire:model.live="completionAction" value="completed" class="text-zinc-600">
-                    <div>
-                        <p class="font-medium text-zinc-900 dark:text-white">{{ __('Completed') }}</p>
-                        <p class="text-xs text-zinc-500">{{ __('Follow-up, no billing needed') }}</p>
+                <label class="cursor-pointer">
+                    <input type="radio" wire:model.live="completionAction" value="completed" class="peer sr-only">
+                    <div class="flex flex-col items-center gap-1 rounded-lg border p-3 text-center transition hover:bg-zinc-50 dark:hover:bg-zinc-800 peer-checked:border-zinc-900 peer-checked:bg-zinc-100 dark:peer-checked:border-white dark:peer-checked:bg-zinc-800 {{ $completionAction === 'completed' ? 'border-zinc-900 dark:border-white' : 'border-zinc-200 dark:border-zinc-700' }}">
+                        <flux:icon name="check-circle" class="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
+                        <p class="text-sm font-medium text-zinc-900 dark:text-white">{{ __('Completed') }}</p>
+                        <p class="text-xs text-zinc-500">{{ __('No billing') }}</p>
                     </div>
                 </label>
             </div>

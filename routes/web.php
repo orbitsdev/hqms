@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Display\QueueMonitor;
+use App\Livewire\Doctor\Admissions as DoctorAdmissions;
 use App\Livewire\Doctor\Dashboard as DoctorDashboard;
 use App\Livewire\Doctor\Examination as DoctorExamination;
 use App\Livewire\Doctor\MySchedule as DoctorMySchedule;
@@ -82,6 +83,7 @@ Route::prefix('doctor')->name('doctor.')->middleware(['auth', 'role:doctor'])->g
     Route::get('/queue', DoctorPatientQueue::class)->name('queue');
     Route::get('/examine/{medicalRecord}', DoctorExamination::class)->name('examine');
     Route::get('/patient-history', DoctorPatientHistory::class)->name('patient-history');
+    Route::get('/admissions', DoctorAdmissions::class)->name('admissions');
     Route::get('/schedule', DoctorMySchedule::class)->name('schedule');
 });
 

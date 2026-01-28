@@ -32,7 +32,9 @@
       "Bash(cmd.exe /c \"npm install\")",
       "Bash(/c/Program Files/nodejs/npm install)",
       "Bash(./vendor/bin/pint:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)"
     ]
   }
 }
