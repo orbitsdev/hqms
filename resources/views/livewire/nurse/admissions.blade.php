@@ -11,9 +11,9 @@
     <div class="flex flex-wrap gap-2">
         <button
             wire:click="setStatus('active')"
-            class="flex items-center gap-2 rounded-lg border px-4 py-2 transition {{ $status === 'active' ? 'border-emerald-500 bg-emerald-50 dark:border-emerald-400 dark:bg-emerald-900/30' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}"
+            class="flex items-center gap-2 rounded-lg border px-4 py-2 transition {{ $status === 'active' ? 'border-success bg-success/10 dark:border-success dark:bg-success/20' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}"
         >
-            <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
+            <span class="h-2 w-2 animate-pulse rounded-full bg-success"></span>
             <span class="font-medium">{{ $this->statusCounts['active'] }}</span>
             <span class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('Active') }}</span>
         </button>
@@ -50,13 +50,13 @@
                 <button
                     wire:click="selectAdmission({{ $admission->id }})"
                     wire:key="admission-{{ $admission->id }}"
-                    class="w-full rounded-lg border p-4 text-left transition {{ $isSelected ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-500 dark:bg-emerald-900/20' : 'border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800' }}"
+                    class="w-full rounded-lg border p-4 text-left transition {{ $isSelected ? 'border-success bg-success/10 ring-2 ring-success dark:bg-success/20' : 'border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800' }}"
                 >
                     <div class="flex items-start justify-between">
                         <div class="flex items-start gap-3">
                             {{-- Admission Number --}}
-                            <div class="flex h-12 w-14 shrink-0 items-center justify-center rounded-lg {{ $admission->status === 'active' ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-zinc-100 dark:bg-zinc-800' }}">
-                                <span class="text-xs font-bold {{ $admission->status === 'active' ? 'text-emerald-700 dark:text-emerald-300' : 'text-zinc-600 dark:text-zinc-400' }}">
+                            <div class="flex h-12 w-14 shrink-0 items-center justify-center rounded-lg {{ $admission->status === 'active' ? 'bg-success/10 dark:bg-success/20' : 'bg-zinc-100 dark:bg-zinc-800' }}">
+                                <span class="text-xs font-bold {{ $admission->status === 'active' ? 'text-success' : 'text-zinc-600 dark:text-zinc-400' }}">
                                     {{ Str::after($admission->admission_number, 'ADM-') }}
                                 </span>
                             </div>

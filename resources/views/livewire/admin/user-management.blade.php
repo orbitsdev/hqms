@@ -118,7 +118,7 @@
                             @if($statusFilter === 'active')
                                 <div class="flex justify-end gap-1">
                                     <flux:button wire:click="openEditModal({{ $user->id }})" variant="ghost" size="sm" icon="pencil-square" />
-                                    <flux:button wire:click="openDeleteModal({{ $user->id }})" variant="ghost" size="sm" icon="trash" class="text-red-600 hover:text-red-700" />
+                                    <flux:button wire:click="openDeleteModal({{ $user->id }})" variant="ghost" size="sm" icon="trash" class="text-destructive hover:text-destructive/80" />
                                 </div>
                             @else
                                 <flux:button wire:click="restoreUser({{ $user->id }})" variant="ghost" size="sm" icon="arrow-path">
@@ -161,13 +161,13 @@
                 </div>
 
                 <flux:field>
-                    <flux:label>{{ __('Email') }} <span class="text-red-500">*</span></flux:label>
+                    <flux:label>{{ __('Email') }} <span class="text-destructive">*</span></flux:label>
                     <flux:input wire:model="email" type="email" placeholder="user@example.com" />
                     <flux:error name="email" />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('Role') }} <span class="text-red-500">*</span></flux:label>
+                    <flux:label>{{ __('Role') }} <span class="text-destructive">*</span></flux:label>
                     <flux:select wire:model.live="role">
                         @foreach($this->roles as $r)
                             <flux:select.option value="{{ $r->name }}">{{ ucfirst($r->name) }}</flux:select.option>
@@ -177,13 +177,13 @@
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('Password') }} @unless($editingUserId)<span class="text-red-500">*</span>@endunless</flux:label>
+                    <flux:label>{{ __('Password') }} @unless($editingUserId)<span class="text-destructive">*</span>@endunless</flux:label>
                     <flux:input wire:model="password" type="password" placeholder="{{ $editingUserId ? __('Leave blank to keep current') : '' }}" />
                     <flux:error name="password" />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('Confirm Password') }} @unless($editingUserId)<span class="text-red-500">*</span>@endunless</flux:label>
+                    <flux:label>{{ __('Confirm Password') }} @unless($editingUserId)<span class="text-destructive">*</span>@endunless</flux:label>
                     <flux:input wire:model="passwordConfirmation" type="password" />
                     <flux:error name="passwordConfirmation" />
                 </flux:field>
@@ -194,13 +194,13 @@
                 </div>
 
                 <flux:field>
-                    <flux:label>{{ __('First Name') }} <span class="text-red-500">*</span></flux:label>
+                    <flux:label>{{ __('First Name') }} <span class="text-destructive">*</span></flux:label>
                     <flux:input wire:model="firstName" placeholder="Juan" />
                     <flux:error name="firstName" />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('Last Name') }} <span class="text-red-500">*</span></flux:label>
+                    <flux:label>{{ __('Last Name') }} <span class="text-destructive">*</span></flux:label>
                     <flux:input wire:model="lastName" placeholder="Dela Cruz" />
                     <flux:error name="lastName" />
                 </flux:field>
@@ -240,7 +240,7 @@
                     </div>
 
                     <flux:field class="sm:col-span-2">
-                        <flux:label>{{ __('Consultation Types') }} <span class="text-red-500">*</span></flux:label>
+                        <flux:label>{{ __('Consultation Types') }} <span class="text-destructive">*</span></flux:label>
                         <div class="mt-2 flex flex-wrap gap-2">
                             @foreach($this->consultationTypes as $ct)
                                 <label class="cursor-pointer">

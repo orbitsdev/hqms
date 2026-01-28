@@ -6,7 +6,7 @@
     <header class="border-b border-zinc-800 bg-zinc-900 px-8 py-4">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-600">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
                     <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
@@ -21,7 +21,7 @@
                     </h1>
                     <div class="flex items-center gap-2">
                         <p class="text-sm text-zinc-400">{{ config('app.name') }}</p>
-                        <span id="connection-status" class="h-2 w-2 rounded-full bg-yellow-500" title="Connecting..."></span>
+                        <span id="connection-status" class="h-2 w-2 rounded-full bg-warning" title="Connecting..."></span>
                         <button
                             id="sound-toggle"
                             onclick="toggleAudio()"
@@ -50,14 +50,14 @@
             @if($calledQueues->isNotEmpty())
                 @php $mainCalled = $calledQueues->first(); @endphp
                 <div class="animate-fade-in-up text-center" data-called-id="{{ $mainCalled->id }}">
-                    <div class="mb-6 inline-flex items-center gap-3 rounded-full bg-emerald-600 px-8 py-3">
+                    <div class="mb-6 inline-flex items-center gap-3 rounded-full bg-success px-8 py-3">
                         <svg class="h-8 w-8 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                         </svg>
                         <span class="text-2xl font-bold uppercase tracking-wider">{{ __('Now Calling') }}</span>
                     </div>
 
-                    <div class="animate-pulse-scale rounded-3xl border-4 border-emerald-500 bg-gradient-to-b from-emerald-900/50 to-zinc-900 px-20 py-12 shadow-2xl shadow-emerald-500/20">
+                    <div class="animate-pulse-scale rounded-3xl border-4 border-success bg-gradient-to-b from-success/30 to-zinc-900 px-20 py-12 shadow-2xl shadow-success/20">
                         <div class="text-[14rem] font-bold leading-none tracking-tight text-white">
                             {{ $mainCalled->formatted_number }}
                         </div>
@@ -72,7 +72,7 @@
                         <div class="mt-8 flex items-center justify-center gap-4">
                             <span class="text-xl text-zinc-400">{{ __('Also calling:') }}</span>
                             @foreach($calledQueues->skip(1) as $queue)
-                                <span class="rounded-xl bg-emerald-600 px-6 py-3 text-4xl font-bold text-white">
+                                <span class="rounded-xl bg-success px-6 py-3 text-4xl font-bold text-white">
                                     {{ $queue->formatted_number }}
                                 </span>
                             @endforeach
@@ -98,18 +98,18 @@
             {{-- Now Serving Section --}}
             <div class="flex-1 border-b border-zinc-800 p-6">
                 <div class="mb-4 flex items-center gap-3">
-                    <div class="h-4 w-4 rounded-full bg-blue-500"></div>
-                    <h2 class="text-2xl font-bold uppercase tracking-wider text-blue-400">{{ __('Now Serving') }}</h2>
+                    <div class="h-4 w-4 rounded-full bg-primary"></div>
+                    <h2 class="text-2xl font-bold uppercase tracking-wider text-primary">{{ __('Now Serving') }}</h2>
                 </div>
 
                 @if($servingQueues->isNotEmpty())
                     <div class="space-y-4">
                         @foreach($servingQueues as $queue)
-                            <div class="flex items-center gap-4 rounded-2xl bg-blue-900/30 p-4">
+                            <div class="flex items-center gap-4 rounded-2xl bg-primary/20 p-4">
                                 <div class="text-6xl font-bold text-white">
                                     {{ $queue->formatted_number }}
                                 </div>
-                                <div class="text-xl text-blue-200">
+                                <div class="text-xl text-primary/80">
                                     → {{ __('Nurse Station') }}
                                 </div>
                             </div>
@@ -126,8 +126,8 @@
             <div class="flex-1 p-6">
                 <div class="mb-4 flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="h-4 w-4 rounded-full bg-amber-500"></div>
-                        <h2 class="text-2xl font-bold uppercase tracking-wider text-amber-400">{{ __('Next') }}</h2>
+                        <div class="h-4 w-4 rounded-full bg-warning"></div>
+                        <h2 class="text-2xl font-bold uppercase tracking-wider text-warning">{{ __('Next') }}</h2>
                     </div>
                     <span class="rounded-full bg-zinc-800 px-4 py-2 text-lg font-medium text-zinc-300">
                         {{ $waitingCount }} {{ __('waiting') }}
@@ -137,7 +137,7 @@
                 @if($nextQueues->isNotEmpty())
                     <div class="flex flex-wrap gap-3">
                         @foreach($nextQueues as $index => $queue)
-                            <div class="rounded-xl px-5 py-3 {{ $index === 0 ? 'bg-amber-600 text-white' : 'bg-zinc-800 text-zinc-300' }} {{ $queue->priority === 'emergency' ? 'ring-4 ring-red-500' : ($queue->priority === 'urgent' ? 'ring-4 ring-amber-400' : '') }}">
+                            <div class="rounded-xl px-5 py-3 {{ $index === 0 ? 'bg-warning text-white' : 'bg-zinc-800 text-zinc-300' }} {{ $queue->priority === 'emergency' ? 'ring-4 ring-destructive' : ($queue->priority === 'urgent' ? 'ring-4 ring-warning' : '') }}">
                                 <span class="text-4xl font-bold">{{ $queue->formatted_number }}</span>
                             </div>
                         @endforeach

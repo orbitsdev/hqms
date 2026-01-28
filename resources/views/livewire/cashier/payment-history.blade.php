@@ -185,7 +185,7 @@
                         @if($selectedTransaction->discount_amount > 0)
                             <div class="flex justify-between">
                                 <span class="text-zinc-500">{{ __('Discount') }} ({{ ucfirst($selectedTransaction->discount_type) }})</span>
-                                <span class="text-red-500">-₱{{ number_format($selectedTransaction->discount_amount, 2) }}</span>
+                                <span class="text-destructive">-₱{{ number_format($selectedTransaction->discount_amount, 2) }}</span>
                             </div>
                         @endif
                         <div class="flex justify-between border-t border-zinc-200 pt-2 font-bold dark:border-zinc-700">

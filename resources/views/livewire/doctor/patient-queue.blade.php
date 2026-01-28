@@ -16,18 +16,18 @@
     <div class="flex flex-wrap gap-2">
         <button
             wire:click="setStatus('waiting')"
-            class="flex items-center gap-2 rounded-lg border px-4 py-2 transition {{ $status === 'waiting' ? 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/30' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}"
+            class="flex items-center gap-2 rounded-lg border px-4 py-2 transition {{ $status === 'waiting' ? 'border-primary bg-primary/10' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}"
         >
-            <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+            <span class="h-2 w-2 rounded-full bg-primary"></span>
             <span class="font-medium">{{ $this->statusCounts['waiting'] }}</span>
             <span class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('Waiting') }}</span>
         </button>
 
         <button
             wire:click="setStatus('examining')"
-            class="flex items-center gap-2 rounded-lg border px-4 py-2 transition {{ $status === 'examining' ? 'border-emerald-500 bg-emerald-50 dark:border-emerald-400 dark:bg-emerald-900/30' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}"
+            class="flex items-center gap-2 rounded-lg border px-4 py-2 transition {{ $status === 'examining' ? 'border-success bg-success/10' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}"
         >
-            <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
+            <span class="h-2 w-2 animate-pulse rounded-full bg-success"></span>
             <span class="font-medium">{{ $this->statusCounts['examining'] }}</span>
             <span class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('Examining') }}</span>
         </button>
@@ -75,13 +75,13 @@
                 <button
                     wire:click="selectQueue({{ $queue->id }})"
                     wire:key="queue-{{ $queue->id }}"
-                    class="w-full rounded-lg border p-4 text-left transition {{ $isSelected ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500 dark:bg-blue-900/20' : 'border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800' }}"
+                    class="w-full rounded-lg border p-4 text-left transition {{ $isSelected ? 'border-primary bg-primary/10 ring-2 ring-primary' : 'border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800' }}"
                 >
                     <div class="flex items-start justify-between">
                         <div class="flex items-start gap-3">
                             {{-- Queue Number --}}
-                            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg {{ $queue->priority === 'emergency' ? 'bg-red-100 dark:bg-red-900/50' : ($queue->priority === 'urgent' ? 'bg-amber-100 dark:bg-amber-900/50' : 'bg-blue-100 dark:bg-blue-900/50') }}">
-                                <span class="text-sm font-bold {{ $queue->priority === 'emergency' ? 'text-red-700 dark:text-red-300' : ($queue->priority === 'urgent' ? 'text-amber-700 dark:text-amber-300' : 'text-blue-700 dark:text-blue-300') }}">
+                            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg {{ $queue->priority === 'emergency' ? 'bg-destructive/20' : ($queue->priority === 'urgent' ? 'bg-warning/20' : 'bg-primary/20') }}">
+                                <span class="text-sm font-bold {{ $queue->priority === 'emergency' ? 'text-destructive' : ($queue->priority === 'urgent' ? 'text-warning' : 'text-primary') }}">
                                     {{ $queue->formatted_number }}
                                 </span>
                             </div>
@@ -130,7 +130,7 @@
                     @if($record && $status === 'waiting')
                         <div class="mt-3 flex flex-wrap gap-3 border-t border-zinc-100 pt-3 text-xs text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
                             @if($record->temperature)
-                                <span class="{{ $record->temperature >= 38 ? 'text-red-600 font-medium' : '' }}">
+                                <span class="{{ $record->temperature >= 38 ? 'text-destructive font-medium' : '' }}">
                                     T: {{ $record->temperature }}°C
                                 </span>
                             @endif
@@ -207,7 +207,7 @@
                             <p class="mb-2 text-xs font-medium uppercase text-zinc-500">{{ __('Vital Signs') }}</p>
                             <div class="grid grid-cols-2 gap-2 text-sm">
                                 @if($sr->temperature)
-                                    <div class="{{ $sr->temperature >= 38 ? 'text-red-600 dark:text-red-400' : 'text-zinc-700 dark:text-zinc-300' }}">
+                                    <div class="{{ $sr->temperature >= 38 ? 'text-destructive' : 'text-zinc-700 dark:text-zinc-300' }}">
                                         <span class="text-zinc-500 dark:text-zinc-400">T:</span> {{ $sr->temperature }}°C
                                     </div>
                                 @endif
@@ -252,9 +252,9 @@
                             <div class="border-b border-zinc-200 p-4 dark:border-zinc-700">
                                 <p class="mb-2 text-xs font-medium uppercase text-zinc-500">{{ __('Medical Background') }}</p>
                                 @if($sr->patient_allergies)
-                                    <div class="mb-2 rounded bg-red-50 p-2 text-xs dark:bg-red-900/20">
-                                        <span class="font-medium text-red-700 dark:text-red-300">{{ __('Allergies:') }}</span>
-                                        <span class="text-red-600 dark:text-red-400">{{ $sr->patient_allergies }}</span>
+                                    <div class="mb-2 rounded bg-destructive/10 p-2 text-xs">
+                                        <span class="font-medium text-destructive">{{ __('Allergies:') }}</span>
+                                        <span class="text-destructive/80">{{ $sr->patient_allergies }}</span>
                                     </div>
                                 @endif
                                 @if($sr->patient_chronic_conditions)

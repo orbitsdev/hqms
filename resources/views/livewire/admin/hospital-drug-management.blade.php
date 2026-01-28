@@ -53,7 +53,7 @@
                                 ₱{{ number_format($drug->unit_price, 2) }}
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <span class="{{ $drug->stock_quantity <= 10 ? 'text-red-600 font-medium' : '' }}">
+                                <span class="{{ $drug->stock_quantity <= 10 ? 'text-destructive font-medium' : '' }}">
                                     {{ $drug->stock_quantity ?? 0 }}
                                 </span>
                             </td>
@@ -66,7 +66,7 @@
                                 <div class="flex items-center justify-center gap-1">
                                     <flux:button size="xs" variant="ghost" icon="pencil" wire:click="openEditModal({{ $drug->id }})" title="{{ __('Edit') }}" />
                                     <flux:button size="xs" variant="ghost" icon="{{ $drug->is_active ? 'eye-slash' : 'eye' }}" wire:click="toggleActive({{ $drug->id }})" title="{{ $drug->is_active ? __('Deactivate') : __('Activate') }}" />
-                                    <flux:button size="xs" variant="ghost" icon="trash" wire:click="delete({{ $drug->id }})" wire:confirm="{{ __('Are you sure you want to delete this drug?') }}" title="{{ __('Delete') }}" class="text-red-600 hover:text-red-700" />
+                                    <flux:button size="xs" variant="ghost" icon="trash" wire:click="delete({{ $drug->id }})" wire:confirm="{{ __('Are you sure you want to delete this drug?') }}" title="{{ __('Delete') }}" class="text-destructive hover:text-destructive/80" />
                                 </div>
                             </td>
                         </tr>

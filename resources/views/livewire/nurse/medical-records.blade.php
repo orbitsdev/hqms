@@ -13,8 +13,8 @@
     <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <div class="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
             <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                    <flux:icon name="calendar" class="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
+                    <flux:icon name="calendar" class="h-5 w-5 text-primary" />
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $stats['today'] }}</p>
@@ -24,8 +24,8 @@
         </div>
         <div class="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
             <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                    <flux:icon name="chart-bar" class="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-info/20">
+                    <flux:icon name="chart-bar" class="h-5 w-5 text-info" />
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $stats['this_month'] }}</p>
@@ -35,8 +35,8 @@
         </div>
         <div class="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
             <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                    <flux:icon name="clock" class="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/20">
+                    <flux:icon name="clock" class="h-5 w-5 text-warning" />
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $stats['in_progress'] }}</p>
@@ -46,8 +46,8 @@
         </div>
         <div class="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
             <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                    <flux:icon name="banknotes" class="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-success/20">
+                    <flux:icon name="banknotes" class="h-5 w-5 text-success" />
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $stats['for_billing'] }}</p>
@@ -215,22 +215,22 @@
                                 <td class="whitespace-nowrap px-4 py-4">
                                     @switch($record->status)
                                         @case('in_progress')
-                                            <span class="inline-flex items-center rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                                            <span class="inline-flex items-center rounded bg-warning/20 px-2 py-0.5 text-xs font-medium text-warning">
                                                 {{ __('In Progress') }}
                                             </span>
                                             @break
                                         @case('for_billing')
-                                            <span class="inline-flex items-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                            <span class="inline-flex items-center rounded bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
                                                 {{ __('For Billing') }}
                                             </span>
                                             @break
                                         @case('for_admission')
-                                            <span class="inline-flex items-center rounded bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                                            <span class="inline-flex items-center rounded bg-info/20 px-2 py-0.5 text-xs font-medium text-info">
                                                 {{ __('For Admission') }}
                                             </span>
                                             @break
                                         @case('completed')
-                                            <span class="inline-flex items-center rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                            <span class="inline-flex items-center rounded bg-success/20 px-2 py-0.5 text-xs font-medium text-success">
                                                 {{ __('Completed') }}
                                             </span>
                                             @break
@@ -534,8 +534,8 @@
                                         {{ __('Recorded at') }}: {{ $record->vital_signs_recorded_at->format('M d, Y h:i A') }}
                                     </p>
                                 @else
-                                    <div class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
-                                        <p class="text-sm text-amber-800 dark:text-amber-200">{{ __('Vital signs not yet recorded.') }}</p>
+                                    <div class="rounded-lg border border-warning/30 bg-warning/10 p-3 dark:bg-warning/20">
+                                        <p class="text-sm text-warning-foreground dark:text-warning">{{ __('Vital signs not yet recorded.') }}</p>
                                     </div>
                                 @endif
                             </div>

@@ -1,6 +1,6 @@
-<x-layouts::auth>
+<x-layouts.auth.split background="/images/login_bg.png">
     <div class="flex flex-col gap-6">
-        <x-auth-header :title="__('Log in to your account')" :description="__('Enter your email and password below to log in')" />
+        <x-auth-header :title="__('Welcome Back')" :description="__('Enter your credentials to access your account')" />
 
         <!-- Session Status -->
         <x-auth-session-status class="text-center" :status="session('status')" />
@@ -58,4 +58,4 @@
             </div>
         @endif
     </div>
-</x-layouts::auth>
+</x-layouts.auth.split>

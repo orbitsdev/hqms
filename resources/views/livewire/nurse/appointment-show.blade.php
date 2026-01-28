@@ -94,7 +94,7 @@
                                 </flux:text>
                                 <flux:text class="text-sm text-zinc-700 dark:text-zinc-200">
                                     @if($appointment->patient_phone)
-                                        <a href="tel:{{ $appointment->patient_phone }}" class="text-blue-600 hover:underline dark:text-blue-400">
+                                        <a href="tel:{{ $appointment->patient_phone }}" class="text-primary hover:underline">
                                             {{ $appointment->patient_phone }}
                                         </a>
                                     @else
@@ -275,7 +275,7 @@
                             @if($accountInfo->phone)
                                 <div class="flex items-center gap-2 text-zinc-600 dark:text-zinc-300">
                                     <flux:icon name="phone" class="h-4 w-4 text-zinc-400" />
-                                    <a href="tel:{{ $accountInfo->phone }}" class="hover:text-blue-600 dark:hover:text-blue-400">
+                                    <a href="tel:{{ $accountInfo->phone }}" class="hover:text-primary">
                                         {{ $accountInfo->phone }}
                                     </a>
                                 </div>
@@ -283,7 +283,7 @@
                             @if($accountOwner?->email)
                                 <div class="flex items-center gap-2 text-zinc-600 dark:text-zinc-300">
                                     <flux:icon name="envelope" class="h-4 w-4 text-zinc-400" />
-                                    <a href="mailto:{{ $accountOwner->email }}" class="truncate hover:text-blue-600 dark:hover:text-blue-400">
+                                    <a href="mailto:{{ $accountOwner->email }}" class="truncate hover:text-primary">
                                         {{ $accountOwner->email }}
                                     </a>
                                 </div>
@@ -453,7 +453,7 @@
             </div>
 
             <flux:field>
-                <flux:label>{{ __('Reason for Cancellation') }} <span class="text-red-500">*</span></flux:label>
+                <flux:label>{{ __('Reason for Cancellation') }} <span class="text-destructive">*</span></flux:label>
                 <flux:textarea
                     wire:model="cancelReason"
                     rows="3"

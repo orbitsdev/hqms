@@ -83,8 +83,8 @@
             {{-- Total Doctors --}}
             <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                        <flux:icon name="users" class="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
+                        <flux:icon name="users" class="h-5 w-5 text-primary" />
                     </div>
                     <div>
                         <p class="text-2xl font-semibold text-zinc-900 dark:text-white">{{ $stats['total_doctors'] }}</p>
@@ -96,8 +96,8 @@
             {{-- Doctors with Schedules --}}
             <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
-                        <flux:icon name="check-circle" class="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-success/20">
+                        <flux:icon name="check-circle" class="h-5 w-5 text-success" />
                     </div>
                     <div>
                         <p class="text-2xl font-semibold text-zinc-900 dark:text-white">{{ $stats['doctors_with_schedule'] }}</p>
@@ -105,7 +105,7 @@
                     </div>
                 </div>
                 @if($stats['doctors_without_schedule'] > 0)
-                    <p class="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                    <p class="mt-2 text-xs text-warning">
                         <flux:icon name="exclamation-triangle" class="inline h-3 w-3" />
                         {{ $stats['doctors_without_schedule'] }} {{ __('doctor(s) need schedules') }}
                     </p>
@@ -115,8 +115,8 @@
             {{-- Upcoming Leaves --}}
             <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                        <flux:icon name="clock" class="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/20">
+                        <flux:icon name="clock" class="h-5 w-5 text-warning" />
                     </div>
                     <div>
                         <p class="text-2xl font-semibold text-zinc-900 dark:text-white">{{ $stats['upcoming_leaves'] }}</p>
@@ -129,8 +129,8 @@
             {{-- Today's Changes --}}
             <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-lg {{ $stats['today_exceptions'] > 0 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-zinc-100 dark:bg-zinc-800' }}">
-                        <flux:icon name="calendar" class="h-5 w-5 {{ $stats['today_exceptions'] > 0 ? 'text-red-600 dark:text-red-400' : 'text-zinc-600 dark:text-zinc-400' }}" />
+                    <div class="flex h-10 w-10 items-center justify-center rounded-lg {{ $stats['today_exceptions'] > 0 ? 'bg-destructive/20' : 'bg-zinc-100 dark:bg-zinc-800' }}">
+                        <flux:icon name="calendar" class="h-5 w-5 {{ $stats['today_exceptions'] > 0 ? 'text-destructive' : 'text-zinc-600 dark:text-zinc-400' }}" />
                     </div>
                     <div>
                         <p class="text-2xl font-semibold text-zinc-900 dark:text-white">{{ $stats['today_exceptions'] }}</p>
@@ -159,13 +159,13 @@
                 <div class="inline-flex min-w-full gap-0 divide-x divide-zinc-200 dark:divide-zinc-700">
                     @foreach($weekCalendar as $day)
                         <div wire:key="cal-{{ $day['date']->format('Y-m-d') }}"
-                             class="flex min-w-[140px] flex-1 flex-col {{ $day['isPast'] ? 'opacity-50' : '' }} {{ $day['isToday'] ? 'bg-blue-50/50 dark:bg-blue-900/10' : '' }}">
+                             class="flex min-w-[140px] flex-1 flex-col {{ $day['isPast'] ? 'opacity-50' : '' }} {{ $day['isToday'] ? 'bg-primary/5' : '' }}">
                             {{-- Day Header --}}
-                            <div class="border-b border-zinc-200 px-3 py-2 text-center dark:border-zinc-700 {{ $day['isToday'] ? 'bg-blue-100/50 dark:bg-blue-900/20' : 'bg-zinc-50 dark:bg-zinc-800' }}">
-                                <p class="text-xs font-medium {{ $day['isToday'] ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400' }}">
+                            <div class="border-b border-zinc-200 px-3 py-2 text-center dark:border-zinc-700 {{ $day['isToday'] ? 'bg-primary/10' : 'bg-zinc-50 dark:bg-zinc-800' }}">
+                                <p class="text-xs font-medium {{ $day['isToday'] ? 'text-primary' : 'text-zinc-500 dark:text-zinc-400' }}">
                                     {{ $day['dayShort'] }}
                                 </p>
-                                <p class="text-lg font-semibold {{ $day['isToday'] ? 'text-blue-700 dark:text-blue-300' : 'text-zinc-900 dark:text-white' }}">
+                                <p class="text-lg font-semibold {{ $day['isToday'] ? 'text-primary' : 'text-zinc-900 dark:text-white' }}">
                                     {{ $day['date']->format('d') }}
                                 </p>
                                 @if($day['isToday'])
@@ -187,15 +187,15 @@
                                                 @if($typeData['has_exception'])
                                                     @if($typeData['is_available'])
                                                         @if($typeData['is_extra'] ?? false)
-                                                            <span class="h-2 w-2 rounded-full bg-purple-500" title="{{ __('Extra Day') }}"></span>
+                                                            <span class="h-2 w-2 rounded-full bg-info" title="{{ __('Extra Day') }}"></span>
                                                         @else
-                                                            <span class="h-2 w-2 rounded-full bg-amber-500" title="{{ __('Modified') }}"></span>
+                                                            <span class="h-2 w-2 rounded-full bg-warning" title="{{ __('Modified') }}"></span>
                                                         @endif
                                                     @else
-                                                        <span class="h-2 w-2 rounded-full bg-red-500" title="{{ __('Not Available') }}"></span>
+                                                        <span class="h-2 w-2 rounded-full bg-destructive" title="{{ __('Not Available') }}"></span>
                                                     @endif
                                                 @else
-                                                    <span class="h-2 w-2 rounded-full bg-green-500" title="{{ __('Available') }}"></span>
+                                                    <span class="h-2 w-2 rounded-full bg-success" title="{{ __('Available') }}"></span>
                                                 @endif
                                                 <span class="truncate text-zinc-600 dark:text-zinc-300" title="{{ $typeData['type']->name }}">
                                                     {{ Str::limit($typeData['type']->name, 12) }}
@@ -216,10 +216,10 @@
             {{-- Legend --}}
             <div class="flex flex-wrap items-center gap-4 border-t border-zinc-200 px-4 py-2 text-xs dark:border-zinc-700">
                 <span class="font-medium text-zinc-600 dark:text-zinc-400">{{ __('Legend:') }}</span>
-                <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-green-500"></span> {{ __('Available') }}</span>
-                <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-amber-500"></span> {{ __('Modified Hours') }}</span>
-                <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-purple-500"></span> {{ __('Extra Day') }}</span>
-                <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-red-500"></span> {{ __('Not Available') }}</span>
+                <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-success"></span> {{ __('Available') }}</span>
+                <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-warning"></span> {{ __('Modified Hours') }}</span>
+                <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-info"></span> {{ __('Extra Day') }}</span>
+                <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-destructive"></span> {{ __('Not Available') }}</span>
             </div>
         </div>
 
@@ -238,11 +238,11 @@
                     @foreach($upcomingExceptions as $exception)
                         <div wire:key="upcoming-{{ $exception->id }}" class="flex items-center justify-between px-4 py-3">
                             <div class="flex items-center gap-3">
-                                <div class="flex h-10 w-10 flex-col items-center justify-center rounded-lg {{ $exception->is_available ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30' }}">
-                                    <span class="text-xs font-medium {{ $exception->is_available ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                                <div class="flex h-10 w-10 flex-col items-center justify-center rounded-lg {{ $exception->is_available ? 'bg-success/20' : 'bg-destructive/20' }}">
+                                    <span class="text-xs font-medium {{ $exception->is_available ? 'text-success' : 'text-destructive' }}">
                                         {{ $exception->date->format('d') }}
                                     </span>
-                                    <span class="text-[10px] {{ $exception->is_available ? 'text-green-500 dark:text-green-500' : 'text-red-500 dark:text-red-500' }}">
+                                    <span class="text-[10px] {{ $exception->is_available ? 'text-success/80' : 'text-destructive/80' }}">
                                         {{ $exception->date->format('M') }}
                                     </span>
                                 </div>
@@ -273,15 +273,15 @@
     @if($viewMode === 'weekly')
         {{-- Doctors Without Schedules Alert --}}
         @if($doctorsWithoutSchedule->isNotEmpty())
-            <div class="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20">
-                <div class="border-b border-amber-200 px-4 py-3 dark:border-amber-800">
+            <div class="rounded-xl border border-warning/30 bg-warning/10 dark:bg-warning/20">
+                <div class="border-b border-warning/30 px-4 py-3">
                     <div class="flex items-center gap-2">
-                        <flux:icon name="exclamation-triangle" class="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                        <flux:heading size="sm" class="text-amber-800 dark:text-amber-200">
+                        <flux:icon name="exclamation-triangle" class="h-5 w-5 text-warning" />
+                        <flux:heading size="sm" class="text-warning">
                             {{ trans_choice('{1} :count Doctor Without Schedule|[2,*] :count Doctors Without Schedules', $doctorsWithoutSchedule->count(), ['count' => $doctorsWithoutSchedule->count()]) }}
                         </flux:heading>
                     </div>
-                    <p class="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                    <p class="mt-1 text-sm text-warning">
                         {{ __('These doctors cannot receive appointments until their schedules are set up.') }}
                     </p>
                 </div>
@@ -289,8 +289,8 @@
                     @foreach($doctorsWithoutSchedule as $doctor)
                         <div wire:key="no-schedule-{{ $doctor->id }}" class="flex items-center justify-between px-4 py-3">
                             <div class="flex items-center gap-3">
-                                <div class="flex h-9 w-9 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/40">
-                                    <flux:icon name="user" class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                <div class="flex h-9 w-9 items-center justify-center rounded-full bg-warning/20 dark:bg-warning/30">
+                                    <flux:icon name="user" class="h-4 w-4 text-warning" />
                                 </div>
                                 <div>
                                     <p class="font-medium text-zinc-900 dark:text-white">{{ $doctor->name }}</p>
@@ -299,7 +299,7 @@
                                             {{ $doctor->consultationTypes->pluck('name')->join(', ') }}
                                         </p>
                                     @else
-                                        <p class="text-xs text-red-500 dark:text-red-400">
+                                        <p class="text-xs text-destructive dark:text-destructive">
                                             {{ __('No consultation types assigned') }}
                                         </p>
                                     @endif
@@ -349,8 +349,8 @@
                         <div class="border-b border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
-                                        <flux:icon name="user" class="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                                        <flux:icon name="user" class="h-5 w-5 text-primary" />
                                     </div>
                                     <div>
                                         <flux:heading size="sm">{{ $doctor->name }}</flux:heading>
@@ -411,7 +411,7 @@
                                                         </span>
                                                         <span class="flex h-8 w-8 items-center justify-center rounded-lg text-xs font-semibold transition
                                                             {{ $isActive
-                                                                ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400'
+                                                                ? 'bg-success/10 text-success dark:bg-success/20'
                                                                 : 'bg-zinc-100 text-zinc-300 dark:bg-zinc-800 dark:text-zinc-600' }}">
                                                             {{ $isActive ? '✓' : '–' }}
                                                         </span>
@@ -433,7 +433,7 @@
                                             <flux:button wire:click="openEditScheduleModal({{ $doctor->id }}, {{ $typeId }})" size="sm" variant="ghost" icon="pencil">
                                                 {{ __('Edit') }}
                                             </flux:button>
-                                            <flux:button wire:click="confirmDeleteSchedule({{ $doctor->id }}, {{ $typeId }})" size="sm" variant="ghost" icon="trash" class="text-red-600 hover:text-red-700 dark:text-red-400">
+                                            <flux:button wire:click="confirmDeleteSchedule({{ $doctor->id }}, {{ $typeId }})" size="sm" variant="ghost" icon="trash" class="text-destructive hover:text-destructive/80">
                                                 {{ __('Delete') }}
                                             </flux:button>
                                         </div>
@@ -532,14 +532,14 @@
                                     $isTomorrow = $exception->date->isTomorrow();
                                 @endphp
                                 <tr wire:key="exception-{{ $exception->id }}"
-                                    class="{{ $isPast ? 'opacity-50' : '' }} {{ $isToday ? 'bg-amber-50/50 dark:bg-amber-900/10' : '' }} hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                                    class="{{ $isPast ? 'opacity-50' : '' }} {{ $isToday ? 'bg-warning/5 dark:bg-warning/10' : '' }} hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                                     <td class="whitespace-nowrap px-4 py-3">
                                         <div class="flex items-center gap-2">
-                                            <div class="flex h-10 w-10 flex-col items-center justify-center rounded-lg {{ $exception->is_available ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30' }}">
-                                                <span class="text-sm font-semibold {{ $exception->is_available ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400' }}">
+                                            <div class="flex h-10 w-10 flex-col items-center justify-center rounded-lg {{ $exception->is_available ? 'bg-success/20' : 'bg-destructive/20' }}">
+                                                <span class="text-sm font-semibold {{ $exception->is_available ? 'text-success' : 'text-destructive' }}">
                                                     {{ $exception->date->format('d') }}
                                                 </span>
-                                                <span class="text-[10px] {{ $exception->is_available ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500' }}">
+                                                <span class="text-[10px] {{ $exception->is_available ? 'text-success/80' : 'text-destructive/80' }}">
                                                     {{ $exception->date->format('M') }}
                                                 </span>
                                             </div>
@@ -588,7 +588,7 @@
                                     <td class="whitespace-nowrap px-4 py-3 text-right">
                                         <div class="flex items-center justify-end gap-1">
                                             <flux:button wire:click="openEditExceptionModal({{ $exception->id }})" size="xs" variant="ghost" icon="pencil" />
-                                            <flux:button wire:click="confirmDeleteException({{ $exception->id }})" size="xs" variant="ghost" icon="trash" class="text-red-600 hover:text-red-700 dark:text-red-400" />
+                                            <flux:button wire:click="confirmDeleteException({{ $exception->id }})" size="xs" variant="ghost" icon="trash" class="text-destructive hover:text-destructive/80" />
                                         </div>
                                     </td>
                                 </tr>
@@ -645,7 +645,7 @@
             <div class="space-y-4">
                 {{-- Doctor Selection --}}
                 <flux:field>
-                    <flux:label>{{ __('Doctor') }} <span class="text-red-500">*</span></flux:label>
+                    <flux:label>{{ __('Doctor') }} <span class="text-destructive">*</span></flux:label>
                     <flux:select wire:model="scheduleDoctor" placeholder="{{ __('Select a doctor') }}" :disabled="(bool) $editScheduleId">
                         <flux:select.option value="">{{ __('Select a doctor') }}</flux:select.option>
                         @foreach($doctors as $doctor)
@@ -657,7 +657,7 @@
 
                 {{-- Consultation Type Selection --}}
                 <flux:field>
-                    <flux:label>{{ __('Consultation Type') }} <span class="text-red-500">*</span></flux:label>
+                    <flux:label>{{ __('Consultation Type') }} <span class="text-destructive">*</span></flux:label>
                     <flux:select wire:model="scheduleConsultationType" placeholder="{{ __('Select consultation type') }}" :disabled="(bool) $editScheduleId">
                         <flux:select.option value="">{{ __('Select consultation type') }}</flux:select.option>
                         @foreach($consultationTypes as $type)
@@ -669,7 +669,7 @@
 
                 {{-- Days Selection --}}
                 <flux:field>
-                    <flux:label>{{ __('Working Days') }} <span class="text-red-500">*</span></flux:label>
+                    <flux:label>{{ __('Working Days') }} <span class="text-destructive">*</span></flux:label>
                     <p class="mb-2 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Click to select the days when the doctor works.') }}</p>
                     <div class="flex flex-wrap gap-2">
                         @foreach($dayNames as $dayNum => $dayName)
@@ -677,9 +677,9 @@
                             <label wire:key="day-{{ $dayNum }}" class="cursor-pointer">
                                 <input type="checkbox" wire:model="scheduleDays" value="{{ $dayNum }}" class="peer sr-only">
                                 <span class="inline-flex h-12 w-14 flex-col items-center justify-center rounded-xl border-2 text-sm font-medium transition-all
-                                    peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700
-                                    peer-focus:ring-2 peer-focus:ring-green-500 peer-focus:ring-offset-2
-                                    dark:peer-checked:border-green-600 dark:peer-checked:bg-green-900/30 dark:peer-checked:text-green-400
+                                    peer-checked:border-success peer-checked:bg-success/10 peer-checked:text-success
+                                    peer-focus:ring-2 peer-focus:ring-success peer-focus:ring-offset-2
+                                    dark:peer-checked:border-success dark:peer-checked:bg-success/20 dark:peer-checked:text-success
                                     {{ !$isChecked ? 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-500' : '' }}">
                                     <span class="text-xs">{{ substr($dayName, 0, 3) }}</span>
                                     @if($isChecked)
@@ -754,7 +754,7 @@
 
                 {{-- Doctor Selection --}}
                 <flux:field>
-                    <flux:label>{{ __('Doctor') }} <span class="text-red-500">*</span></flux:label>
+                    <flux:label>{{ __('Doctor') }} <span class="text-destructive">*</span></flux:label>
                     <flux:select wire:model="exceptionDoctor" placeholder="{{ __('Select a doctor') }}">
                         <flux:select.option value="">{{ __('Select a doctor') }}</flux:select.option>
                         @foreach($doctors as $doctor)
@@ -766,7 +766,7 @@
 
                 {{-- Consultation Type Selection --}}
                 <flux:field>
-                    <flux:label>{{ __('Consultation Type') }} <span class="text-red-500">*</span></flux:label>
+                    <flux:label>{{ __('Consultation Type') }} <span class="text-destructive">*</span></flux:label>
                     <flux:select wire:model="exceptionConsultationType" placeholder="{{ __('Select consultation type') }}">
                         <flux:select.option value="">{{ __('Select consultation type') }}</flux:select.option>
                         @foreach($consultationTypes as $type)
@@ -794,26 +794,26 @@
                     {{-- Date Range Mode --}}
                     <div class="grid grid-cols-2 gap-4">
                         <flux:field>
-                            <flux:label>{{ __('From Date') }} <span class="text-red-500">*</span></flux:label>
+                            <flux:label>{{ __('From Date') }} <span class="text-destructive">*</span></flux:label>
                             <flux:input type="date" wire:model.live="exceptionDate" min="{{ now()->format('Y-m-d') }}" />
                             <flux:error name="exceptionDate" />
                         </flux:field>
                         <flux:field>
-                            <flux:label>{{ __('To Date') }} <span class="text-red-500">*</span></flux:label>
+                            <flux:label>{{ __('To Date') }} <span class="text-destructive">*</span></flux:label>
                             <flux:input type="date" wire:model.live="exceptionDateEnd" min="{{ $exceptionDate ?: now()->format('Y-m-d') }}" />
                             <flux:error name="exceptionDateEnd" />
                         </flux:field>
                     </div>
                     @if($dateRangeDaysCount > 0)
-                        <div class="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
-                            <p class="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300">
+                        <div class="rounded-lg border border-primary/30 bg-primary/10 p-3 dark:bg-primary/20">
+                            <p class="flex items-center gap-2 text-sm text-primary">
                                 <flux:icon name="information-circle" class="h-5 w-5" />
                                 <span>
                                     {{ trans_choice('{1} This will create :count exception.|[2,*] This will create :count exceptions.', $dateRangeDaysCount, ['count' => $dateRangeDaysCount]) }}
                                 </span>
                             </p>
                             @if($dateRangeDaysCount > 14)
-                                <p class="mt-1 text-xs text-blue-600 dark:text-blue-400">
+                                <p class="mt-1 text-xs text-primary">
                                     {{ __('Tip: For long periods, consider if all dates need exceptions or just weekdays.') }}
                                 </p>
                             @endif
@@ -822,7 +822,7 @@
                 @else
                     {{-- Single Date Mode --}}
                     <flux:field>
-                        <flux:label>{{ __('Date') }} <span class="text-red-500">*</span></flux:label>
+                        <flux:label>{{ __('Date') }} <span class="text-destructive">*</span></flux:label>
                         <flux:input type="date" wire:model="exceptionDate" min="{{ now()->format('Y-m-d') }}" />
                         <flux:error name="exceptionDate" />
                     </flux:field>
@@ -833,7 +833,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <flux:label>{{ __('Availability Status') }}</flux:label>
-                            <p class="mt-1 text-sm {{ $exceptionIsAvailable ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                            <p class="mt-1 text-sm {{ $exceptionIsAvailable ? 'text-success' : 'text-destructive' }}">
                                 @if($exceptionIsAvailable)
                                     <flux:icon name="check-circle" class="inline h-4 w-4" />
                                     {{ __('Doctor will be AVAILABLE on this day') }}
@@ -902,7 +902,7 @@
             <div class="space-y-4">
                 {{-- Source Doctor --}}
                 <flux:field>
-                    <flux:label>{{ __('Copy From (Source Doctor)') }} <span class="text-red-500">*</span></flux:label>
+                    <flux:label>{{ __('Copy From (Source Doctor)') }} <span class="text-destructive">*</span></flux:label>
                     <flux:select wire:model="copyFromDoctor" placeholder="{{ __('Select source doctor') }}">
                         <flux:select.option value="">{{ __('Select source doctor') }}</flux:select.option>
                         @foreach($doctors as $doctor)
@@ -921,7 +921,7 @@
 
                 {{-- Target Doctor --}}
                 <flux:field>
-                    <flux:label>{{ __('Copy To (Target Doctor)') }} <span class="text-red-500">*</span></flux:label>
+                    <flux:label>{{ __('Copy To (Target Doctor)') }} <span class="text-destructive">*</span></flux:label>
                     <flux:select wire:model="copyToDoctor" placeholder="{{ __('Select target doctor') }}">
                         <flux:select.option value="">{{ __('Select target doctor') }}</flux:select.option>
                         @foreach($doctors as $doctor)
@@ -933,7 +933,7 @@
 
                 {{-- Consultation Type --}}
                 <flux:field>
-                    <flux:label>{{ __('Consultation Type') }} <span class="text-red-500">*</span></flux:label>
+                    <flux:label>{{ __('Consultation Type') }} <span class="text-destructive">*</span></flux:label>
                     <flux:select wire:model="copyConsultationType" placeholder="{{ __('Select consultation type') }}">
                         <flux:select.option value="">{{ __('Select consultation type') }}</flux:select.option>
                         @foreach($consultationTypes as $type)
@@ -965,8 +965,8 @@
     <flux:modal wire:model="showDeleteModal" class="max-w-md">
         <div class="space-y-6">
             <div class="flex items-start gap-4">
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
-                    <flux:icon name="trash" class="h-6 w-6 text-red-600 dark:text-red-400" />
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-destructive/20">
+                    <flux:icon name="trash" class="h-6 w-6 text-destructive" />
                 </div>
                 <div>
                     <flux:heading size="lg">{{ __('Delete Confirmation') }}</flux:heading>

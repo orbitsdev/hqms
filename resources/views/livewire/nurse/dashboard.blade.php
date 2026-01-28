@@ -23,25 +23,25 @@
             @foreach($alerts as $category => $categoryAlerts)
                 @foreach($categoryAlerts as $alert)
                     <a href="{{ $alert['action'] }}" wire:navigate class="flex items-center gap-3 rounded-lg border p-3 transition hover:shadow-sm
-                        @if($alert['type'] === 'danger') border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20
-                        @elseif($alert['type'] === 'warning') border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20
-                        @else border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20 @endif">
+                        @if($alert['type'] === 'danger') border-destructive/30 bg-destructive/10
+                        @elseif($alert['type'] === 'warning') border-warning/30 bg-warning/10
+                        @else border-primary/30 bg-primary/10 @endif">
                         <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full
-                            @if($alert['type'] === 'danger') bg-red-100 dark:bg-red-900/50
-                            @elseif($alert['type'] === 'warning') bg-amber-100 dark:bg-amber-900/50
-                            @else bg-blue-100 dark:bg-blue-900/50 @endif">
+                            @if($alert['type'] === 'danger') bg-destructive/20
+                            @elseif($alert['type'] === 'warning') bg-warning/20
+                            @else bg-primary/20 @endif">
                             @if($alert['type'] === 'danger')
-                                <flux:icon name="exclamation-triangle" class="h-4 w-4 text-red-600 dark:text-red-400" />
+                                <flux:icon name="exclamation-triangle" class="h-4 w-4 text-destructive" />
                             @elseif($alert['type'] === 'warning')
-                                <flux:icon name="exclamation-circle" class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                <flux:icon name="exclamation-circle" class="h-4 w-4 text-warning" />
                             @else
-                                <flux:icon name="information-circle" class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                <flux:icon name="information-circle" class="h-4 w-4 text-primary" />
                             @endif
                         </div>
                         <span class="flex-1 text-sm font-medium
-                            @if($alert['type'] === 'danger') text-red-800 dark:text-red-200
-                            @elseif($alert['type'] === 'warning') text-amber-800 dark:text-amber-200
-                            @else text-blue-800 dark:text-blue-200 @endif">
+                            @if($alert['type'] === 'danger') text-destructive
+                            @elseif($alert['type'] === 'warning') text-warning-foreground dark:text-warning
+                            @else text-primary @endif">
                             {{ $alert['message'] }}
                         </span>
                         <flux:icon name="chevron-right" class="h-4 w-4 text-zinc-400" />
@@ -97,9 +97,9 @@
                     @if($currentServing->isNotEmpty())
                         <div class="space-y-3">
                             @foreach($currentServing as $queue)
-                                <div class="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-800 dark:bg-emerald-900/20">
+                                <div class="flex items-center justify-between rounded-lg border border-success/30 bg-success/10 p-3">
                                     <div class="flex items-center gap-3">
-                                        <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500 text-lg font-bold text-white">
+                                        <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-success text-lg font-bold text-white">
                                             {{ $queue->formatted_number }}
                                         </span>
                                         <div>
@@ -109,18 +109,18 @@
                                             <div class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                                                 <span>{{ $queue->consultationType?->name }}</span>
                                                 @if($queue->serving_started_at)
-                                                    <span class="text-emerald-600 dark:text-emerald-400">{{ $queue->serving_started_at->diffForHumans(short: true) }}</span>
+                                                    <span class="text-success">{{ $queue->serving_started_at->diffForHumans(short: true) }}</span>
                                                 @endif
                                             </div>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2">
                                         @if($queue->medicalRecord?->vital_signs_recorded_at)
-                                            <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+                                            <span class="rounded-full bg-success/20 px-2 py-0.5 text-xs font-medium text-success">
                                                 {{ __('Vitals OK') }}
                                             </span>
                                         @else
-                                            <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
+                                            <span class="rounded-full bg-warning/20 px-2 py-0.5 text-xs font-medium text-warning">
                                                 {{ __('Needs Vitals') }}
                                             </span>
                                         @endif
@@ -152,9 +152,9 @@
                                 <div class="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
                                     <div class="flex items-center gap-3">
                                         <span class="flex h-8 w-8 items-center justify-center rounded font-bold
-                                            @if($queue->priority === 'emergency') bg-red-500 text-white
-                                            @elseif($queue->priority === 'urgent') bg-amber-500 text-white
-                                            @else bg-blue-500 text-white @endif">
+                                            @if($queue->priority === 'emergency') bg-destructive text-white
+                                            @elseif($queue->priority === 'urgent') bg-warning text-white
+                                            @else bg-primary text-white @endif">
                                             {{ $queue->formatted_number }}
                                         </span>
                                         <div>
@@ -165,8 +165,8 @@
                                                 {{ $queue->consultationType?->name }}
                                                 @if($queue->priority !== 'normal')
                                                     <span class="ml-1 font-medium
-                                                        @if($queue->priority === 'emergency') text-red-600 dark:text-red-400
-                                                        @else text-amber-600 dark:text-amber-400 @endif">
+                                                        @if($queue->priority === 'emergency') text-destructive
+                                                        @else text-warning @endif">
                                                         ({{ ucfirst($queue->priority) }})
                                                     </span>
                                                 @endif
@@ -174,7 +174,7 @@
                                         </div>
                                     </div>
                                     <span class="rounded px-2 py-0.5 text-xs font-medium
-                                        @if($queue->status === 'called') bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300
+                                        @if($queue->status === 'called') bg-info/20 text-info
                                         @else bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300 @endif">
                                         {{ ucfirst($queue->status) }}
                                     </span>
@@ -217,7 +217,7 @@
                                                 {{ strtoupper(substr($doctor['name'], 0, 2)) }}
                                             </div>
                                             @if($doctor['is_serving'])
-                                                <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 dark:border-zinc-800"></span>
+                                                <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-success dark:border-zinc-800"></span>
                                             @endif
                                         </div>
                                         <div>
@@ -226,7 +226,7 @@
                                         </div>
                                     </div>
                                     @if($doctor['is_serving'])
-                                        <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+                                        <span class="rounded-full bg-success/20 px-2 py-0.5 text-xs font-medium text-success">
                                             {{ __('Busy') }}
                                         </span>
                                     @else
@@ -271,7 +271,7 @@
                                                 <span class="font-semibold text-zinc-900 dark:text-white">{{ $type['waiting'] }}</span> {{ __('waiting') }}
                                             </span>
                                             @if($type['serving'] > 0)
-                                                <span class="text-emerald-600 dark:text-emerald-400">
+                                                <span class="text-success">
                                                     <span class="font-semibold">{{ $type['serving'] }}</span> {{ __('serving') }}
                                                 </span>
                                             @endif

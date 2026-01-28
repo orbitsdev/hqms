@@ -176,15 +176,15 @@
                         @foreach($patientRecords as $record)
                             @php
                                 $bgClass = match($record->status) {
-                                    'completed' => 'bg-emerald-100 dark:bg-emerald-900/30',
-                                    'in_progress' => 'bg-amber-100 dark:bg-amber-900/30',
-                                    'for_billing' => 'bg-blue-100 dark:bg-blue-900/30',
+                                    'completed' => 'bg-success/10 dark:bg-success/20',
+                                    'in_progress' => 'bg-warning/10 dark:bg-warning/20',
+                                    'for_billing' => 'bg-primary/10 dark:bg-primary/20',
                                     default => 'bg-zinc-100 dark:bg-zinc-800',
                                 };
                                 $iconClass = match($record->status) {
-                                    'completed' => 'text-emerald-600 dark:text-emerald-400',
-                                    'in_progress' => 'text-amber-600 dark:text-amber-400',
-                                    'for_billing' => 'text-blue-600 dark:text-blue-400',
+                                    'completed' => 'text-success',
+                                    'in_progress' => 'text-warning',
+                                    'for_billing' => 'text-primary',
                                     default => 'text-zinc-500 dark:text-zinc-400',
                                 };
                             @endphp
@@ -235,17 +235,17 @@
                                     <div class="flex items-center gap-2">
                                         @switch($record->status)
                                             @case('completed')
-                                                <span class="inline-flex items-center rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                                <span class="inline-flex items-center rounded bg-success/10 px-2 py-0.5 text-xs font-medium text-success dark:bg-success/20">
                                                     {{ __('Completed') }}
                                                 </span>
                                                 @break
                                             @case('in_progress')
-                                                <span class="inline-flex items-center rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                                                <span class="inline-flex items-center rounded bg-warning/10 px-2 py-0.5 text-xs font-medium text-warning dark:bg-warning/20">
                                                     {{ __('In Progress') }}
                                                 </span>
                                                 @break
                                             @case('for_billing')
-                                                <span class="inline-flex items-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                                <span class="inline-flex items-center rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary dark:bg-primary/20">
                                                     {{ __('For Billing') }}
                                                 </span>
                                                 @break
@@ -443,8 +443,8 @@
                                         {{ __('Recorded at') }}: {{ $record->vital_signs_recorded_at->format('M d, Y h:i A') }}
                                     </p>
                                 @else
-                                    <div class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
-                                        <p class="text-sm text-amber-800 dark:text-amber-200">{{ __('Vital signs not yet recorded.') }}</p>
+                                    <div class="rounded-lg border border-warning/30 bg-warning/10 p-3 dark:bg-warning/20">
+                                        <p class="text-sm text-warning">{{ __('Vital signs not yet recorded.') }}</p>
                                     </div>
                                 @endif
                             </div>

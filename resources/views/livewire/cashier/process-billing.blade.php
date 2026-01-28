@@ -87,7 +87,7 @@
                                             ₱{{ number_format($item['total_price'], 2) }}
                                         </td>
                                         <td class="py-2 text-right">
-                                            <flux:button wire:click="removeItem({{ $index }})" variant="ghost" size="sm" icon="x-mark" class="text-red-500 hover:text-red-600" />
+                                            <flux:button wire:click="removeItem({{ $index }})" variant="ghost" size="sm" icon="x-mark" class="text-destructive hover:text-destructive/80" />
                                         </td>
                                     </tr>
                                 @endforeach
@@ -176,7 +176,7 @@
                     @if($this->discountAmount > 0)
                         <div class="flex justify-between">
                             <span class="text-zinc-500 dark:text-zinc-400">{{ __('Discount') }} ({{ $discountPercent }}%)</span>
-                            <span class="text-red-600 dark:text-red-400">-₱{{ number_format($this->discountAmount, 2) }}</span>
+                            <span class="text-destructive">-₱{{ number_format($this->discountAmount, 2) }}</span>
                         </div>
                     @endif
 
@@ -365,7 +365,7 @@
                         @if($completedTransaction->discount_amount > 0)
                             <div class="flex justify-between text-sm">
                                 <span class="text-zinc-500">{{ __('Discount') }}</span>
-                                <span class="text-red-500">-₱{{ number_format($completedTransaction->discount_amount, 2) }}</span>
+                                <span class="text-destructive">-₱{{ number_format($completedTransaction->discount_amount, 2) }}</span>
                             </div>
                         @endif
                         <div class="mt-2 flex justify-between border-t border-zinc-200 pt-2 font-bold dark:border-zinc-700">

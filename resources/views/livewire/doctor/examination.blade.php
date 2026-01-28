@@ -29,7 +29,7 @@
             <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="mb-3 flex items-center justify-between">
                     <flux:heading size="sm">{{ __('Patient') }}</flux:heading>
-                    <span class="rounded bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                    <span class="rounded bg-primary/20 px-2 py-0.5 text-xs font-bold text-primary">
                         {{ $record->queue?->formatted_number }}
                     </span>
                 </div>
@@ -48,7 +48,7 @@
                 <flux:heading size="sm" class="mb-3">{{ __('Vital Signs') }}</flux:heading>
                 <dl class="space-y-2 text-sm">
                     @if($record->temperature)
-                        <div class="flex justify-between {{ $record->temperature >= 38 ? 'text-red-600 dark:text-red-400 font-medium' : '' }}">
+                        <div class="flex justify-between {{ $record->temperature >= 38 ? 'text-destructive font-medium' : '' }}">
                             <dt class="text-zinc-500 dark:text-zinc-400">{{ __('Temperature') }}</dt>
                             <dd>{{ $record->temperature }}°C</dd>
                         </div>
@@ -108,18 +108,18 @@
 
             {{-- Allergies & Conditions --}}
             @if($record->patient_allergies || $record->patient_chronic_conditions)
-                <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
-                    <flux:heading size="sm" class="mb-3 text-amber-800 dark:text-amber-200">{{ __('Medical Alert') }}</flux:heading>
+                <div class="rounded-xl border border-warning/30 bg-warning/10 p-4">
+                    <flux:heading size="sm" class="mb-3 text-warning-foreground dark:text-warning">{{ __('Medical Alert') }}</flux:heading>
                     @if($record->patient_allergies)
                         <div class="mb-2">
-                            <p class="text-xs font-medium uppercase text-red-700 dark:text-red-300">{{ __('Allergies') }}</p>
-                            <p class="text-sm text-red-600 dark:text-red-400">{{ $record->patient_allergies }}</p>
+                            <p class="text-xs font-medium uppercase text-destructive">{{ __('Allergies') }}</p>
+                            <p class="text-sm text-destructive/80">{{ $record->patient_allergies }}</p>
                         </div>
                     @endif
                     @if($record->patient_chronic_conditions)
                         <div>
-                            <p class="text-xs font-medium uppercase text-amber-700 dark:text-amber-300">{{ __('Chronic Conditions') }}</p>
-                            <p class="text-sm text-amber-600 dark:text-amber-400">{{ $record->patient_chronic_conditions }}</p>
+                            <p class="text-xs font-medium uppercase text-warning">{{ __('Chronic Conditions') }}</p>
+                            <p class="text-sm text-warning/80">{{ $record->patient_chronic_conditions }}</p>
                         </div>
                     @endif
                 </div>
@@ -237,7 +237,7 @@
                                         <button wire:click="editPrescription({{ $rx->id }})" class="rounded p-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600 dark:hover:bg-zinc-700">
                                             <flux:icon name="pencil" class="h-4 w-4" />
                                         </button>
-                                        <button wire:click="deletePrescription({{ $rx->id }})" wire:confirm="{{ __('Remove this prescription?') }}" class="rounded p-1 text-zinc-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30">
+                                        <button wire:click="deletePrescription({{ $rx->id }})" wire:confirm="{{ __('Remove this prescription?') }}" class="rounded p-1 text-zinc-400 hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/20">
                                             <flux:icon name="trash" class="h-4 w-4" />
                                         </button>
                                     </div>
@@ -297,9 +297,9 @@
                 @endif
 
                 @if($hospitalDrugId)
-                    <div class="mt-2 flex items-center justify-between rounded bg-blue-100 px-3 py-2 dark:bg-blue-900/30">
-                        <span class="text-sm font-medium text-blue-800 dark:text-blue-200">{{ __('Hospital drug selected') }}</span>
-                        <button wire:click="clearHospitalDrug" type="button" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">
+                    <div class="mt-2 flex items-center justify-between rounded bg-primary/20 px-3 py-2">
+                        <span class="text-sm font-medium text-primary">{{ __('Hospital drug selected') }}</span>
+                        <button wire:click="clearHospitalDrug" type="button" class="text-primary hover:text-primary/80">
                             <flux:icon name="x-mark" class="h-4 w-4" />
                         </button>
                     </div>
@@ -385,33 +385,33 @@
 
             {{-- Admission Fields (shown when for_admission is selected) --}}
             @if($completionAction === 'for_admission')
-                <div class="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
-                    <p class="text-xs font-medium uppercase text-amber-700 dark:text-amber-300">{{ __('Admission Details') }}</p>
+                <div class="space-y-3 rounded-lg border border-warning/30 bg-warning/10 p-3">
+                    <p class="text-xs font-medium uppercase text-warning">{{ __('Admission Details') }}</p>
 
                     <flux:field>
-                        <flux:label>{{ __('Reason for Admission') }} <span class="text-red-500">*</span></flux:label>
+                        <flux:label>{{ __('Reason for Admission') }} <span class="text-destructive">*</span></flux:label>
                         <flux:textarea wire:model="admissionReason" rows="2" placeholder="{{ __('Enter reason for admission...') }}" />
                         <flux:error name="admissionReason" />
                     </flux:field>
 
                     <flux:field>
-                        <flux:label>{{ __('Urgency') }} <span class="text-red-500">*</span></flux:label>
+                        <flux:label>{{ __('Urgency') }} <span class="text-destructive">*</span></flux:label>
                         <div class="flex gap-2">
                             <label class="flex-1">
                                 <input type="radio" wire:model="admissionUrgency" value="routine" class="peer sr-only">
-                                <span class="flex cursor-pointer items-center justify-center rounded-lg border p-2 text-sm transition peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700 dark:peer-checked:bg-green-900/30">
+                                <span class="flex cursor-pointer items-center justify-center rounded-lg border p-2 text-sm transition peer-checked:border-success peer-checked:bg-success/10 peer-checked:text-success">
                                     {{ __('Routine') }}
                                 </span>
                             </label>
                             <label class="flex-1">
                                 <input type="radio" wire:model="admissionUrgency" value="urgent" class="peer sr-only">
-                                <span class="flex cursor-pointer items-center justify-center rounded-lg border p-2 text-sm transition peer-checked:border-amber-500 peer-checked:bg-amber-50 peer-checked:text-amber-700 dark:peer-checked:bg-amber-900/30">
+                                <span class="flex cursor-pointer items-center justify-center rounded-lg border p-2 text-sm transition peer-checked:border-warning peer-checked:bg-warning/10 peer-checked:text-warning">
                                     {{ __('Urgent') }}
                                 </span>
                             </label>
                             <label class="flex-1">
                                 <input type="radio" wire:model="admissionUrgency" value="emergency" class="peer sr-only">
-                                <span class="flex cursor-pointer items-center justify-center rounded-lg border p-2 text-sm transition peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-700 dark:peer-checked:bg-red-900/30">
+                                <span class="flex cursor-pointer items-center justify-center rounded-lg border p-2 text-sm transition peer-checked:border-destructive peer-checked:bg-destructive/10 peer-checked:text-destructive">
                                     {{ __('Emergency') }}
                                 </span>
                             </label>

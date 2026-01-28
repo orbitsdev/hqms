@@ -12,24 +12,24 @@
 
     <!-- Quick Stats -->
     <div class="flex flex-wrap gap-2">
-        <div class="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-800 dark:bg-amber-900/20">
-            <flux:icon name="clock" class="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            <span class="text-sm font-semibold text-amber-800 dark:text-amber-200">{{ $pendingCheckIns->count() }}</span>
-            <span class="text-xs text-amber-700 dark:text-amber-300">{{ __('Check-ins') }}</span>
+        <div class="flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2">
+            <flux:icon name="clock" class="h-4 w-4 text-warning" />
+            <span class="text-sm font-semibold text-warning-foreground dark:text-warning">{{ $pendingCheckIns->count() }}</span>
+            <span class="text-xs text-warning-foreground/80 dark:text-warning/80">{{ __('Check-ins') }}</span>
         </div>
-        <button wire:click="setStatus('waiting')" class="flex items-center gap-2 rounded-lg border px-3 py-2 transition {{ $status === 'waiting' ? 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/30' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}">
-            <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+        <button wire:click="setStatus('waiting')" class="flex items-center gap-2 rounded-lg border px-3 py-2 transition {{ $status === 'waiting' ? 'border-primary bg-primary/10' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}">
+            <span class="h-2 w-2 rounded-full bg-primary"></span>
             <span class="text-sm font-semibold">{{ $statusCounts['waiting'] + $statusCounts['called'] }}</span>
             <span class="text-xs text-zinc-600 dark:text-zinc-400">{{ __('In Queue') }}</span>
             @if($statusCounts['called'] > 0)
-                <span class="ml-1 flex items-center gap-1 rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-medium text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">
-                    <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-500"></span>
+                <span class="ml-1 flex items-center gap-1 rounded bg-info/20 px-1.5 py-0.5 text-[10px] font-medium text-info">
+                    <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-info"></span>
                     {{ $statusCounts['called'] }} {{ __('called') }}
                 </span>
             @endif
         </button>
-        <button wire:click="setStatus('serving')" class="flex items-center gap-2 rounded-lg border px-3 py-2 transition {{ $status === 'serving' ? 'border-emerald-500 bg-emerald-50 dark:border-emerald-400 dark:bg-emerald-900/30' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}">
-            <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
+        <button wire:click="setStatus('serving')" class="flex items-center gap-2 rounded-lg border px-3 py-2 transition {{ $status === 'serving' ? 'border-success bg-success/10' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}">
+            <span class="h-2 w-2 animate-pulse rounded-full bg-success"></span>
             <span class="text-sm font-semibold">{{ $statusCounts['serving'] }}</span>
             <span class="text-xs text-zinc-600 dark:text-zinc-400">{{ __('Serving') }}</span>
         </button>
@@ -49,13 +49,13 @@
 
     <!-- Pending Check-ins -->
     @if($pendingCheckIns->isNotEmpty())
-        <div class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
-            <p class="mb-2 text-xs font-medium text-amber-700 dark:text-amber-300">{{ __('Click to check in:') }}</p>
+        <div class="rounded-lg border border-warning/30 bg-warning/10 p-3">
+            <p class="mb-2 text-xs font-medium text-warning-foreground dark:text-warning">{{ __('Click to check in:') }}</p>
             <div class="flex flex-wrap gap-2">
                 @foreach($pendingCheckIns as $appointment)
                     <button
                         wire:click="openCheckInModal({{ $appointment->id }})"
-                        class="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-white px-2 py-1 text-xs font-medium text-amber-800 transition hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
+                        class="inline-flex items-center gap-1.5 rounded-md border border-warning/50 bg-white px-2 py-1 text-xs font-medium text-warning-foreground transition hover:bg-warning/20 dark:border-warning/40 dark:bg-warning/10 dark:text-warning"
                     >
                         <span class="font-bold">{{ $appointment->consultationType?->short_name }}</span>
                         {{ $appointment->patient_first_name }}
@@ -116,28 +116,28 @@
                             wire:key="queue-card-{{ $queue->id }}"
                             class="relative flex flex-col items-center justify-center rounded-lg border-2 p-3 text-center transition
                                 @if($isSelected) ring-2 ring-offset-2 dark:ring-offset-zinc-900
-                                    @if($queue->status === 'serving') ring-emerald-500 border-emerald-500 bg-emerald-500 text-white
-                                    @elseif($queue->status === 'waiting') ring-blue-500 border-blue-500 bg-blue-500 text-white
-                                    @elseif($queue->status === 'called') ring-purple-500 border-purple-500 bg-purple-500 text-white
+                                    @if($queue->status === 'serving') ring-success border-success bg-success text-white
+                                    @elseif($queue->status === 'waiting') ring-primary border-primary bg-primary text-white
+                                    @elseif($queue->status === 'called') ring-info border-info bg-info text-white
                                     @else ring-zinc-500 border-zinc-400 bg-zinc-400 text-white @endif
                                 @else
-                                    @if($queue->status === 'serving') border-emerald-400 bg-emerald-500 text-white hover:bg-emerald-600
-                                    @elseif($queue->status === 'waiting') border-blue-300 bg-blue-500 text-white hover:bg-blue-600
-                                    @elseif($queue->status === 'called') border-purple-300 bg-purple-500 text-white hover:bg-purple-600
+                                    @if($queue->status === 'serving') border-success/80 bg-success text-white hover:bg-success/90
+                                    @elseif($queue->status === 'waiting') border-primary/80 bg-primary text-white hover:bg-primary/90
+                                    @elseif($queue->status === 'called') border-info/80 bg-info text-white hover:bg-info/90
                                     @elseif($queue->status === 'skipped') border-zinc-300 bg-zinc-200 text-zinc-600 hover:bg-zinc-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-300
                                     @else border-zinc-300 bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 @endif
                                 @endif"
                         >
                             <!-- Priority Badge -->
                             @if($queue->priority === 'emergency')
-                                <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white">!</span>
+                                <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[8px] font-bold text-white">!</span>
                             @elseif($queue->priority === 'urgent')
-                                <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[8px] font-bold text-white">U</span>
+                                <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-warning text-[8px] font-bold text-white">U</span>
                             @endif
 
                             <!-- Vitals Indicator -->
                             @if($queue->status === 'serving' && $hasVitals)
-                                <span class="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-emerald-600">
+                                <span class="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-success">
                                     <flux:icon name="check-circle" class="h-3 w-3" />
                                 </span>
                             @endif
@@ -178,16 +178,16 @@
                         <div>
                             <div class="flex items-center gap-2">
                                 <span class="text-2xl font-bold
-                                    @if($selectedQueue->status === 'serving') text-emerald-600 dark:text-emerald-400
-                                    @elseif($selectedQueue->status === 'waiting') text-blue-600 dark:text-blue-400
-                                    @elseif($selectedQueue->status === 'called') text-purple-600 dark:text-purple-400
+                                    @if($selectedQueue->status === 'serving') text-success
+                                    @elseif($selectedQueue->status === 'waiting') text-primary
+                                    @elseif($selectedQueue->status === 'called') text-info
                                     @else text-zinc-600 dark:text-zinc-400 @endif">
                                     {{ $selectedQueue->formatted_number }}
                                 </span>
                                 @if($selectedQueue->priority === 'emergency')
-                                    <span class="rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700 dark:bg-red-900/50 dark:text-red-300">{{ __('EMERGENCY') }}</span>
+                                    <span class="rounded bg-destructive/20 px-1.5 py-0.5 text-xs font-bold text-destructive">{{ __('EMERGENCY') }}</span>
                                 @elseif($selectedQueue->priority === 'urgent')
-                                    <span class="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">{{ __('URGENT') }}</span>
+                                    <span class="rounded bg-warning/20 px-1.5 py-0.5 text-xs font-bold text-warning">{{ __('URGENT') }}</span>
                                 @endif
                             </div>
                             <p class="mt-1 text-sm font-medium text-zinc-900 dark:text-white">{{ $patientName }}</p>
@@ -203,18 +203,18 @@
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-medium uppercase text-zinc-500 dark:text-zinc-400">{{ __('Status') }}</span>
                             @if($selectedQueue->status === 'waiting')
-                                <span class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
-                                    <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                                <span class="inline-flex items-center gap-1 rounded-full bg-primary/20 px-2.5 py-1 text-xs font-semibold text-primary">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-primary"></span>
                                     {{ __('Waiting') }}
                                 </span>
                             @elseif($selectedQueue->status === 'called')
-                                <span class="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-semibold text-purple-800 dark:bg-purple-900/50 dark:text-purple-300">
-                                    <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-500"></span>
+                                <span class="inline-flex items-center gap-1 rounded-full bg-info/20 px-2.5 py-1 text-xs font-semibold text-info">
+                                    <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-info"></span>
                                     {{ __('Called') }}
                                 </span>
                             @elseif($selectedQueue->status === 'serving')
-                                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">
-                                    <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"></span>
+                                <span class="inline-flex items-center gap-1 rounded-full bg-success/20 px-2.5 py-1 text-xs font-semibold text-success">
+                                    <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-success"></span>
                                     {{ __('Being Served') }}
                                 </span>
                             @elseif($selectedQueue->status === 'skipped')
@@ -232,12 +232,12 @@
                         @if($selectedQueue->status === 'serving')
                             <div class="mt-3 flex items-center gap-2">
                                 @if($hasVitals)
-                                    <span class="inline-flex items-center gap-1 rounded bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+                                    <span class="inline-flex items-center gap-1 rounded bg-success/20 px-2 py-1 text-xs font-medium text-success">
                                         <flux:icon name="check-circle" class="h-3.5 w-3.5" />
                                         {{ __('Vitals Recorded') }}
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">
+                                    <span class="inline-flex items-center gap-1 rounded bg-warning/20 px-2 py-1 text-xs font-medium text-warning">
                                         <flux:icon name="exclamation-circle" class="h-3.5 w-3.5" />
                                         {{ __('Needs Interview & Vitals') }}
                                     </span>
@@ -329,7 +329,7 @@
 
                         @elseif($selectedQueue->status === 'completed')
                             <div class="rounded-lg bg-zinc-100 p-3 text-center text-sm text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                                <flux:icon name="check-circle" class="mx-auto h-8 w-8 text-emerald-500" />
+                                <flux:icon name="check-circle" class="mx-auto h-8 w-8 text-success" />
                                 <p class="mt-2">{{ __('Patient has been forwarded to the doctor.') }}</p>
                             </div>
                         @endif
@@ -379,7 +379,7 @@
                 <div class="flex items-center justify-between">
                     <flux:heading size="lg">{{ __('Patient Interview') }}</flux:heading>
                     @if($this->interviewQueue)
-                        <span class="rounded-lg bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">
+                        <span class="rounded-lg bg-success/20 px-3 py-1 text-sm font-bold text-success">
                             {{ $this->interviewQueue->formatted_number }}
                         </span>
                     @endif
@@ -387,12 +387,12 @@
 
                 {{-- Validation Errors at Top --}}
                 @if($errors->any())
-                    <div class="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
+                    <div class="rounded-lg border border-destructive/30 bg-destructive/10 p-3">
                         <div class="flex items-start gap-2">
-                            <flux:icon name="exclamation-circle" class="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
+                            <flux:icon name="exclamation-circle" class="h-5 w-5 shrink-0 text-destructive" />
                             <div>
-                                <p class="text-sm font-medium text-red-800 dark:text-red-200">{{ __('Please fix the following errors:') }}</p>
-                                <ul class="mt-1 list-inside list-disc text-xs text-red-700 dark:text-red-300">
+                                <p class="text-sm font-medium text-destructive">{{ __('Please fix the following errors:') }}</p>
+                                <ul class="mt-1 list-inside list-disc text-xs text-destructive/80">
                                     @foreach($errors->all() as $error)
                                         <li>{{ $error }}</li>
                                     @endforeach
@@ -421,8 +421,8 @@
                         $isActive = $key === $interviewStep;
                         $isCompleted = $stepIndex < $currentIndex;
                     @endphp
-                    <button wire:click="setInterviewStep('{{ $key }}')" class="flex flex-col items-center gap-1 {{ $isActive ? 'text-zinc-900 dark:text-white' : ($isCompleted ? 'text-emerald-600' : 'text-zinc-400') }}">
-                        <div class="flex h-8 w-8 items-center justify-center rounded-full {{ $isActive ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : ($isCompleted ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-zinc-100 dark:bg-zinc-800') }}">
+                    <button wire:click="setInterviewStep('{{ $key }}')" class="flex flex-col items-center gap-1 {{ $isActive ? 'text-zinc-900 dark:text-white' : ($isCompleted ? 'text-success' : 'text-zinc-400') }}">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-full {{ $isActive ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : ($isCompleted ? 'bg-success/20' : 'bg-zinc-100 dark:bg-zinc-800') }}">
                             @if($isCompleted)
                                 <flux:icon name="check" class="h-4 w-4" />
                             @else
@@ -432,7 +432,7 @@
                         <span class="hidden text-xs font-medium sm:block">{{ $step['label'] }}</span>
                     </button>
                     @if(!$loop->last)
-                        <div class="h-0.5 flex-1 {{ $isCompleted || $isActive ? 'bg-emerald-300 dark:bg-emerald-700' : 'bg-zinc-200 dark:bg-zinc-700' }}"></div>
+                        <div class="h-0.5 flex-1 {{ $isCompleted || $isActive ? 'bg-success/50' : 'bg-zinc-200 dark:bg-zinc-700' }}"></div>
                     @endif
                 @endforeach
             </div>
@@ -523,9 +523,9 @@
                         </div>
 
                         {{-- Emergency Contact Section --}}
-                        <div class="rounded-lg border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-800 dark:bg-amber-900/10">
+                        <div class="rounded-lg border border-warning/30 bg-warning/5 p-4">
                             <div class="mb-3 flex items-center gap-2">
-                                <flux:icon name="phone" class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                <flux:icon name="phone" class="h-4 w-4 text-warning" />
                                 <p class="text-sm font-medium text-zinc-900 dark:text-white">{{ __('Emergency Contact') }}</p>
                                 <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('(Person to contact in case of emergency)') }}</span>
                             </div>
@@ -585,12 +585,12 @@
 
                     {{-- Vital Signs Alerts Banner --}}
                     @if(count($vitalAlerts) > 0)
-                        <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
+                        <div class="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3">
                             <div class="flex items-start gap-2">
-                                <flux:icon name="exclamation-triangle" class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+                                <flux:icon name="exclamation-triangle" class="h-5 w-5 shrink-0 text-warning" />
                                 <div>
-                                    <p class="text-sm font-medium text-amber-800 dark:text-amber-200">{{ __('Abnormal Vital Signs Detected') }}</p>
-                                    <ul class="mt-1 list-inside list-disc text-xs text-amber-700 dark:text-amber-300">
+                                    <p class="text-sm font-medium text-warning-foreground dark:text-warning">{{ __('Abnormal Vital Signs Detected') }}</p>
+                                    <ul class="mt-1 list-inside list-disc text-xs text-warning-foreground/80 dark:text-warning/80">
                                         @foreach($vitalAlerts as $field => $alert)
                                             <li>{{ $alert['message'] }}</li>
                                         @endforeach
@@ -606,47 +606,47 @@
                                 <flux:label class="flex items-center gap-2">
                                     {{ __('Temperature') }} (°C)
                                     @if(isset($vitalAlerts['temperature']))
-                                        <span class="rounded px-1.5 py-0.5 text-[10px] font-bold {{ $vitalAlerts['temperature']['level'] === 'danger' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' }}">
+                                        <span class="rounded px-1.5 py-0.5 text-[10px] font-bold {{ $vitalAlerts['temperature']['level'] === 'danger' ? 'bg-destructive/20 text-destructive' : 'bg-warning/20 text-warning' }}">
                                             {{ $vitalAlerts['temperature']['message'] }}
                                         </span>
                                     @endif
                                 </flux:label>
-                                <flux:input type="number" wire:model.live.debounce.500ms="temperature" step="0.1" placeholder="36.5" class="{{ isset($vitalAlerts['temperature']) ? ($vitalAlerts['temperature']['level'] === 'danger' ? 'border-red-500! ring-red-500!' : 'border-amber-500! ring-amber-500!') : '' }}" />
+                                <flux:input type="number" wire:model.live.debounce.500ms="temperature" step="0.1" placeholder="36.5" class="{{ isset($vitalAlerts['temperature']) ? ($vitalAlerts['temperature']['level'] === 'danger' ? 'border-destructive! ring-destructive!' : 'border-warning! ring-warning!') : '' }}" />
                                 <flux:error name="temperature" />
                             </flux:field>
                             <flux:field>
                                 <flux:label class="flex items-center gap-2">
                                     {{ __('Blood Pressure') }}
                                     @if(isset($vitalAlerts['bloodPressure']))
-                                        <span class="rounded px-1.5 py-0.5 text-[10px] font-bold {{ $vitalAlerts['bloodPressure']['level'] === 'danger' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' }}">
+                                        <span class="rounded px-1.5 py-0.5 text-[10px] font-bold {{ $vitalAlerts['bloodPressure']['level'] === 'danger' ? 'bg-destructive/20 text-destructive' : 'bg-warning/20 text-warning' }}">
                                             {{ $vitalAlerts['bloodPressure']['message'] }}
                                         </span>
                                     @endif
                                 </flux:label>
-                                <flux:input wire:model.live.debounce.500ms="bloodPressure" placeholder="120/80" class="{{ isset($vitalAlerts['bloodPressure']) ? ($vitalAlerts['bloodPressure']['level'] === 'danger' ? 'border-red-500! ring-red-500!' : 'border-amber-500! ring-amber-500!') : '' }}" />
+                                <flux:input wire:model.live.debounce.500ms="bloodPressure" placeholder="120/80" class="{{ isset($vitalAlerts['bloodPressure']) ? ($vitalAlerts['bloodPressure']['level'] === 'danger' ? 'border-destructive! ring-destructive!' : 'border-warning! ring-warning!') : '' }}" />
                                 <flux:error name="bloodPressure" />
                             </flux:field>
                             <flux:field>
                                 <flux:label class="flex items-center gap-2">
                                     {{ __('Cardiac Rate') }}
                                     @if(isset($vitalAlerts['cardiacRate']))
-                                        <span class="rounded px-1.5 py-0.5 text-[10px] font-bold {{ $vitalAlerts['cardiacRate']['level'] === 'danger' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' }}">
+                                        <span class="rounded px-1.5 py-0.5 text-[10px] font-bold {{ $vitalAlerts['cardiacRate']['level'] === 'danger' ? 'bg-destructive/20 text-destructive' : 'bg-warning/20 text-warning' }}">
                                             {{ $vitalAlerts['cardiacRate']['message'] }}
                                         </span>
                                     @endif
                                 </flux:label>
-                                <flux:input type="number" wire:model.live.debounce.500ms="cardiacRate" placeholder="72" class="{{ isset($vitalAlerts['cardiacRate']) ? ($vitalAlerts['cardiacRate']['level'] === 'danger' ? 'border-red-500! ring-red-500!' : 'border-amber-500! ring-amber-500!') : '' }}" />
+                                <flux:input type="number" wire:model.live.debounce.500ms="cardiacRate" placeholder="72" class="{{ isset($vitalAlerts['cardiacRate']) ? ($vitalAlerts['cardiacRate']['level'] === 'danger' ? 'border-destructive! ring-destructive!' : 'border-warning! ring-warning!') : '' }}" />
                             </flux:field>
                             <flux:field>
                                 <flux:label class="flex items-center gap-2">
                                     {{ __('Respiratory Rate') }}
                                     @if(isset($vitalAlerts['respiratoryRate']))
-                                        <span class="rounded px-1.5 py-0.5 text-[10px] font-bold {{ $vitalAlerts['respiratoryRate']['level'] === 'danger' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' }}">
+                                        <span class="rounded px-1.5 py-0.5 text-[10px] font-bold {{ $vitalAlerts['respiratoryRate']['level'] === 'danger' ? 'bg-destructive/20 text-destructive' : 'bg-warning/20 text-warning' }}">
                                             {{ $vitalAlerts['respiratoryRate']['message'] }}
                                         </span>
                                     @endif
                                 </flux:label>
-                                <flux:input type="number" wire:model.live.debounce.500ms="respiratoryRate" placeholder="16" class="{{ isset($vitalAlerts['respiratoryRate']) ? ($vitalAlerts['respiratoryRate']['level'] === 'danger' ? 'border-red-500! ring-red-500!' : 'border-amber-500! ring-amber-500!') : '' }}" />
+                                <flux:input type="number" wire:model.live.debounce.500ms="respiratoryRate" placeholder="16" class="{{ isset($vitalAlerts['respiratoryRate']) ? ($vitalAlerts['respiratoryRate']['level'] === 'danger' ? 'border-destructive! ring-destructive!' : 'border-warning! ring-warning!') : '' }}" />
                             </flux:field>
                             <flux:field>
                                 <flux:label>{{ __('Weight') }} (kg)</flux:label>
@@ -667,12 +667,12 @@
                                     <flux:label class="flex items-center gap-2">
                                         {{ __('Fetal Heart Tone') }}
                                         @if(isset($vitalAlerts['fetalHeartTone']))
-                                            <span class="rounded px-1.5 py-0.5 text-[10px] font-bold {{ $vitalAlerts['fetalHeartTone']['level'] === 'danger' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' }}">
+                                            <span class="rounded px-1.5 py-0.5 text-[10px] font-bold {{ $vitalAlerts['fetalHeartTone']['level'] === 'danger' ? 'bg-destructive/20 text-destructive' : 'bg-warning/20 text-warning' }}">
                                                 {{ $vitalAlerts['fetalHeartTone']['message'] }}
                                             </span>
                                         @endif
                                     </flux:label>
-                                    <flux:input type="number" wire:model.live.debounce.500ms="fetalHeartTone" class="{{ isset($vitalAlerts['fetalHeartTone']) ? ($vitalAlerts['fetalHeartTone']['level'] === 'danger' ? 'border-red-500! ring-red-500!' : 'border-amber-500! ring-amber-500!') : '' }}" />
+                                    <flux:input type="number" wire:model.live.debounce.500ms="fetalHeartTone" class="{{ isset($vitalAlerts['fetalHeartTone']) ? ($vitalAlerts['fetalHeartTone']['level'] === 'danger' ? 'border-destructive! ring-destructive!' : 'border-warning! ring-warning!') : '' }}" />
                                 </flux:field>
                                 <flux:field>
                                     <flux:label>{{ __('Fundal Height') }} (cm)</flux:label>
@@ -807,33 +807,33 @@
             <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Higher priority patients will be served first.') }}</p>
 
             <div class="space-y-2">
-                <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 {{ $selectedPriority === 'normal' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-zinc-200 dark:border-zinc-700' }}">
-                    <input type="radio" wire:model="selectedPriority" value="normal" class="text-blue-600">
+                <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 {{ $selectedPriority === 'normal' ? 'border-primary bg-primary/10' : 'border-zinc-200 dark:border-zinc-700' }}">
+                    <input type="radio" wire:model="selectedPriority" value="normal" class="text-primary">
                     <div>
                         <p class="font-medium text-zinc-900 dark:text-white">{{ __('Normal') }}</p>
                         <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Regular queue order') }}</p>
                     </div>
                 </label>
 
-                <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 {{ $selectedPriority === 'urgent' ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'border-zinc-200 dark:border-zinc-700' }}">
-                    <input type="radio" wire:model="selectedPriority" value="urgent" class="text-amber-600">
+                <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 {{ $selectedPriority === 'urgent' ? 'border-warning bg-warning/10' : 'border-zinc-200 dark:border-zinc-700' }}">
+                    <input type="radio" wire:model="selectedPriority" value="urgent" class="text-warning">
                     <div class="flex items-center gap-2">
                         <div>
                             <p class="font-medium text-zinc-900 dark:text-white">{{ __('Urgent') }}</p>
                             <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Needs attention soon') }}</p>
                         </div>
-                        <span class="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-700">U</span>
+                        <span class="rounded bg-warning/20 px-1.5 py-0.5 text-xs font-bold text-warning">U</span>
                     </div>
                 </label>
 
-                <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 {{ $selectedPriority === 'emergency' ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-zinc-200 dark:border-zinc-700' }}">
-                    <input type="radio" wire:model="selectedPriority" value="emergency" class="text-red-600">
+                <label class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 {{ $selectedPriority === 'emergency' ? 'border-destructive bg-destructive/10' : 'border-zinc-200 dark:border-zinc-700' }}">
+                    <input type="radio" wire:model="selectedPriority" value="emergency" class="text-destructive">
                     <div class="flex items-center gap-2">
                         <div>
                             <p class="font-medium text-zinc-900 dark:text-white">{{ __('Emergency') }}</p>
                             <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Immediate attention required') }}</p>
                         </div>
-                        <span class="rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700">!</span>
+                        <span class="rounded bg-destructive/20 px-1.5 py-0.5 text-xs font-bold text-destructive">!</span>
                     </div>
                 </label>
             </div>

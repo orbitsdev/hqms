@@ -78,8 +78,8 @@
             @endphp
             <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-lg {{ $hasScheduleToday ? 'bg-green-100 dark:bg-green-900/30' : 'bg-zinc-100 dark:bg-zinc-800' }}">
-                        <flux:icon name="calendar" class="h-5 w-5 {{ $hasScheduleToday ? 'text-green-600 dark:text-green-400' : 'text-zinc-600 dark:text-zinc-400' }}" />
+                    <div class="flex h-10 w-10 items-center justify-center rounded-lg {{ $hasScheduleToday ? 'bg-success/20' : 'bg-zinc-100 dark:bg-zinc-800' }}">
+                        <flux:icon name="calendar" class="h-5 w-5 {{ $hasScheduleToday ? 'text-success' : 'text-zinc-600 dark:text-zinc-400' }}" />
                     </div>
                     <div>
                         <p class="text-2xl font-semibold text-zinc-900 dark:text-white">
@@ -89,7 +89,7 @@
                     </div>
                 </div>
                 @if($todaySchedule['isDayOff'] && $todaySchedule['dayOffReason'])
-                    <p class="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                    <p class="mt-2 text-xs text-warning">
                         <flux:icon name="information-circle" class="inline h-3 w-3" />
                         {{ $todaySchedule['dayOffReason'] }}
                     </p>
@@ -102,8 +102,8 @@
             @endphp
             <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                        <flux:icon name="calendar-days" class="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
+                        <flux:icon name="calendar-days" class="h-5 w-5 text-primary" />
                     </div>
                     <div>
                         <p class="text-2xl font-semibold text-zinc-900 dark:text-white">{{ $weeklyScheduleCount }}</p>
@@ -115,8 +115,8 @@
             {{-- Upcoming Appointments --}}
             <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                        <flux:icon name="users" class="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/20">
+                        <flux:icon name="users" class="h-5 w-5 text-warning" />
                     </div>
                     <div>
                         <p class="text-2xl font-semibold text-zinc-900 dark:text-white">{{ $this->upcomingAppointments->count() }}</p>
@@ -132,8 +132,8 @@
             @endphp
             <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-lg {{ $exceptionsThisWeek > 0 ? 'bg-purple-100 dark:bg-purple-900/30' : 'bg-zinc-100 dark:bg-zinc-800' }}">
-                        <flux:icon name="adjustments-horizontal" class="h-5 w-5 {{ $exceptionsThisWeek > 0 ? 'text-purple-600 dark:text-purple-400' : 'text-zinc-600 dark:text-zinc-400' }}" />
+                    <div class="flex h-10 w-10 items-center justify-center rounded-lg {{ $exceptionsThisWeek > 0 ? 'bg-info/20 dark:bg-info/30' : 'bg-zinc-100 dark:bg-zinc-800' }}">
+                        <flux:icon name="adjustments-horizontal" class="h-5 w-5 {{ $exceptionsThisWeek > 0 ? 'text-info' : 'text-zinc-600 dark:text-zinc-400' }}" />
                     </div>
                     <div>
                         <p class="text-2xl font-semibold text-zinc-900 dark:text-white">{{ $exceptionsThisWeek }}</p>
@@ -168,13 +168,13 @@
                             $isPast = $day->isPast() && !$isToday;
                         @endphp
                         <div wire:key="cal-{{ $day->format('Y-m-d') }}"
-                             class="flex min-w-[120px] flex-1 flex-col {{ $isPast ? 'opacity-50' : '' }} {{ $isToday ? 'bg-blue-50/50 dark:bg-blue-900/10' : '' }}">
+                             class="flex min-w-[120px] flex-1 flex-col {{ $isPast ? 'opacity-50' : '' }} {{ $isToday ? 'bg-primary/5' : '' }}">
                             {{-- Day Header --}}
-                            <div class="border-b border-zinc-200 px-3 py-2 text-center dark:border-zinc-700 {{ $isToday ? 'bg-blue-100/50 dark:bg-blue-900/20' : 'bg-zinc-50 dark:bg-zinc-800' }}">
-                                <p class="text-xs font-medium {{ $isToday ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400' }}">
+                            <div class="border-b border-zinc-200 px-3 py-2 text-center dark:border-zinc-700 {{ $isToday ? 'bg-primary/10' : 'bg-zinc-50 dark:bg-zinc-800' }}">
+                                <p class="text-xs font-medium {{ $isToday ? 'text-primary' : 'text-zinc-500 dark:text-zinc-400' }}">
                                     {{ $day->format('D') }}
                                 </p>
-                                <p class="text-lg font-semibold {{ $isToday ? 'text-blue-700 dark:text-blue-300' : 'text-zinc-900 dark:text-white' }}">
+                                <p class="text-lg font-semibold {{ $isToday ? 'text-primary' : 'text-zinc-900 dark:text-white' }}">
                                     {{ $day->format('d') }}
                                 </p>
                                 @if($isToday)
@@ -185,24 +185,24 @@
                             {{-- Day Content --}}
                             <div class="flex-1 space-y-1 p-2">
                                 @if($daySchedule['isDayOff'])
-                                    <div class="rounded-lg border border-red-200 bg-red-50 p-2 text-center dark:border-red-800 dark:bg-red-900/20">
-                                        <flux:icon name="x-circle" class="mx-auto h-4 w-4 text-red-500 dark:text-red-400" />
-                                        <p class="mt-1 text-xs font-medium text-red-700 dark:text-red-300">{{ __('Day Off') }}</p>
+                                    <div class="rounded-lg border border-destructive/30 bg-destructive/10 p-2 text-center dark:bg-destructive/20">
+                                        <flux:icon name="x-circle" class="mx-auto h-4 w-4 text-destructive" />
+                                        <p class="mt-1 text-xs font-medium text-destructive">{{ __('Day Off') }}</p>
                                         @if($daySchedule['dayOffReason'])
-                                            <p class="mt-0.5 text-[10px] text-red-600 dark:text-red-400">{{ Str::limit($daySchedule['dayOffReason'], 20) }}</p>
+                                            <p class="mt-0.5 text-[10px] text-destructive">{{ Str::limit($daySchedule['dayOffReason'], 20) }}</p>
                                         @endif
                                     </div>
                                 @elseif($daySchedule['regular']->isNotEmpty())
                                     @foreach($daySchedule['regular'] as $schedule)
-                                        <div class="rounded-lg border border-green-200 bg-green-50 p-2 dark:border-green-800 dark:bg-green-900/20">
+                                        <div class="rounded-lg border border-success/30 bg-success/10 p-2 dark:bg-success/20">
                                             <div class="flex items-center gap-1">
-                                                <span class="h-2 w-2 rounded-full bg-green-500"></span>
-                                                <span class="truncate text-xs font-medium text-green-700 dark:text-green-300" title="{{ $schedule->consultationType?->name }}">
+                                                <span class="h-2 w-2 rounded-full bg-success"></span>
+                                                <span class="truncate text-xs font-medium text-success" title="{{ $schedule->consultationType?->name }}">
                                                     {{ $schedule->consultationType?->short_name }}
                                                 </span>
                                             </div>
                                             @if($schedule->start_time && $schedule->end_time)
-                                                <p class="mt-1 text-[10px] text-green-600 dark:text-green-400">
+                                                <p class="mt-1 text-[10px] text-success">
                                                     {{ Carbon\Carbon::parse($schedule->start_time)->format('g:i A') }}
                                                 </p>
                                             @endif
@@ -216,10 +216,10 @@
 
                                 {{-- Exceptions (available) --}}
                                 @foreach($daySchedule['exceptions']->where('is_available', true) as $exception)
-                                    <div class="rounded-lg border border-purple-200 bg-purple-50 p-2 dark:border-purple-800 dark:bg-purple-900/20">
+                                    <div class="rounded-lg border border-info/30 bg-info/10 p-2 dark:bg-info/20">
                                         <div class="flex items-center gap-1">
-                                            <span class="h-2 w-2 rounded-full bg-purple-500"></span>
-                                            <span class="truncate text-xs font-medium text-purple-700 dark:text-purple-300">
+                                            <span class="h-2 w-2 rounded-full bg-info"></span>
+                                            <span class="truncate text-xs font-medium text-info">
                                                 {{ $exception->reason ?: __('Extra') }}
                                             </span>
                                         </div>
@@ -233,9 +233,9 @@
             {{-- Legend --}}
             <div class="flex flex-wrap items-center gap-4 border-t border-zinc-200 px-4 py-2 text-xs dark:border-zinc-700">
                 <span class="font-medium text-zinc-600 dark:text-zinc-400">{{ __('Legend:') }}</span>
-                <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-green-500"></span> {{ __('Available') }}</span>
-                <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-purple-500"></span> {{ __('Extra/Modified') }}</span>
-                <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-red-500"></span> {{ __('Day Off') }}</span>
+                <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-success"></span> {{ __('Available') }}</span>
+                <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-info"></span> {{ __('Extra/Modified') }}</span>
+                <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-destructive"></span> {{ __('Day Off') }}</span>
             </div>
         </div>
 
@@ -258,8 +258,8 @@
                         @endphp
                         <div wire:key="my-schedule-{{ $typeId }}" class="flex items-center justify-between px-4 py-3">
                             <div class="flex items-center gap-3">
-                                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                                    <flux:icon name="calendar-days" class="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-success/20">
+                                    <flux:icon name="calendar-days" class="h-5 w-5 text-success" />
                                 </div>
                                 <div>
                                     <p class="font-medium text-zinc-900 dark:text-white">{{ $consultationType?->name }}</p>
@@ -273,19 +273,19 @@
                             </div>
                             <div class="flex gap-1">
                                 <flux:button wire:click="openEditScheduleModal({{ $typeId }})" size="xs" variant="ghost" icon="pencil" />
-                                <flux:button wire:click="confirmDeleteSchedule({{ $typeId }})" size="xs" variant="ghost" icon="trash" class="text-red-600 hover:text-red-700 dark:text-red-400" />
+                                <flux:button wire:click="confirmDeleteSchedule({{ $typeId }})" size="xs" variant="ghost" icon="trash" class="text-destructive hover:text-destructive/80" />
                             </div>
                         </div>
                     @endforeach
                 </div>
             </div>
         @else
-            <div class="rounded-xl border border-dashed border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-900/20">
+            <div class="rounded-xl border border-dashed border-warning/50 bg-warning/10 p-4 dark:bg-warning/20">
                 <div class="flex items-start gap-3">
-                    <flux:icon name="exclamation-triangle" class="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    <flux:icon name="exclamation-triangle" class="h-5 w-5 text-warning" />
                     <div>
-                        <p class="font-medium text-amber-800 dark:text-amber-200">{{ __('No Weekly Schedule Set') }}</p>
-                        <p class="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                        <p class="font-medium text-warning-foreground dark:text-warning">{{ __('No Weekly Schedule Set') }}</p>
+                        <p class="mt-1 text-sm text-warning">
                             {{ __('You haven\'t set up your weekly schedule yet. Add a schedule to receive patient appointments.') }}
                         </p>
                         <flux:button wire:click="openAddScheduleModal" size="sm" variant="filled" class="mt-3" icon="plus">
@@ -306,11 +306,11 @@
                     @foreach($this->exceptions->take(5) as $exception)
                         <div wire:key="exception-{{ $exception->id }}" class="flex items-center justify-between px-4 py-3">
                             <div class="flex items-center gap-3">
-                                <div class="flex h-10 w-10 flex-col items-center justify-center rounded-lg {{ $exception->is_available ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30' }}">
-                                    <span class="text-xs font-semibold {{ $exception->is_available ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400' }}">
+                                <div class="flex h-10 w-10 flex-col items-center justify-center rounded-lg {{ $exception->is_available ? 'bg-success/20' : 'bg-destructive/20' }}">
+                                    <span class="text-xs font-semibold {{ $exception->is_available ? 'text-success' : 'text-destructive' }}">
                                         {{ $exception->date->format('d') }}
                                     </span>
-                                    <span class="text-[10px] {{ $exception->is_available ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500' }}">
+                                    <span class="text-[10px] {{ $exception->is_available ? 'text-success' : 'text-destructive' }}">
                                         {{ $exception->date->format('M') }}
                                     </span>
                                 </div>
@@ -331,7 +331,7 @@
                                     <flux:badge size="sm" color="red">{{ __('Off') }}</flux:badge>
                                 @endif
                                 <flux:button wire:click="openEditExceptionModal({{ $exception->id }})" size="xs" variant="ghost" icon="pencil" />
-                                <flux:button wire:click="confirmDeleteException({{ $exception->id }})" size="xs" variant="ghost" icon="trash" class="text-red-600 dark:text-red-400" />
+                                <flux:button wire:click="confirmDeleteException({{ $exception->id }})" size="xs" variant="ghost" icon="trash" class="text-destructive" />
                             </div>
                         </div>
                     @endforeach
@@ -354,11 +354,11 @@
                     @foreach($this->upcomingAppointments->take(5) as $appointment)
                         <div wire:key="upcoming-{{ $appointment->id }}" class="flex items-center justify-between px-4 py-3">
                             <div class="flex items-center gap-3">
-                                <div class="flex h-10 w-10 flex-col items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                                    <span class="text-sm font-semibold text-blue-700 dark:text-blue-400">
+                                <div class="flex h-10 w-10 flex-col items-center justify-center rounded-lg bg-primary/20">
+                                    <span class="text-sm font-semibold text-primary">
                                         {{ $appointment->appointment_date->format('d') }}
                                     </span>
-                                    <span class="text-[10px] text-blue-600 dark:text-blue-500">
+                                    <span class="text-[10px] text-primary">
                                         {{ $appointment->appointment_date->format('M') }}
                                     </span>
                                 </div>
@@ -394,7 +394,7 @@
                     {{ Carbon\Carbon::parse($weekStart)->format('M d') }} - {{ Carbon\Carbon::parse($weekStart)->addDays(6)->format('M d, Y') }}
                 </p>
                 @if(Carbon\Carbon::parse($weekStart)->isCurrentWeek())
-                    <p class="text-xs text-emerald-600 dark:text-emerald-400">{{ __('Current Week') }}</p>
+                    <p class="text-xs text-success">{{ __('Current Week') }}</p>
                 @endif
             </div>
             <div class="flex gap-2">
@@ -412,13 +412,13 @@
                     $isPast = $day->isPast() && !$isToday;
                 @endphp
                 <div wire:key="week-{{ $day->format('Y-m-d') }}"
-                     class="rounded-xl border {{ $isToday ? 'border-blue-500 ring-2 ring-blue-200 dark:border-blue-400 dark:ring-blue-900' : 'border-zinc-200 dark:border-zinc-700' }} {{ $isPast ? 'opacity-50' : '' }} bg-white dark:bg-zinc-900">
+                     class="rounded-xl border {{ $isToday ? 'border-primary ring-2 ring-primary/30 dark:border-primary dark:ring-primary/20' : 'border-zinc-200 dark:border-zinc-700' }} {{ $isPast ? 'opacity-50' : '' }} bg-white dark:bg-zinc-900">
                     {{-- Day Header --}}
-                    <div class="border-b border-zinc-200 p-3 text-center dark:border-zinc-700 {{ $isToday ? 'bg-blue-50 dark:bg-blue-900/20' : '' }}">
-                        <p class="text-xs font-medium uppercase {{ $isToday ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400' }}">
+                    <div class="border-b border-zinc-200 p-3 text-center dark:border-zinc-700 {{ $isToday ? 'bg-primary/10 dark:bg-primary/20' : '' }}">
+                        <p class="text-xs font-medium uppercase {{ $isToday ? 'text-primary' : 'text-zinc-500 dark:text-zinc-400' }}">
                             {{ $day->format('D') }}
                         </p>
-                        <p class="text-2xl font-bold {{ $isToday ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-900 dark:text-white' }}">
+                        <p class="text-2xl font-bold {{ $isToday ? 'text-primary' : 'text-zinc-900 dark:text-white' }}">
                             {{ $day->format('d') }}
                         </p>
                         @if($isToday)
@@ -429,22 +429,22 @@
                     {{-- Day Content --}}
                     <div class="min-h-32 p-3">
                         @if($daySchedule['isDayOff'])
-                            <div class="flex h-full flex-col items-center justify-center rounded-lg bg-red-50 p-3 text-center dark:bg-red-900/20">
-                                <flux:icon name="x-circle" class="h-6 w-6 text-red-500 dark:text-red-400" />
-                                <p class="mt-2 text-sm font-medium text-red-700 dark:text-red-300">{{ __('Day Off') }}</p>
+                            <div class="flex h-full flex-col items-center justify-center rounded-lg bg-destructive/10 p-3 text-center dark:bg-destructive/20">
+                                <flux:icon name="x-circle" class="h-6 w-6 text-destructive" />
+                                <p class="mt-2 text-sm font-medium text-destructive">{{ __('Day Off') }}</p>
                                 @if($daySchedule['dayOffReason'])
-                                    <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $daySchedule['dayOffReason'] }}</p>
+                                    <p class="mt-1 text-xs text-destructive">{{ $daySchedule['dayOffReason'] }}</p>
                                 @endif
                             </div>
                         @elseif($daySchedule['regular']->isNotEmpty())
                             <div class="space-y-2">
                                 @foreach($daySchedule['regular'] as $schedule)
-                                    <div class="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
-                                        <p class="text-xs font-semibold text-emerald-800 dark:text-emerald-200">
+                                    <div class="rounded-lg bg-success/10 p-2 dark:bg-success/20">
+                                        <p class="text-xs font-semibold text-success">
                                             {{ $schedule->consultationType?->name }}
                                         </p>
                                         @if($schedule->start_time && $schedule->end_time)
-                                            <p class="mt-1 flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+                                            <p class="mt-1 flex items-center gap-1 text-xs text-success">
                                                 <flux:icon name="clock" class="h-3 w-3" />
                                                 {{ Carbon\Carbon::parse($schedule->start_time)->format('g:i A') }} -
                                                 {{ Carbon\Carbon::parse($schedule->end_time)->format('g:i A') }}
@@ -462,12 +462,12 @@
 
                         {{-- Exceptions (available) --}}
                         @foreach($daySchedule['exceptions']->where('is_available', true) as $exception)
-                            <div class="mt-2 rounded-lg bg-amber-100 p-2 dark:bg-amber-900/30">
-                                <p class="text-xs font-medium text-amber-800 dark:text-amber-200">
+                            <div class="mt-2 rounded-lg bg-warning/10 p-2 dark:bg-warning/20">
+                                <p class="text-xs font-medium text-warning-foreground dark:text-warning">
                                     {{ $exception->reason ?: __('Extra Clinic') }}
                                 </p>
                                 @if($exception->start_time)
-                                    <p class="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                                    <p class="mt-1 text-xs text-warning">
                                         {{ Carbon\Carbon::parse($exception->start_time)->format('g:i A') }} -
                                         {{ Carbon\Carbon::parse($exception->end_time)->format('g:i A') }}
                                     </p>
@@ -482,15 +482,15 @@
         {{-- Legend --}}
         <div class="flex flex-wrap gap-4 text-xs text-zinc-500">
             <div class="flex items-center gap-2">
-                <span class="h-3 w-3 rounded bg-emerald-100 dark:bg-emerald-900/30"></span>
+                <span class="h-3 w-3 rounded bg-success/20"></span>
                 {{ __('Regular Schedule') }}
             </div>
             <div class="flex items-center gap-2">
-                <span class="h-3 w-3 rounded bg-amber-100 dark:bg-amber-900/30"></span>
+                <span class="h-3 w-3 rounded bg-warning/20"></span>
                 {{ __('Exception/Special') }}
             </div>
             <div class="flex items-center gap-2">
-                <span class="h-3 w-3 rounded bg-red-50 dark:bg-red-900/20"></span>
+                <span class="h-3 w-3 rounded bg-destructive/10 dark:bg-destructive/20"></span>
                 {{ __('Day Off') }}
             </div>
         </div>
@@ -518,14 +518,14 @@
                                     $isTomorrow = $appointment->appointment_date->isTomorrow();
                                 @endphp
                                 <tr wire:key="appt-{{ $appointment->id }}"
-                                    class="{{ $isToday ? 'bg-blue-50/50 dark:bg-blue-900/10' : '' }} hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                                    class="{{ $isToday ? 'bg-primary/5' : '' }} hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                                     <td class="whitespace-nowrap px-4 py-3">
                                         <div class="flex items-center gap-2">
-                                            <div class="flex h-10 w-10 flex-col items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                                                <span class="text-sm font-semibold text-blue-700 dark:text-blue-400">
+                                            <div class="flex h-10 w-10 flex-col items-center justify-center rounded-lg bg-primary/20">
+                                                <span class="text-sm font-semibold text-primary">
                                                     {{ $appointment->appointment_date->format('d') }}
                                                 </span>
-                                                <span class="text-[10px] text-blue-600 dark:text-blue-500">
+                                                <span class="text-[10px] text-primary">
                                                     {{ $appointment->appointment_date->format('M') }}
                                                 </span>
                                             </div>
@@ -601,7 +601,7 @@
             <div class="space-y-4">
                 {{-- Consultation Type Selection --}}
                 <flux:field>
-                    <flux:label>{{ __('Consultation Type') }} <span class="text-red-500">*</span></flux:label>
+                    <flux:label>{{ __('Consultation Type') }} <span class="text-destructive">*</span></flux:label>
                     <flux:select wire:model="scheduleConsultationType" placeholder="{{ __('Select consultation type') }}" :disabled="(bool) $editScheduleTypeId">
                         <flux:select.option value="">{{ __('Select consultation type') }}</flux:select.option>
                         @foreach($this->consultationTypes as $type)
@@ -613,7 +613,7 @@
 
                 {{-- Days Selection --}}
                 <flux:field>
-                    <flux:label>{{ __('Working Days') }} <span class="text-red-500">*</span></flux:label>
+                    <flux:label>{{ __('Working Days') }} <span class="text-destructive">*</span></flux:label>
                     <p class="mb-2 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Click to select the days when you work.') }}</p>
                     <div class="flex flex-wrap gap-2">
                         @foreach($dayNames as $dayNum => $dayName)
@@ -621,9 +621,9 @@
                             <label wire:key="day-{{ $dayNum }}" class="cursor-pointer">
                                 <input type="checkbox" wire:model="scheduleDays" value="{{ $dayNum }}" class="peer sr-only">
                                 <span class="inline-flex h-12 w-14 flex-col items-center justify-center rounded-xl border-2 text-sm font-medium transition-all
-                                    peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700
-                                    peer-focus:ring-2 peer-focus:ring-green-500 peer-focus:ring-offset-2
-                                    dark:peer-checked:border-green-600 dark:peer-checked:bg-green-900/30 dark:peer-checked:text-green-400
+                                    peer-checked:border-success peer-checked:bg-success/10 peer-checked:text-success
+                                    peer-focus:ring-2 peer-focus:ring-success peer-focus:ring-offset-2
+                                    dark:peer-checked:border-success dark:peer-checked:bg-success/20 dark:peer-checked:text-success
                                     {{ !$isChecked ? 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-500' : '' }}">
                                     <span class="text-xs">{{ substr($dayName, 0, 3) }}</span>
                                     @if($isChecked)
@@ -697,7 +697,7 @@
 
                 {{-- Consultation Type Selection --}}
                 <flux:field>
-                    <flux:label>{{ __('Consultation Type') }} <span class="text-red-500">*</span></flux:label>
+                    <flux:label>{{ __('Consultation Type') }} <span class="text-destructive">*</span></flux:label>
                     <flux:select wire:model="exceptionConsultationType" placeholder="{{ __('Select consultation type') }}">
                         <flux:select.option value="">{{ __('Select consultation type') }}</flux:select.option>
                         @foreach($this->consultationTypes as $type)
@@ -724,19 +724,19 @@
                 @if($exceptionUseDateRange && !$editExceptionId)
                     <div class="grid grid-cols-2 gap-4">
                         <flux:field>
-                            <flux:label>{{ __('From Date') }} <span class="text-red-500">*</span></flux:label>
+                            <flux:label>{{ __('From Date') }} <span class="text-destructive">*</span></flux:label>
                             <flux:input type="date" wire:model.live="exceptionDate" min="{{ now()->format('Y-m-d') }}" />
                             <flux:error name="exceptionDate" />
                         </flux:field>
                         <flux:field>
-                            <flux:label>{{ __('To Date') }} <span class="text-red-500">*</span></flux:label>
+                            <flux:label>{{ __('To Date') }} <span class="text-destructive">*</span></flux:label>
                             <flux:input type="date" wire:model.live="exceptionDateEnd" min="{{ $exceptionDate ?: now()->format('Y-m-d') }}" />
                             <flux:error name="exceptionDateEnd" />
                         </flux:field>
                     </div>
                     @if($this->dateRangeDaysCount > 0)
-                        <div class="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
-                            <p class="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300">
+                        <div class="rounded-lg border border-primary/30 bg-primary/10 p-3 dark:bg-primary/20">
+                            <p class="flex items-center gap-2 text-sm text-primary">
                                 <flux:icon name="information-circle" class="h-5 w-5" />
                                 {{ trans_choice('{1} This will create :count exception.|[2,*] This will create :count exceptions.', $this->dateRangeDaysCount, ['count' => $this->dateRangeDaysCount]) }}
                             </p>
@@ -744,7 +744,7 @@
                     @endif
                 @else
                     <flux:field>
-                        <flux:label>{{ __('Date') }} <span class="text-red-500">*</span></flux:label>
+                        <flux:label>{{ __('Date') }} <span class="text-destructive">*</span></flux:label>
                         <flux:input type="date" wire:model="exceptionDate" min="{{ now()->format('Y-m-d') }}" />
                         <flux:error name="exceptionDate" />
                     </flux:field>
@@ -755,7 +755,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <flux:label>{{ __('Availability Status') }}</flux:label>
-                            <p class="mt-1 text-sm {{ $exceptionIsAvailable ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                            <p class="mt-1 text-sm {{ $exceptionIsAvailable ? 'text-success' : 'text-destructive' }}">
                                 @if($exceptionIsAvailable)
                                     <flux:icon name="check-circle" class="inline h-4 w-4" />
                                     {{ __('I will be AVAILABLE on this day') }}
@@ -815,8 +815,8 @@
     <flux:modal wire:model="showDeleteModal" class="max-w-md">
         <div class="space-y-6">
             <div class="flex items-start gap-4">
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
-                    <flux:icon name="trash" class="h-6 w-6 text-red-600 dark:text-red-400" />
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-destructive/20">
+                    <flux:icon name="trash" class="h-6 w-6 text-destructive" />
                 </div>
                 <div>
                     <flux:heading size="lg">{{ __('Delete Confirmation') }}</flux:heading>

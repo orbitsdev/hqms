@@ -20,7 +20,7 @@
         </flux:callout>
     @endif
 
-    <form wire:submit.prevent="save" class="space-y-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm">
+    <form wire:submit.prevent="save" class="space-y-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div class="grid gap-4 md:grid-cols-3">
             <flux:input wire:model.defer="first_name" :label="__('First name')" type="text" required autocomplete="given-name" />
             <flux:input wire:model.defer="middle_name" :label="__('Middle name')" type="text" autocomplete="additional-name" />
@@ -33,30 +33,30 @@
             <div class="grid gap-2 md:grid-cols-2">
                 <flux:input wire:model.defer="date_of_birth" :label="__('Date of birth')" type="date" required />
                 <div>
-                    <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">{{ __('Gender') }}</label>
-                    <select wire:model.defer="gender" required class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
+                    <label class="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-200">{{ __('Gender') }}</label>
+                    <select wire:model.defer="gender" required class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary focus:ring-primary dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
                         <option value="">{{ __('Select') }}</option>
                         <option value="male">{{ __('Male') }}</option>
                         <option value="female">{{ __('Female') }}</option>
                     </select>
-                    @error('gender') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                    @error('gender') <span class="text-xs text-destructive">{{ $message }}</span> @enderror
                 </div>
             </div>
         </div>
 
         <div class="grid gap-4 md:grid-cols-4">
             <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">{{ __('Marital status') }}</label>
-                <select wire:model.defer="marital_status" class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
+                <label class="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-200">{{ __('Marital status') }}</label>
+                <select wire:model.defer="marital_status" class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-primary focus:ring-primary dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
                     <option value="">{{ __('Select') }}</option>
                     <option value="child">{{ __('Child') }}</option>
                     <option value="single">{{ __('Single') }}</option>
                     <option value="married">{{ __('Married') }}</option>
                     <option value="widow">{{ __('Widowed') }}</option>
                 </select>
-                @error('marital_status') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                @error('marital_status') <span class="text-xs text-destructive">{{ $message }}</span> @enderror
             </div>
-            <flux:input wire:model.defer="occupation" :label="__('Occupation')" type="text" />
+            <flux:input wire:model.defer="occupation" :label="__('Occupation')" type="text" class="md:col-span-2" />
         </div>
 
         <div class="grid gap-4 md:grid-cols-2">

@@ -71,7 +71,7 @@
                                 <div class="flex items-center justify-center gap-1">
                                     <flux:button size="xs" variant="ghost" icon="pencil" wire:click="openEditModal({{ $service->id }})" title="{{ __('Edit') }}" />
                                     <flux:button size="xs" variant="ghost" icon="{{ $service->is_active ? 'eye-slash' : 'eye' }}" wire:click="toggleActive({{ $service->id }})" title="{{ $service->is_active ? __('Deactivate') : __('Activate') }}" />
-                                    <flux:button size="xs" variant="ghost" icon="trash" wire:click="delete({{ $service->id }})" wire:confirm="{{ __('Are you sure you want to delete this service?') }}" title="{{ __('Delete') }}" class="text-red-600 hover:text-red-700" />
+                                    <flux:button size="xs" variant="ghost" icon="trash" wire:click="delete({{ $service->id }})" wire:confirm="{{ __('Are you sure you want to delete this service?') }}" title="{{ __('Delete') }}" class="text-destructive hover:text-destructive/80" />
                                 </div>
                             </td>
                         </tr>

@@ -7,7 +7,7 @@
             <flux:icon name="bell" class="w-5 h-5" />
 
             @if($unreadCount > 0)
-                <span class="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                <span class="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-destructive rounded-full">
                     {{ $unreadCount > 99 ? '99+' : $unreadCount }}
                 </span>
             @endif
@@ -53,7 +53,7 @@
                                 </span>
 
                                 @if($isUnread)
-                                    <span class="w-2 h-2 bg-blue-500 rounded-full shrink-0"></span>
+                                    <span class="w-2 h-2 bg-primary rounded-full shrink-0"></span>
                                 @endif
                             </div>
 

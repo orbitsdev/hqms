@@ -1,202 +1,181 @@
-<section class="space-y-6">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div class="space-y-1">
-            <flux:heading size="xl" level="1">{{ __('My Appointments') }}</flux:heading>
-            <flux:text variant="subtle" class="text-sm">
-                {{ __('Track upcoming visits, review past care, and manage your requests.') }}
-            </flux:text>
-        </div>
-        <flux:button :href="route('patient.appointments.book')" variant="primary" icon="calendar-days" wire:navigate>
-            {{ __('Book appointment') }}
-        </flux:button>
-    </div>
+<div class="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-zinc-800">
+    <div class="mx-auto max-w-2xl px-4 py-6 sm:px-6 lg:px-8">
 
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div class="flex flex-wrap gap-2">
-            <flux:button
-                wire:click="$set('filter', 'upcoming')"
-                :variant="$filter === 'upcoming' ? 'primary' : 'ghost'"
-                size="sm"
-            >
+        {{-- Header --}}
+        <div class="mb-6 flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-zinc-900 dark:text-white">{{ __('My Appointments') }}</h1>
+                <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Track and manage your visits') }}</p>
+            </div>
+            <a href="{{ route('patient.appointments.book') }}"
+               class="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+               wire:navigate>
+                <flux:icon name="plus" class="h-4 w-4" />
+                <span class="hidden sm:inline">{{ __('Book') }}</span>
+            </a>
+        </div>
+
+        {{-- Filter Tabs --}}
+        <div class="mb-4 flex gap-2 overflow-x-auto pb-2">
+            <button wire:click="$set('filter', 'upcoming')"
+                    class="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition {{ $filter === 'upcoming' ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700' }}">
                 {{ __('Upcoming') }}
-            </flux:button>
-            <flux:button
-                wire:click="$set('filter', 'past')"
-                :variant="$filter === 'past' ? 'primary' : 'ghost'"
-                size="sm"
-            >
+            </button>
+            <button wire:click="$set('filter', 'past')"
+                    class="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition {{ $filter === 'past' ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700' }}">
                 {{ __('Past') }}
-            </flux:button>
-            <flux:button
-                wire:click="$set('filter', 'all')"
-                :variant="$filter === 'all' ? 'primary' : 'ghost'"
-                size="sm"
-            >
+            </button>
+            <button wire:click="$set('filter', 'all')"
+                    class="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium transition {{ $filter === 'all' ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700' }}">
                 {{ __('All') }}
-            </flux:button>
+            </button>
         </div>
 
-        <div class="w-full lg:w-72">
-            <flux:input
-                type="search"
-                wire:model.live.debounce.400ms="search"
-                placeholder="{{ __('Search appointments') }}"
-            />
+        {{-- Search --}}
+        <div class="mb-6">
+            <div class="relative">
+                <flux:icon name="magnifying-glass" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                <input type="search"
+                       wire:model.live.debounce.400ms="search"
+                       placeholder="{{ __('Search appointments...') }}"
+                       class="w-full rounded-xl border border-zinc-200 bg-white py-2.5 pl-10 pr-4 text-sm text-zinc-900 placeholder-zinc-400 focus:border-primary focus:ring-primary dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-500" />
+            </div>
         </div>
-    </div>
 
-    @if($appointments->count() > 0)
-        <div class="grid gap-4">
-            @foreach($appointments as $appointment)
-                @php
-                    $statusColor = match ($appointment->status) {
-                        'approved', 'completed' => 'green',
-                        'checked_in', 'in_progress' => 'blue',
-                        'cancelled', 'no_show' => 'red',
-                        'pending' => 'yellow',
-                        default => 'gray',
-                    };
-                    $statusLabel = str_replace('_', ' ', ucfirst($appointment->status));
-                    $dateLabel = $appointment->appointment_date?->format('M d, Y');
-                    $timeLabel = $appointment->appointment_time?->format('h:i A');
-                @endphp
+        {{-- Appointments List --}}
+        @if($appointments->count() > 0)
+            <div class="space-y-3">
+                @foreach($appointments as $appointment)
+                    @php
+                        $statusConfig = match ($appointment->status) {
+                            'approved' => ['bg' => 'bg-success/10', 'text' => 'text-success', 'dot' => 'bg-success'],
+                            'completed' => ['bg' => 'bg-success/10', 'text' => 'text-success', 'dot' => 'bg-success'],
+                            'checked_in', 'in_progress' => ['bg' => 'bg-primary/10', 'text' => 'text-primary', 'dot' => 'bg-primary'],
+                            'cancelled', 'no_show' => ['bg' => 'bg-destructive/10', 'text' => 'text-destructive', 'dot' => 'bg-destructive'],
+                            'pending' => ['bg' => 'bg-warning/10', 'text' => 'text-warning', 'dot' => 'bg-warning'],
+                            default => ['bg' => 'bg-zinc-100 dark:bg-zinc-800', 'text' => 'text-zinc-600 dark:text-zinc-400', 'dot' => 'bg-zinc-400'],
+                        };
+                        $statusLabel = str_replace('_', ' ', ucfirst($appointment->status));
+                    @endphp
 
-                <div
-                    class="rounded-xl border border-zinc-200/70 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 space-y-4"
-                    wire:key="appointment-{{ $appointment->id }}"
-                >
-                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div class="space-y-3">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <flux:heading size="lg" level="3">
-                                    {{ $appointment->consultationType?->name ?? __('Consultation') }}
-                                </flux:heading>
-                                <flux:badge color="{{ $statusColor }}">{{ $statusLabel }}</flux:badge>
+                    <a href="{{ route('patient.appointments.show', $appointment) }}"
+                       class="block rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-zinc-300 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600"
+                       wire:navigate
+                       wire:key="appointment-{{ $appointment->id }}">
+                        <div class="flex items-start gap-4">
+                            {{-- Date Badge --}}
+                            <div class="flex h-14 w-14 flex-shrink-0 flex-col items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-700">
+                                <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ $appointment->appointment_date?->format('M') }}</span>
+                                <span class="text-xl font-bold text-zinc-900 dark:text-white">{{ $appointment->appointment_date?->format('d') }}</span>
                             </div>
 
-                            <div class="space-y-1 text-sm text-zinc-600 dark:text-zinc-300">
-                                <div class="flex items-center gap-2">
-                                    <flux:icon name="calendar-days" class="h-4 w-4 text-zinc-400" />
-                                    <span>
-                                        {{ $dateLabel }}
-                                        @if($timeLabel)
-                                            {{ __('at') }} {{ $timeLabel }}
-                                        @else
-                                            <span class="text-zinc-500">({{ __('Time to be confirmed') }})</span>
-                                        @endif
+                            {{-- Content --}}
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="min-w-0 flex-1">
+                                        <p class="font-semibold text-zinc-900 dark:text-white truncate">
+                                            {{ $appointment->consultationType?->name ?? __('Consultation') }}
+                                        </p>
+                                        <p class="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+                                            @if($appointment->appointment_time)
+                                                {{ $appointment->appointment_time->format('h:i A') }}
+                                            @else
+                                                {{ __('Time TBA') }}
+                                            @endif
+                                            @if($appointment->doctor)
+                                                &middot; {{ $appointment->doctor->name }}
+                                            @endif
+                                        </p>
+                                    </div>
+                                    <span class="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }}">
+                                        <span class="h-1.5 w-1.5 rounded-full {{ $statusConfig['dot'] }}"></span>
+                                        {{ $statusLabel }}
                                     </span>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <flux:icon name="user" class="h-4 w-4 text-zinc-400" />
-                                    <span>
-                                        {{ $appointment->patient_first_name }} {{ $appointment->patient_last_name }}
-                                        @if($appointment->relationship_to_account !== 'self')
-                                            <span class="text-zinc-500">({{ ucfirst($appointment->relationship_to_account) }})</span>
-                                        @endif
-                                    </span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <flux:icon name="user-circle" class="h-4 w-4 text-zinc-400" />
-                                    <span>
-                                        {{ $appointment->doctor?->name ?? __('Doctor assignment pending') }}
-                                    </span>
-                                </div>
+
+                                <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                                    <flux:icon name="user" class="inline h-3 w-3" />
+                                    {{ $appointment->patient_first_name }} {{ $appointment->patient_last_name }}
+                                    @if($appointment->relationship_to_account !== 'self')
+                                        ({{ ucfirst($appointment->relationship_to_account) }})
+                                    @endif
+                                </p>
+
+                                @if($appointment->queue)
+                                    <p class="mt-1 text-xs font-medium text-primary">
+                                        <flux:icon name="ticket" class="inline h-3 w-3" />
+                                        {{ __('Queue') }}: {{ $appointment->queue->formatted_number }}
+                                    </p>
+                                @endif
                             </div>
 
-                            @if(filled($appointment->chief_complaints))
-                                <flux:text class="text-sm text-zinc-700 dark:text-zinc-300">
-                                    {{ $appointment->chief_complaints }}
-                                </flux:text>
-                            @endif
-
-                            @if($appointment->queue)
-                                <div class="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-200">
-                                    <span>{{ __('Queue') }}:</span>
-                                    <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-                                        {{ $appointment->queue->formatted_number }}
-                                    </span>
-                                </div>
-                            @endif
+                            <flux:icon name="chevron-right" class="h-5 w-5 flex-shrink-0 text-zinc-400" />
                         </div>
+                    </a>
 
-                        <div class="flex flex-wrap gap-2">
-                            <flux:button
-                                :href="route('patient.appointments.show', $appointment)"
-                                variant="outline"
-                                size="sm"
-                                wire:navigate
-                            >
-                                {{ __('View details') }}
-                            </flux:button>
-                            @if($appointment->status === 'pending')
-                                <flux:modal.trigger name="cancel-appointment-{{ $appointment->id }}">
-                                    <flux:button
-                                        variant="danger"
-                                        size="sm"
-                                        x-data=""
-                                        x-on:click.prevent="$dispatch('open-modal', 'cancel-appointment-{{ $appointment->id }}')"
-                                    >
-                                        {{ __('Cancel') }}
-                                    </flux:button>
-                                </flux:modal.trigger>
-                            @endif
-                        </div>
-                    </div>
+                    {{-- Cancel Modal for Pending --}}
                     @if($appointment->status === 'pending')
-                        <flux:modal name="cancel-appointment-{{ $appointment->id }}" focusable class="max-w-md">
-                            <div class="space-y-4">
-                                <div class="space-y-1">
-                                    <flux:heading size="lg">{{ __('Cancel this appointment?') }}</flux:heading>
-                                    <flux:text variant="subtle" class="text-sm">
-                                        {{ __('You can book a new appointment any time. This will mark the request as cancelled.') }}
-                                    </flux:text>
+                        <flux:modal name="cancel-appointment-{{ $appointment->id }}" focusable class="max-w-sm">
+                            <div class="p-4 space-y-4">
+                                <div class="text-center">
+                                    <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                                        <flux:icon name="exclamation-triangle" class="h-6 w-6 text-destructive" />
+                                    </div>
+                                    <h3 class="text-lg font-semibold text-zinc-900 dark:text-white">{{ __('Cancel Appointment?') }}</h3>
+                                    <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                                        {{ __('This action cannot be undone. You can book a new appointment anytime.') }}
+                                    </p>
                                 </div>
-                                <div class="flex items-center justify-end gap-2">
-                                    <flux:modal.close>
-                                        <flux:button variant="ghost">{{ __('Keep appointment') }}</flux:button>
+                                <div class="flex gap-3">
+                                    <flux:modal.close class="flex-1">
+                                        <flux:button variant="outline" class="w-full">{{ __('Keep') }}</flux:button>
                                     </flux:modal.close>
-                                    <flux:modal.close>
-                                        <flux:button
-                                            variant="danger"
-                                            wire:click="cancelAppointment({{ $appointment->id }})"
-                                        >
-                                            {{ __('Confirm cancel') }}
+                                    <flux:modal.close class="flex-1">
+                                        <flux:button variant="danger" class="w-full" wire:click="cancelAppointment({{ $appointment->id }})">
+                                            {{ __('Cancel') }}
                                         </flux:button>
                                     </flux:modal.close>
                                 </div>
                             </div>
                         </flux:modal>
                     @endif
+                @endforeach
+            </div>
+
+            {{-- Pagination --}}
+            <div class="mt-6">
+                {{ $appointments->links() }}
+            </div>
+        @else
+            {{-- Empty State --}}
+            <div class="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center dark:border-zinc-700 dark:bg-zinc-800/50">
+                <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700">
+                    <flux:icon name="calendar" class="h-8 w-8 text-zinc-400" />
                 </div>
-            @endforeach
-        </div>
+                <h3 class="text-lg font-semibold text-zinc-900 dark:text-white">{{ __('No appointments found') }}</h3>
+                <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                    @if($search)
+                        {{ __('Try adjusting your search terms.') }}
+                    @elseif($filter === 'upcoming')
+                        {{ __('You have no upcoming appointments.') }}
+                    @elseif($filter === 'past')
+                        {{ __('No past appointments found.') }}
+                    @else
+                        {{ __('Book your first appointment to get started.') }}
+                    @endif
+                </p>
+                @unless($search)
+                    <a href="{{ route('patient.appointments.book') }}"
+                       class="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                       wire:navigate>
+                        <flux:icon name="plus" class="h-4 w-4" />
+                        {{ __('Book Appointment') }}
+                    </a>
+                @endunless
+            </div>
+        @endif
 
-        {{ $appointments->links() }}
-    @else
-        <div class="rounded-xl border border-zinc-200/70 bg-white p-8 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900 space-y-4">
-            <img
-                src="{{ asset('images/undraw_booked_bb22.svg') }}"
-                alt="{{ __('Appointments') }}"
-                class="mx-auto mb-4 h-28 w-auto opacity-80"
-            />
-            <flux:heading size="lg" level="2">{{ __('No appointments found') }}</flux:heading>
-            <flux:text variant="subtle" class="text-sm">
-                @if($search)
-                    {{ __('Try adjusting your search terms or filters.') }}
-                @elseif($filter === 'upcoming')
-                    {{ __('You have no upcoming appointments right now.') }}
-                @elseif($filter === 'past')
-                    {{ __('No past appointments are on file yet.') }}
-                @else
-                    {{ __('Book your first appointment to get started.') }}
-                @endif
-            </flux:text>
-
-            @if(! $search)
-                <flux:button :href="route('patient.appointments.book')" variant="primary" wire:navigate>
-                    {{ __('Book appointment') }}
-                </flux:button>
-            @endif
-        </div>
-    @endif
-</section>
+        {{-- Bottom spacing for mobile nav --}}
+        <div class="h-20 lg:hidden"></div>
+    </div>
+</div>

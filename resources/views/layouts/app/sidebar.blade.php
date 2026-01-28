@@ -24,7 +24,7 @@
             }
         @endphp
 
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+        <flux:sidebar sticky collapsible="mobile" class="sidebar-enhanced border-e border-zinc-200/80 bg-gradient-to-b from-white via-zinc-50/80 to-zinc-100/50 dark:border-zinc-700 dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/50">
             <flux:sidebar.header>
                 <div class="grid gap-1">
                     <x-app-logo :sidebar="true" href="{{ $isPatient ? route('patient.dashboard') : route('dashboard') }}" wire:navigate />

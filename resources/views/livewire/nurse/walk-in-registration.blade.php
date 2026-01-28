@@ -97,7 +97,7 @@
             </div>
 
             @error('consultationTypeId')
-                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                <p class="mt-2 text-sm text-destructive">{{ $message }}</p>
             @enderror
 
             <div class="flex justify-end mt-6">
