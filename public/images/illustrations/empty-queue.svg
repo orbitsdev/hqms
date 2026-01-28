@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <!-- Background circle -->
+  <circle cx="200" cy="150" r="100" fill="#f4f4f5" />
+
+  <!-- Clipboard -->
+  <rect x="150" y="80" width="100" height="130" rx="8" fill="#e4e4e7" stroke="#a1a1aa" stroke-width="2"/>
+  <rect x="175" y="70" width="50" height="20" rx="4" fill="#a1a1aa"/>
+
+  <!-- Empty lines on clipboard -->
+  <rect x="165" y="110" width="70" height="8" rx="2" fill="#d4d4d8"/>
+  <rect x="165" y="130" width="50" height="8" rx="2" fill="#d4d4d8"/>
+  <rect x="165" y="150" width="60" height="8" rx="2" fill="#d4d4d8"/>
+  <rect x="165" y="170" width="40" height="8" rx="2" fill="#d4d4d8"/>
+
+  <!-- Checkmark circle -->
+  <circle cx="280" cy="180" r="30" fill="#22c55e" opacity="0.2"/>
+  <path d="M265 180 L275 190 L295 170" stroke="#22c55e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

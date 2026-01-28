@@ -1,5 +1,7 @@
 <?php
 
+use App\Livewire\Admin\Dashboard as AdminDashboard;
+use App\Livewire\Admin\UserManagement as AdminUserManagement;
 use App\Livewire\Display\QueueMonitor;
 use App\Livewire\Doctor\Admissions as DoctorAdmissions;
 use App\Livewire\Doctor\Dashboard as DoctorDashboard;
@@ -7,6 +9,7 @@ use App\Livewire\Doctor\Examination as DoctorExamination;
 use App\Livewire\Doctor\MySchedule as DoctorMySchedule;
 use App\Livewire\Doctor\PatientHistory as DoctorPatientHistory;
 use App\Livewire\Doctor\PatientQueue as DoctorPatientQueue;
+use App\Livewire\Nurse\Admissions as NurseAdmissions;
 use App\Livewire\Nurse\Appointments as NurseAppointments;
 use App\Livewire\Nurse\AppointmentShow as NurseAppointmentShow;
 use App\Livewire\Nurse\Dashboard as NurseDashboard;
@@ -46,6 +49,10 @@ Route::get('dashboard', function () {
         return redirect()->route('nurse.dashboard');
     }
 
+    if (auth()->user()->isAdmin()) {
+        return redirect()->route('admin.dashboard');
+    }
+
     return redirect()->route('nurse.dashboard');
 })
     ->middleware(['auth'])
@@ -74,6 +81,7 @@ Route::prefix('nurse')->name('nurse.')->middleware(['auth', 'role:nurse'])->grou
     Route::get('/walk-in', NurseWalkIn::class)->name('walk-in');
     Route::get('/medical-records', NurseMedicalRecords::class)->name('medical-records');
     Route::get('/patient-history', NursePatientHistory::class)->name('patient-history');
+    Route::get('/admissions', NurseAdmissions::class)->name('admissions');
 });
 
 // doctor portal routes
@@ -85,6 +93,13 @@ Route::prefix('doctor')->name('doctor.')->middleware(['auth', 'role:doctor'])->g
     Route::get('/patient-history', DoctorPatientHistory::class)->name('patient-history');
     Route::get('/admissions', DoctorAdmissions::class)->name('admissions');
     Route::get('/schedule', DoctorMySchedule::class)->name('schedule');
+});
+
+// admin portal routes
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/', AdminDashboard::class)->name('dashboard');
+    Route::redirect('/dashboard', '/admin')->name('dashboard.redirect');
+    Route::get('/users', AdminUserManagement::class)->name('users');
 });
 
 require __DIR__.'/settings.php';

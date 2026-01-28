@@ -147,8 +147,8 @@
                     @endif
                 </button>
             @empty
-                <div class="rounded-lg border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-600">
-                    <flux:icon name="clipboard-document-list" class="mx-auto h-12 w-12 text-zinc-300 dark:text-zinc-600" />
+                <div class="rounded-lg border border-dashed border-zinc-300 p-8 text-center dark:border-zinc-600">
+                    <img src="{{ asset('images/illustrations/empty-queue.svg') }}" alt="" class="mx-auto h-32 w-32 opacity-60" />
                     <p class="mt-4 font-medium text-zinc-600 dark:text-zinc-400">
                         @if($status === 'waiting')
                             {{ __('No patients waiting') }}

@@ -157,7 +157,7 @@
                 </div>
             @else
                 <div class="rounded-lg border border-dashed border-zinc-300 p-8 text-center dark:border-zinc-600">
-                    <flux:icon name="queue-list" class="mx-auto h-8 w-8 text-zinc-400" />
+                    <img src="{{ asset('images/illustrations/empty-queue.svg') }}" alt="" class="mx-auto h-28 w-28 opacity-60" />
                     <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">{{ __('No patients in this queue') }}</p>
                 </div>
             @endif

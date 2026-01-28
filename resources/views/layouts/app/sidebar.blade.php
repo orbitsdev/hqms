@@ -92,6 +92,21 @@
                         <flux:sidebar.item icon="user-circle" :href="route('nurse.patient-history')" :current="request()->routeIs('nurse.patient-history')" wire:navigate>
                             {{ __('Patient History') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="building-office-2" :href="route('nurse.admissions')" :current="request()->routeIs('nurse.admissions')" wire:navigate>
+                            {{ __('Admissions') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="cog" :href="route('profile.edit')" :current="request()->routeIs('profile.edit')" wire:navigate>
+                            {{ __('Settings') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @elseif($user?->isAdmin())
+                    <flux:sidebar.group :heading="$portalLabel" class="grid">
+                        <flux:sidebar.item icon="home" :href="route('admin.dashboard')" :current="request()->routeIs('admin.dashboard')" wire:navigate>
+                            {{ __('Dashboard') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="users" :href="route('admin.users')" :current="request()->routeIs('admin.users')" wire:navigate>
+                            {{ __('User Management') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="cog" :href="route('profile.edit')" :current="request()->routeIs('profile.edit')" wire:navigate>
                             {{ __('Settings') }}
                         </flux:sidebar.item>

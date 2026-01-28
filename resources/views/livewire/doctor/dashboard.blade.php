@@ -14,38 +14,38 @@
 
     {{-- Quick Stats --}}
     <div class="grid gap-4 sm:grid-cols-3">
-        <div class="rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+        <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
             <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/50">
-                    <flux:icon name="clock" class="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                    <flux:icon name="clock" class="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
                 </div>
                 <div>
-                    <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ $waitingCount }}</p>
-                    <p class="text-sm text-blue-700 dark:text-blue-300">{{ __('Waiting') }}</p>
+                    <p class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{{ $waitingCount }}</p>
+                    <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Waiting') }}</p>
                 </div>
             </div>
         </div>
 
-        <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-900/20">
+        <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
             <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/50">
-                    <flux:icon name="user" class="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                    <flux:icon name="user" class="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
                 </div>
                 <div>
-                    <p class="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{{ $examiningCount }}</p>
-                    <p class="text-sm text-emerald-700 dark:text-emerald-300">{{ __('Examining') }}</p>
+                    <p class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{{ $examiningCount }}</p>
+                    <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Examining') }}</p>
                 </div>
             </div>
         </div>
 
-        <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800">
+        <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
             <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-200 dark:bg-zinc-700">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
                     <flux:icon name="check-circle" class="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{{ $completedCount }}</p>
-                    <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ __('Completed Today') }}</p>
+                    <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Completed') }}</p>
                 </div>
             </div>
         </div>
@@ -54,11 +54,11 @@
     <div class="grid gap-6 lg:grid-cols-2">
         {{-- Currently Examining --}}
         @if($currentlyExamining)
-            <div class="rounded-xl border-2 border-emerald-500 bg-emerald-50 p-4 dark:bg-emerald-900/20">
+            <div class="rounded-xl border-2 border-zinc-900 bg-zinc-50 p-4 dark:border-white dark:bg-zinc-800">
                 <div class="mb-3 flex items-center gap-2">
                     <span class="relative flex h-3 w-3">
-                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex h-3 w-3 rounded-full bg-emerald-500"></span>
+                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-zinc-400 opacity-75"></span>
+                        <span class="relative inline-flex h-3 w-3 rounded-full bg-zinc-900 dark:bg-white"></span>
                     </span>
                     <flux:heading size="sm">{{ __('Currently Examining') }}</flux:heading>
                 </div>
@@ -102,16 +102,10 @@
                         @endphp
                         <div class="flex items-center justify-between rounded-lg border border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-800/50">
                             <div class="flex items-center gap-3">
-                                {{-- Priority Badge --}}
-                                @if($queue->priority === 'emergency')
-                                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-xs font-bold text-red-700 dark:bg-red-900/50 dark:text-red-300">!</span>
-                                @elseif($queue->priority === 'urgent')
-                                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">U</span>
-                                @else
-                                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
-                                        {{ $queue->formatted_number }}
-                                    </span>
-                                @endif
+                                {{-- Queue Number --}}
+                                <span class="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-200 text-xs font-bold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
+                                    {{ $queue->formatted_number }}
+                                </span>
                                 <div>
                                     <p class="font-medium text-zinc-900 dark:text-white">{{ $patientName }}</p>
                                     <p class="text-xs text-zinc-500 dark:text-zinc-400">
@@ -123,7 +117,7 @@
                                 </div>
                             </div>
                             @if($queue->priority !== 'normal')
-                                <flux:badge size="sm" :color="$queue->priority === 'emergency' ? 'red' : 'yellow'">
+                                <flux:badge size="sm" color="zinc">
                                     {{ strtoupper($queue->priority) }}
                                 </flux:badge>
                             @endif
@@ -132,7 +126,7 @@
                 </div>
             @else
                 <div class="py-8 text-center">
-                    <flux:icon name="check-circle" class="mx-auto h-10 w-10 text-zinc-300 dark:text-zinc-600" />
+                    <img src="{{ asset('images/illustrations/empty-queue.svg') }}" alt="" class="mx-auto h-32 w-32 opacity-60" />
                     <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">{{ __('No patients waiting') }}</p>
                 </div>
             @endif
@@ -152,7 +146,7 @@
                                     {{ $record->examination_ended_at?->format('h:i A') }}
                                 </p>
                             </div>
-                            <flux:badge size="sm" :color="$record->status === 'for_billing' ? 'yellow' : ($record->status === 'for_admission' ? 'blue' : 'zinc')">
+                            <flux:badge size="sm" color="zinc">
                                 {{ str_replace('_', ' ', ucfirst($record->status)) }}
                             </flux:badge>
                         </div>

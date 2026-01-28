@@ -178,9 +178,7 @@
         </div>
     @else
         <div class="rounded-lg border border-zinc-200 bg-white p-8 text-center dark:border-zinc-700 dark:bg-zinc-900">
-            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-                <flux:icon name="calendar-days" class="h-6 w-6 text-zinc-400" />
-            </div>
+            <img src="{{ asset('images/illustrations/empty-appointments.svg') }}" alt="" class="mx-auto h-32 w-32 opacity-60" />
             <h3 class="mt-4 text-sm font-medium text-zinc-900 dark:text-white">{{ __('No appointments found') }}</h3>
             <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
                 @if($search || $consultationTypeFilter || $dateFilter || $sourceFilter)

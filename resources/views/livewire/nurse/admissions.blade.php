@@ -3,7 +3,7 @@
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <flux:heading size="xl" level="1">{{ __('Admissions') }}</flux:heading>
-            <flux:text class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Manage admitted patients') }}</flux:text>
+            <flux:text class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('View admitted patients') }}</flux:text>
         </div>
     </div>
 
@@ -74,6 +74,7 @@
                                 </p>
                                 <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                                     {{ __('Admitted:') }} {{ $admission->admission_date->format('M d, Y g:i A') }}
+                                    &bull; {{ __('Dr.') }} {{ $admission->admittedBy?->name ?? 'N/A' }}
                                 </p>
                             </div>
                         </div>
@@ -109,9 +110,6 @@
                         @else
                             {{ __('No discharged patients') }}
                         @endif
-                    </p>
-                    <p class="mt-1 text-sm text-zinc-500">
-                        {{ __('Patients you admit will appear here.') }}
                     </p>
                 </div>
             @endforelse
@@ -174,6 +172,12 @@
                         </div>
                     @endif
 
+                    {{-- Attending Doctor --}}
+                    <div class="border-b border-zinc-200 p-4 dark:border-zinc-700">
+                        <p class="mb-2 text-xs font-medium uppercase text-zinc-500">{{ __('Attending Doctor') }}</p>
+                        <p class="text-sm font-medium text-zinc-900 dark:text-white">{{ $sa->admittedBy?->name ?? 'N/A' }}</p>
+                    </div>
+
                     {{-- Reason for Admission --}}
                     <div class="border-b border-zinc-200 p-4 dark:border-zinc-700">
                         <p class="mb-2 text-xs font-medium uppercase text-zinc-500">{{ __('Reason for Admission') }}</p>
@@ -207,29 +211,11 @@
 
                     {{-- Discharge Summary (if discharged) --}}
                     @if($sa->status === 'discharged' && $sa->discharge_summary)
-                        <div class="border-b border-zinc-200 p-4 dark:border-zinc-700">
+                        <div class="p-4">
                             <p class="mb-2 text-xs font-medium uppercase text-zinc-500">{{ __('Discharge Summary') }}</p>
                             <p class="text-sm whitespace-pre-line text-zinc-700 dark:text-zinc-300">{{ $sa->discharge_summary }}</p>
                         </div>
                     @endif
-
-                    {{-- Actions --}}
-                    <div class="p-4 space-y-2">
-                        @if($sa->status === 'active')
-                            <flux:button wire:click="openEditModal" class="w-full" variant="filled" icon="pencil-square">
-                                {{ __('Edit Details') }}
-                            </flux:button>
-                            <flux:button wire:click="openDischargeModal" class="w-full" variant="primary" icon="arrow-right-start-on-rectangle">
-                                {{ __('Discharge Patient') }}
-                            </flux:button>
-                        @else
-                            @if($sr)
-                                <flux:button href="{{ route('doctor.patient-history') }}?search={{ urlencode($sr->patient_full_name) }}" wire:navigate class="w-full" variant="filled" icon="clock">
-                                    {{ __('View History') }}
-                                </flux:button>
-                            @endif
-                        @endif
-                    </div>
                 </div>
             @else
                 <div class="rounded-xl border border-dashed border-zinc-300 p-8 text-center dark:border-zinc-600">
@@ -240,76 +226,4 @@
             @endif
         </div>
     </div>
-
-    {{-- Edit Modal --}}
-    <flux:modal wire:model="showEditModal" class="max-w-lg">
-        <div class="space-y-6">
-            <div>
-                <flux:heading size="lg">{{ __('Edit Admission') }}</flux:heading>
-                <flux:text class="mt-1">{{ __('Update room assignment and notes.') }}</flux:text>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <flux:field>
-                    <flux:label>{{ __('Room Number') }}</flux:label>
-                    <flux:input wire:model="roomNumber" placeholder="e.g. 101" />
-                    <flux:error name="roomNumber" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>{{ __('Bed Number') }}</flux:label>
-                    <flux:input wire:model="bedNumber" placeholder="e.g. A" />
-                    <flux:error name="bedNumber" />
-                </flux:field>
-            </div>
-
-            <flux:field>
-                <flux:label>{{ __('Notes') }}</flux:label>
-                <flux:textarea wire:model="notes" rows="4" placeholder="{{ __('Additional notes...') }}" />
-                <flux:error name="notes" />
-            </flux:field>
-
-            <div class="flex justify-end gap-3">
-                <flux:button wire:click="closeEditModal" variant="ghost">{{ __('Cancel') }}</flux:button>
-                <flux:button wire:click="saveAdmission" variant="primary">{{ __('Save Changes') }}</flux:button>
-            </div>
-        </div>
-    </flux:modal>
-
-    {{-- Discharge Modal --}}
-    <flux:modal wire:model="showDischargeModal" class="max-w-lg">
-        <div class="space-y-6">
-            <div>
-                <flux:heading size="lg">{{ __('Discharge Patient') }}</flux:heading>
-                <flux:text class="mt-1">{{ __('Provide a discharge summary for this patient.') }}</flux:text>
-            </div>
-
-            @if($this->selectedAdmission)
-                <div class="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800">
-                    <p class="font-medium text-zinc-900 dark:text-white">
-                        {{ $this->selectedAdmission->medicalRecord?->patient_full_name }}
-                    </p>
-                    <p class="text-sm text-zinc-500">
-                        {{ $this->selectedAdmission->admission_number }}
-                        &bull; {{ $this->selectedAdmission->length_of_stay }} {{ __('day(s) stay') }}
-                    </p>
-                </div>
-            @endif
-
-            <flux:field>
-                <flux:label>{{ __('Discharge Summary') }} <span class="text-red-500">*</span></flux:label>
-                <flux:textarea
-                    wire:model="dischargeSummary"
-                    rows="5"
-                    placeholder="{{ __('Include final diagnosis, treatment provided, medications, follow-up instructions...') }}"
-                />
-                <flux:error name="dischargeSummary" />
-            </flux:field>
-
-            <div class="flex justify-end gap-3">
-                <flux:button wire:click="closeDischargeModal" variant="ghost">{{ __('Cancel') }}</flux:button>
-                <flux:button wire:click="dischargePatient" variant="primary">{{ __('Confirm Discharge') }}</flux:button>
-            </div>
-        </div>
-    </flux:modal>
 </section>

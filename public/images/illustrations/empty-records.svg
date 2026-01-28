@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <!-- Background circle -->
+  <circle cx="200" cy="150" r="100" fill="#f4f4f5" />
+
+  <!-- Folder -->
+  <path d="M130 110 L130 190 Q130 200 140 200 L260 200 Q270 200 270 190 L270 120 Q270 110 260 110 L200 110 L190 100 L140 100 Q130 100 130 110Z" fill="#e4e4e7" stroke="#a1a1aa" stroke-width="2"/>
+
+  <!-- Tab -->
+  <path d="M140 100 L190 100 L200 110 L140 110 Q130 110 130 100 L140 100Z" fill="#a1a1aa"/>
+
+  <!-- Document inside folder -->
+  <rect x="155" y="130" width="60" height="50" rx="2" fill="white" stroke="#d4d4d8" stroke-width="1"/>
+  <rect x="162" y="140" width="35" height="4" rx="1" fill="#d4d4d8"/>
+  <rect x="162" y="150" width="45" height="4" rx="1" fill="#d4d4d8"/>
+  <rect x="162" y="160" width="25" height="4" rx="1" fill="#d4d4d8"/>
+
+  <!-- Search magnifier -->
+  <circle cx="270" cy="170" r="20" fill="none" stroke="#a1a1aa" stroke-width="3"/>
+  <line x1="285" y1="185" x2="300" y2="200" stroke="#a1a1aa" stroke-width="4" stroke-linecap="round"/>
+</svg>

@@ -5,20 +5,23 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\Traits\Models\UserRelations;
-use Illuminate\Support\Str;
-use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Fortify\TwoFactorAuthenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
+
 class User extends Authenticatable
 {
+    use HasApiTokens;
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
     use HasRoles;
     use UserRelations;
-    use HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -67,11 +70,12 @@ class User extends Authenticatable
     {
         $info = $this->personalInformation;
         if ($info) {
-            return strtoupper(substr($info->first_name, 0, 1) . substr($info->last_name, 0, 1));
+            return strtoupper(substr($info->first_name, 0, 1).substr($info->last_name, 0, 1));
         }
 
         // Fallback: use email username (e.g., "admin@test.com" -> "AD")
         $username = Str::before($this->email, '@');
+
         return strtoupper(substr($username, 0, 2));
     }
 
