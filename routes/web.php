@@ -1,6 +1,8 @@
 <?php
 
 use App\Livewire\Admin\Dashboard as AdminDashboard;
+use App\Livewire\Admin\HospitalDrugManagement as AdminHospitalDrugManagement;
+use App\Livewire\Admin\ServiceManagement as AdminServiceManagement;
 use App\Livewire\Admin\UserManagement as AdminUserManagement;
 use App\Livewire\Cashier\BillingQueue as CashierBillingQueue;
 use App\Livewire\Cashier\Dashboard as CashierDashboard;
@@ -108,6 +110,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::get('/', AdminDashboard::class)->name('dashboard');
     Route::redirect('/dashboard', '/admin')->name('dashboard.redirect');
     Route::get('/users', AdminUserManagement::class)->name('users');
+    Route::get('/services', AdminServiceManagement::class)->name('services');
+    Route::get('/drugs', AdminHospitalDrugManagement::class)->name('drugs');
 });
 
 // cashier portal routes

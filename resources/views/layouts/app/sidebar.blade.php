@@ -122,6 +122,12 @@
                         <flux:sidebar.item icon="users" :href="route('admin.users')" :current="request()->routeIs('admin.users')" wire:navigate>
                             {{ __('User Management') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="banknotes" :href="route('admin.services')" :current="request()->routeIs('admin.services')" wire:navigate>
+                            {{ __('Services & Fees') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="beaker" :href="route('admin.drugs')" :current="request()->routeIs('admin.drugs')" wire:navigate>
+                            {{ __('Hospital Drugs') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="cog" :href="route('profile.edit')" :current="request()->routeIs('profile.edit')" wire:navigate>
                             {{ __('Settings') }}
                         </flux:sidebar.item>
