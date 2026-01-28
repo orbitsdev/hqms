@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\Appointment;
 use App\Models\ConsultationType;
-use App\Models\MedicalRecord;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -24,7 +23,7 @@ class MedicalRecordFactory extends Factory
         $timeIn = now();
 
         return [
-            'record_number' => MedicalRecord::generateRecordNumber(),
+            // record_number is auto-generated via model's booted() event
             'user_id' => User::factory(),
             'consultation_type_id' => ConsultationType::factory(),
             'appointment_id' => null,
@@ -141,6 +140,16 @@ class MedicalRecordFactory extends Factory
     {
         return $this->examined()->state(fn (array $attributes) => [
             'status' => 'completed',
+        ]);
+    }
+
+    /**
+     * Indicate the record is ready for billing.
+     */
+    public function forBilling(): static
+    {
+        return $this->examined()->state(fn (array $attributes) => [
+            'status' => 'for_billing',
         ]);
     }
 

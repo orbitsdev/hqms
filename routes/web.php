@@ -2,6 +2,10 @@
 
 use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Admin\UserManagement as AdminUserManagement;
+use App\Livewire\Cashier\BillingQueue as CashierBillingQueue;
+use App\Livewire\Cashier\Dashboard as CashierDashboard;
+use App\Livewire\Cashier\PaymentHistory as CashierPaymentHistory;
+use App\Livewire\Cashier\ProcessBilling as CashierProcessBilling;
 use App\Livewire\Display\QueueMonitor;
 use App\Livewire\Doctor\Admissions as DoctorAdmissions;
 use App\Livewire\Doctor\Dashboard as DoctorDashboard;
@@ -53,6 +57,10 @@ Route::get('dashboard', function () {
         return redirect()->route('admin.dashboard');
     }
 
+    if (auth()->user()->isCashier()) {
+        return redirect()->route('cashier.dashboard');
+    }
+
     return redirect()->route('nurse.dashboard');
 })
     ->middleware(['auth'])
@@ -100,6 +108,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::get('/', AdminDashboard::class)->name('dashboard');
     Route::redirect('/dashboard', '/admin')->name('dashboard.redirect');
     Route::get('/users', AdminUserManagement::class)->name('users');
+});
+
+// cashier portal routes
+Route::prefix('cashier')->name('cashier.')->middleware(['auth', 'role:cashier'])->group(function () {
+    Route::get('/', CashierDashboard::class)->name('dashboard');
+    Route::redirect('/dashboard', '/cashier')->name('dashboard.redirect');
+    Route::get('/queue', CashierBillingQueue::class)->name('queue');
+    Route::get('/process/{medicalRecord}', CashierProcessBilling::class)->name('process');
+    Route::get('/history', CashierPaymentHistory::class)->name('history');
 });
 
 require __DIR__.'/settings.php';
