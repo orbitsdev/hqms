@@ -14,6 +14,24 @@ class ServiceSeeder extends Seeder
     {
         $order = 0;
 
+        // Professional/Consultation Fees (must be first in display order)
+        $professionalFees = [
+            'Professional Fee - OB' => 500,
+            'Professional Fee - Pediatrics' => 500,
+            'Professional Fee - General' => 400,
+        ];
+
+        foreach ($professionalFees as $name => $price) {
+            Service::create([
+                'service_name' => $name,
+                'category' => 'consultation',
+                'description' => 'Doctor consultation fee',
+                'base_price' => $price,
+                'is_active' => true,
+                'display_order' => ++$order,
+            ]);
+        }
+
         // General Ultrasound Services
         $ultrasoundServices = [
             'Whole Abdomen' => 1500,

@@ -102,15 +102,30 @@ class ProcessBilling extends Component
     {
         $record = $this->medicalRecord;
 
-        // 1. Add professional fee (consultation fee)
-        $consultationService = Service::where('category', 'consultation')
+        // 1. Add professional fee based on consultation type
+        $consultationType = $record->consultationType;
+        $feeServiceName = match ($consultationType->code ?? '') {
+            'ob' => 'Professional Fee - OB',
+            'pedia' => 'Professional Fee - Pediatrics',
+            default => 'Professional Fee - General',
+        };
+
+        $consultationService = Service::where('service_name', $feeServiceName)
             ->where('is_active', true)
             ->first();
+
+        // Fallback to any consultation service if specific one not found
+        if (! $consultationService) {
+            $consultationService = Service::where('category', 'consultation')
+                ->where('service_name', 'like', 'Professional Fee%')
+                ->where('is_active', true)
+                ->first();
+        }
 
         if ($consultationService) {
             $this->billingItems[] = [
                 'type' => 'professional_fee',
-                'description' => $consultationService->service_name.' - '.$record->consultationType->name,
+                'description' => $consultationService->service_name.' ('.$consultationType->name.')',
                 'service_id' => $consultationService->id,
                 'drug_id' => null,
                 'quantity' => 1,

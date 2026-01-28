@@ -30,8 +30,7 @@ beforeEach(function () {
     ]);
 
     $this->service = Service::create([
-        'service_code' => 'CONS001',
-        'service_name' => 'Consultation Fee',
+        'service_name' => 'Professional Fee - General',
         'category' => 'consultation',
         'base_price' => 500.00,
         'is_active' => true,
