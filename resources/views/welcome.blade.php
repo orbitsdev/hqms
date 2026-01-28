@@ -64,7 +64,7 @@
         {{-- Navigation --}}
         <nav id="navbar" class="relative z-20 flex items-center justify-between px-6 py-4 lg:px-12 bg-black/20 backdrop-blur-sm">
             <a href="{{ url('/') }}" class="logo-link flex items-center gap-3 group">
-                <x-app-logo class="h-10 w-10 transition-transform group-hover:scale-110 group-hover:rotate-6" />
+                <img src="{{ asset('images/caretime_logo.png') }}" alt="CareTime" class="h-10 w-10 object-contain transition-transform group-hover:scale-110" />
                 <span class="text-xl font-bold tracking-tight text-white drop-shadow-lg">{{ config('app.name') }}</span>
             </a>
 
