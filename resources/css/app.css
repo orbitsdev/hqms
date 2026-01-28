@@ -330,3 +330,151 @@ select:focus[data-flux-control] {
     font-weight: 600;
     letter-spacing: 0.05em;
 }
+
+/* ============================================
+   Role-specific Sidebar Themes
+   ============================================ */
+
+/* Doctor - Blue theme */
+.sidebar-doctor::before {
+    background: linear-gradient(180deg, oklch(0.623 0.214 259.815 / 0.08) 0%, transparent 100%) !important;
+}
+.dark .sidebar-doctor::before {
+    background: linear-gradient(180deg, oklch(0.623 0.214 259.815 / 0.12) 0%, transparent 100%) !important;
+}
+.sidebar-doctor [data-flux-sidebar-item]:hover {
+    background: linear-gradient(90deg, oklch(0.623 0.214 259.815 / 0.1) 0%, oklch(0.623 0.214 259.815 / 0.03) 100%) !important;
+}
+.dark .sidebar-doctor [data-flux-sidebar-item]:hover {
+    background: linear-gradient(90deg, oklch(0.623 0.214 259.815 / 0.18) 0%, oklch(0.623 0.214 259.815 / 0.05) 100%) !important;
+}
+.sidebar-doctor [data-flux-sidebar-item][data-current="true"],
+.sidebar-doctor [data-flux-sidebar-item][aria-current="page"] {
+    background: linear-gradient(90deg, oklch(0.623 0.214 259.815 / 0.15) 0%, oklch(0.623 0.214 259.815 / 0.05) 100%) !important;
+    border-left: 3px solid oklch(0.623 0.214 259.815) !important;
+    color: oklch(0.623 0.214 259.815) !important;
+}
+.dark .sidebar-doctor [data-flux-sidebar-item][data-current="true"],
+.dark .sidebar-doctor [data-flux-sidebar-item][aria-current="page"] {
+    background: linear-gradient(90deg, oklch(0.623 0.214 259.815 / 0.22) 0%, oklch(0.623 0.214 259.815 / 0.08) 100%) !important;
+    color: oklch(0.75 0.18 259.815) !important;
+}
+.sidebar-doctor [data-flux-sidebar-item][data-current="true"] svg,
+.sidebar-doctor [data-flux-sidebar-item][aria-current="page"] svg {
+    color: oklch(0.623 0.214 259.815) !important;
+}
+.dark .sidebar-doctor [data-flux-sidebar-item][data-current="true"] svg,
+.dark .sidebar-doctor [data-flux-sidebar-item][aria-current="page"] svg {
+    color: oklch(0.75 0.18 259.815) !important;
+}
+.sidebar-doctor [data-flux-sidebar-group] > span:first-child {
+    color: oklch(0.623 0.214 259.815 / 0.8) !important;
+}
+
+/* Nurse - Green/Teal theme */
+.sidebar-nurse::before {
+    background: linear-gradient(180deg, oklch(0.627 0.194 149.214 / 0.08) 0%, transparent 100%) !important;
+}
+.dark .sidebar-nurse::before {
+    background: linear-gradient(180deg, oklch(0.627 0.194 149.214 / 0.12) 0%, transparent 100%) !important;
+}
+.sidebar-nurse [data-flux-sidebar-item]:hover {
+    background: linear-gradient(90deg, oklch(0.627 0.194 149.214 / 0.1) 0%, oklch(0.627 0.194 149.214 / 0.03) 100%) !important;
+}
+.dark .sidebar-nurse [data-flux-sidebar-item]:hover {
+    background: linear-gradient(90deg, oklch(0.627 0.194 149.214 / 0.18) 0%, oklch(0.627 0.194 149.214 / 0.05) 100%) !important;
+}
+.sidebar-nurse [data-flux-sidebar-item][data-current="true"],
+.sidebar-nurse [data-flux-sidebar-item][aria-current="page"] {
+    background: linear-gradient(90deg, oklch(0.627 0.194 149.214 / 0.15) 0%, oklch(0.627 0.194 149.214 / 0.05) 100%) !important;
+    border-left: 3px solid oklch(0.627 0.194 149.214) !important;
+    color: oklch(0.627 0.194 149.214) !important;
+}
+.dark .sidebar-nurse [data-flux-sidebar-item][data-current="true"],
+.dark .sidebar-nurse [data-flux-sidebar-item][aria-current="page"] {
+    background: linear-gradient(90deg, oklch(0.627 0.194 149.214 / 0.22) 0%, oklch(0.627 0.194 149.214 / 0.08) 100%) !important;
+    color: oklch(0.75 0.18 149.214) !important;
+}
+.sidebar-nurse [data-flux-sidebar-item][data-current="true"] svg,
+.sidebar-nurse [data-flux-sidebar-item][aria-current="page"] svg {
+    color: oklch(0.627 0.194 149.214) !important;
+}
+.dark .sidebar-nurse [data-flux-sidebar-item][data-current="true"] svg,
+.dark .sidebar-nurse [data-flux-sidebar-item][aria-current="page"] svg {
+    color: oklch(0.75 0.18 149.214) !important;
+}
+.sidebar-nurse [data-flux-sidebar-group] > span:first-child {
+    color: oklch(0.627 0.194 149.214 / 0.8) !important;
+}
+
+/* Admin - Purple theme */
+.sidebar-admin::before {
+    background: linear-gradient(180deg, oklch(0.627 0.265 303.9 / 0.08) 0%, transparent 100%) !important;
+}
+.dark .sidebar-admin::before {
+    background: linear-gradient(180deg, oklch(0.627 0.265 303.9 / 0.12) 0%, transparent 100%) !important;
+}
+.sidebar-admin [data-flux-sidebar-item]:hover {
+    background: linear-gradient(90deg, oklch(0.627 0.265 303.9 / 0.1) 0%, oklch(0.627 0.265 303.9 / 0.03) 100%) !important;
+}
+.dark .sidebar-admin [data-flux-sidebar-item]:hover {
+    background: linear-gradient(90deg, oklch(0.627 0.265 303.9 / 0.18) 0%, oklch(0.627 0.265 303.9 / 0.05) 100%) !important;
+}
+.sidebar-admin [data-flux-sidebar-item][data-current="true"],
+.sidebar-admin [data-flux-sidebar-item][aria-current="page"] {
+    background: linear-gradient(90deg, oklch(0.627 0.265 303.9 / 0.15) 0%, oklch(0.627 0.265 303.9 / 0.05) 100%) !important;
+    border-left: 3px solid oklch(0.627 0.265 303.9) !important;
+    color: oklch(0.627 0.265 303.9) !important;
+}
+.dark .sidebar-admin [data-flux-sidebar-item][data-current="true"],
+.dark .sidebar-admin [data-flux-sidebar-item][aria-current="page"] {
+    background: linear-gradient(90deg, oklch(0.627 0.265 303.9 / 0.22) 0%, oklch(0.627 0.265 303.9 / 0.08) 100%) !important;
+    color: oklch(0.75 0.22 303.9) !important;
+}
+.sidebar-admin [data-flux-sidebar-item][data-current="true"] svg,
+.sidebar-admin [data-flux-sidebar-item][aria-current="page"] svg {
+    color: oklch(0.627 0.265 303.9) !important;
+}
+.dark .sidebar-admin [data-flux-sidebar-item][data-current="true"] svg,
+.dark .sidebar-admin [data-flux-sidebar-item][aria-current="page"] svg {
+    color: oklch(0.75 0.22 303.9) !important;
+}
+.sidebar-admin [data-flux-sidebar-group] > span:first-child {
+    color: oklch(0.627 0.265 303.9 / 0.8) !important;
+}
+
+/* Cashier - Amber/Orange theme */
+.sidebar-cashier::before {
+    background: linear-gradient(180deg, oklch(0.769 0.188 70.08 / 0.08) 0%, transparent 100%) !important;
+}
+.dark .sidebar-cashier::before {
+    background: linear-gradient(180deg, oklch(0.769 0.188 70.08 / 0.12) 0%, transparent 100%) !important;
+}
+.sidebar-cashier [data-flux-sidebar-item]:hover {
+    background: linear-gradient(90deg, oklch(0.769 0.188 70.08 / 0.1) 0%, oklch(0.769 0.188 70.08 / 0.03) 100%) !important;
+}
+.dark .sidebar-cashier [data-flux-sidebar-item]:hover {
+    background: linear-gradient(90deg, oklch(0.769 0.188 70.08 / 0.18) 0%, oklch(0.769 0.188 70.08 / 0.05) 100%) !important;
+}
+.sidebar-cashier [data-flux-sidebar-item][data-current="true"],
+.sidebar-cashier [data-flux-sidebar-item][aria-current="page"] {
+    background: linear-gradient(90deg, oklch(0.769 0.188 70.08 / 0.15) 0%, oklch(0.769 0.188 70.08 / 0.05) 100%) !important;
+    border-left: 3px solid oklch(0.769 0.188 70.08) !important;
+    color: oklch(0.65 0.18 70.08) !important;
+}
+.dark .sidebar-cashier [data-flux-sidebar-item][data-current="true"],
+.dark .sidebar-cashier [data-flux-sidebar-item][aria-current="page"] {
+    background: linear-gradient(90deg, oklch(0.769 0.188 70.08 / 0.22) 0%, oklch(0.769 0.188 70.08 / 0.08) 100%) !important;
+    color: oklch(0.82 0.17 70.08) !important;
+}
+.sidebar-cashier [data-flux-sidebar-item][data-current="true"] svg,
+.sidebar-cashier [data-flux-sidebar-item][aria-current="page"] svg {
+    color: oklch(0.65 0.18 70.08) !important;
+}
+.dark .sidebar-cashier [data-flux-sidebar-item][data-current="true"] svg,
+.dark .sidebar-cashier [data-flux-sidebar-item][aria-current="page"] svg {
+    color: oklch(0.82 0.17 70.08) !important;
+}
+.sidebar-cashier [data-flux-sidebar-group] > span:first-child {
+    color: oklch(0.769 0.188 70.08 / 0.8) !important;
+}

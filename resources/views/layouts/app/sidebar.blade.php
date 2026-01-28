@@ -8,23 +8,28 @@
             $user = auth()->user();
             $isPatient = $user?->isPatient() ?? false;
             $portalLabel = $isPatient ? __('Patient Portal') : __('Platform');
+            $sidebarTheme = 'sidebar-primary'; // default
 
             if (! $isPatient && $user) {
                 if ($user->isDoctor()) {
                     $portalLabel = __('Doctor Station');
+                    $sidebarTheme = 'sidebar-doctor';
                 } elseif ($user->isNurse()) {
                     $portalLabel = __('Nurse Station');
+                    $sidebarTheme = 'sidebar-nurse';
                 } elseif ($user->isAdmin()) {
                     $portalLabel = __('Admin Console');
+                    $sidebarTheme = 'sidebar-admin';
                 } elseif ($user->isCashier()) {
                     $portalLabel = __('Cashier Desk');
+                    $sidebarTheme = 'sidebar-cashier';
                 } else {
                     $portalLabel = __('Staff Portal');
                 }
             }
         @endphp
 
-        <flux:sidebar sticky collapsible="mobile" class="sidebar-enhanced border-e border-zinc-200/80 bg-gradient-to-b from-white via-zinc-50/80 to-zinc-100/50 dark:border-zinc-700 dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/50">
+        <flux:sidebar sticky collapsible="mobile" class="sidebar-enhanced {{ $sidebarTheme }} border-e border-zinc-200/80 bg-gradient-to-b from-white via-zinc-50/80 to-zinc-100/50 dark:border-zinc-700 dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/50">
             <flux:sidebar.header>
                 <div class="grid gap-1">
                     <x-app-logo :sidebar="true" href="{{ $isPatient ? route('patient.dashboard') : route('dashboard') }}" wire:navigate />

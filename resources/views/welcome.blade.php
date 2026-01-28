@@ -62,7 +62,7 @@
         </div>
 
         {{-- Navigation --}}
-        <nav id="navbar" class="relative z-10 flex items-center justify-between px-6 py-4 lg:px-12">
+        <nav id="navbar" class="relative z-20 flex items-center justify-between px-6 py-4 lg:px-12 bg-black/20 backdrop-blur-sm">
             <a href="{{ url('/') }}" class="logo-link flex items-center gap-3 group">
                 <x-app-logo class="h-10 w-10 transition-transform group-hover:scale-110 group-hover:rotate-6" />
                 <span class="text-xl font-bold tracking-tight text-white drop-shadow-lg">{{ config('app.name') }}</span>
@@ -74,12 +74,12 @@
                         {{ __('Dashboard') }}
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="nav-link magnetic-btn px-5 py-2.5 text-sm font-medium text-white drop-shadow-md transition hover:text-white/80">
+                    <a href="{{ route('login') }}" class="nav-link magnetic-btn rounded-lg bg-white/10 px-5 py-2.5 text-sm font-medium text-white shadow-lg backdrop-blur-sm transition hover:bg-white/20">
                         {{ __('Log in') }}
                     </a>
                     @if (Route::has('register'))
                         <a href="{{ route('register') }}" class="nav-link magnetic-btn glow-hover rounded-lg bg-white px-5 py-2.5 text-sm font-medium text-primary shadow-lg transition hover:bg-zinc-100 hover:shadow-xl">
-                            {{ __('Register') }}
+                            {{ __('Sign up') }}
                         </a>
                     @endif
                 @endauth
@@ -369,8 +369,8 @@
             // Hero Section Animations
             // ============================================
 
-            // Initial states
-            gsap.set(['#navbar', '#hero-badge', '#hero-title', '#hero-description', '#hero-buttons', '.stat-card'], {
+            // Initial states (navbar stays visible for UX)
+            gsap.set(['#hero-badge', '#hero-title', '#hero-description', '#hero-buttons', '.stat-card'], {
                 opacity: 0
             });
 
@@ -392,19 +392,13 @@
                 { scale: 1, duration: 2, ease: 'power2.out' }
             );
 
-            // Navbar animation
-            gsap.to('#navbar', {
-                opacity: 1,
-                y: 0,
-                duration: 1,
-                ease: 'power3.out',
-                delay: 0.3
-            });
+            // Navbar animation (subtle slide down)
             gsap.from('#navbar', {
-                y: -80,
-                duration: 1,
+                y: -30,
+                opacity: 0.5,
+                duration: 0.8,
                 ease: 'power3.out',
-                delay: 0.3
+                delay: 0.2
             });
 
             // Hero content timeline
