@@ -47,41 +47,68 @@
             </div>
         @endif
 
-        {{-- Quick Actions --}}
-        <div class="mb-6 grid grid-cols-2 gap-3">
-            <a href="{{ route('patient.appointments.book') }}"
-               class="flex flex-col items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-primary/30 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-primary/50"
-               wire:navigate>
-                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <flux:icon name="calendar-days" class="h-6 w-6" />
+        {{-- Primary CTA --}}
+        <a href="{{ route('patient.appointments.book') }}"
+           class="mb-4 flex items-center justify-between rounded-2xl bg-gradient-to-r from-primary to-primary/80 p-4 text-white shadow-lg transition hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+           wire:navigate>
+            <div class="flex items-center gap-4">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
+                    <flux:icon name="plus" class="h-6 w-6" />
                 </div>
-                <span class="text-sm font-medium text-zinc-700 dark:text-zinc-200">{{ __('Book Visit') }}</span>
-            </a>
+                <div>
+                    <p class="font-semibold">{{ __('Book a Visit') }}</p>
+                    <p class="text-sm text-white/80">{{ __('Schedule your appointment') }}</p>
+                </div>
+            </div>
+            <flux:icon name="chevron-right" class="h-5 w-5 text-white/60" />
+        </a>
+
+        {{-- Quick Links Row --}}
+        <div class="mb-6 flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
             <a href="{{ route('patient.appointments') }}"
-               class="flex flex-col items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-success/30 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-success/50"
+               class="flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 shadow-sm transition hover:border-zinc-300 hover:shadow dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:border-zinc-600 whitespace-nowrap"
                wire:navigate>
-                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-success/10 text-success">
-                    <flux:icon name="clipboard-document-list" class="h-6 w-6" />
-                </div>
-                <span class="text-sm font-medium text-zinc-700 dark:text-zinc-200">{{ __('My Bookings') }}</span>
+                <flux:icon name="calendar-days" class="h-4 w-4 text-success" />
+                {{ __('My Bookings') }}
+                @if($this->stats['upcoming_appointments'] > 0)
+                    <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-success/10 px-1.5 text-xs font-semibold text-success">
+                        {{ $this->stats['upcoming_appointments'] }}
+                    </span>
+                @endif
+            </a>
+            <a href="{{ route('patient.queue') }}"
+               class="flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 shadow-sm transition hover:border-zinc-300 hover:shadow dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:border-zinc-600 whitespace-nowrap"
+               wire:navigate>
+                <flux:icon name="ticket" class="h-4 w-4 text-warning" />
+                {{ __('Queue') }}
+            </a>
+            <a href="{{ route('patient.records') }}"
+               class="flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 shadow-sm transition hover:border-zinc-300 hover:shadow dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:border-zinc-600 whitespace-nowrap"
+               wire:navigate>
+                <flux:icon name="document-text" class="h-4 w-4 text-zinc-500" />
+                {{ __('Records') }}
+                @if($this->stats['total_visits'] > 0)
+                    <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-zinc-100 px-1.5 text-xs font-semibold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                        {{ $this->stats['total_visits'] }}
+                    </span>
+                @endif
             </a>
         </div>
 
-        {{-- Stats Cards --}}
-        <div class="mb-6 grid grid-cols-3 gap-3">
-            <div class="rounded-xl border border-zinc-200 bg-white p-4 text-center dark:border-zinc-700 dark:bg-zinc-800">
-                <p class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $this->stats['total_visits'] }}</p>
-                <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Total Visits') }}</p>
+        {{-- Stats Summary --}}
+        @if($this->stats['pending_appointments'] > 0)
+            <div class="mb-6 flex items-center gap-3 rounded-xl border border-warning/30 bg-warning/5 p-3 dark:border-warning/20 dark:bg-warning/10">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-warning/20">
+                    <flux:icon name="clock" class="h-5 w-5 text-warning" />
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-zinc-900 dark:text-white">
+                        {{ trans_choice(':count appointment pending approval|:count appointments pending approval', $this->stats['pending_appointments'], ['count' => $this->stats['pending_appointments']]) }}
+                    </p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('We\'ll notify you once confirmed') }}</p>
+                </div>
             </div>
-            <div class="rounded-xl border border-zinc-200 bg-white p-4 text-center dark:border-zinc-700 dark:bg-zinc-800">
-                <p class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $this->stats['upcoming_appointments'] }}</p>
-                <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Upcoming') }}</p>
-            </div>
-            <div class="rounded-xl border border-zinc-200 bg-white p-4 text-center dark:border-zinc-700 dark:bg-zinc-800">
-                <p class="text-2xl font-bold text-warning">{{ $this->stats['pending_appointments'] }}</p>
-                <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Pending') }}</p>
-            </div>
-        </div>
+        @endif
 
         {{-- Upcoming Appointments --}}
         <div class="mb-6">
@@ -156,10 +183,17 @@
         {{-- Recent Records --}}
         @if($this->recentRecords->count() > 0)
             <div>
-                <h2 class="mb-3 text-lg font-semibold text-zinc-900 dark:text-white">{{ __('Recent Visits') }}</h2>
+                <div class="mb-3 flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-zinc-900 dark:text-white">{{ __('Recent Visits') }}</h2>
+                    <a href="{{ route('patient.records') }}" class="text-sm font-medium text-primary hover:text-primary/80" wire:navigate>
+                        {{ __('See all') }}
+                    </a>
+                </div>
                 @foreach($this->recentRecords as $record)
-                    <div class="mb-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800"
-                         wire:key="record-{{ $record->id }}">
+                    <a href="{{ route('patient.records.show', $record) }}"
+                       class="mb-3 block rounded-xl border border-zinc-200 bg-white p-4 transition hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600"
+                       wire:navigate
+                       wire:key="record-{{ $record->id }}">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="font-medium text-zinc-900 dark:text-white">
@@ -179,7 +213,7 @@
                                 {{ $record->diagnosis }}
                             </p>
                         @endif
-                    </div>
+                    </a>
                 @endforeach
             </div>
         @endif

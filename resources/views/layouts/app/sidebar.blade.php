@@ -46,11 +46,17 @@
                         <flux:sidebar.item icon="home" :href="route('patient.dashboard')" :current="request()->routeIs('patient.dashboard')" wire:navigate>
                             {{ __('Dashboard') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="user" :href="route('patient.profile')" :current="request()->routeIs('patient.profile')" wire:navigate>
-                            {{ __('Profile') }}
-                        </flux:sidebar.item>
                         <flux:sidebar.item icon="calendar-days" :href="route('patient.appointments')" :current="request()->routeIs('patient.appointments*')" wire:navigate>
                             {{ __('Appointments') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="ticket" :href="route('patient.queue')" :current="request()->routeIs('patient.queue')" wire:navigate>
+                            {{ __('Queue Status') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="document-text" :href="route('patient.records')" :current="request()->routeIs('patient.records*')" wire:navigate>
+                            {{ __('Medical Records') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="user" :href="route('patient.profile')" :current="request()->routeIs('patient.profile')" wire:navigate>
+                            {{ __('Profile') }}
                         </flux:sidebar.item>
                         <flux:sidebar.item icon="cog" :href="route('profile.edit')" :current="request()->routeIs('profile.edit')" wire:navigate>
                             {{ __('Settings') }}
@@ -181,22 +187,12 @@
                         <flux:icon name="calendar-days" class="w-5 h-5" />
                         <span class="text-xs mt-1">{{ __('Bookings') }}</span>
                     </a>
-                    @php
-                        $patientUnreadCount = auth()->user()->unreadNotifications()->count();
-                    @endphp
-                    {{-- <a href="{{ route('patient.notifications') }}"
-                       class="relative flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.notifications') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
+                    <a href="{{ route('patient.records') }}"
+                       class="flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.records*') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
                        wire:navigate>
-                        <div class="relative">
-                            <flux:icon name="bell" class="w-5 h-5" />
-                            @if($patientUnreadCount > 0)
-                                <span class="absolute -top-1 -right-1 flex items-center justify-center min-w-[14px] h-[14px] px-0.5 text-[9px] font-bold text-white bg-red-500 rounded-full">
-                                    {{ $patientUnreadCount > 99 ? '99+' : $patientUnreadCount }}
-                                </span>
-                            @endif
-                        </div>
-                        <span class="text-xs mt-1">{{ __('Alerts') }}</span>
-                    </a> --}}
+                        <flux:icon name="document-text" class="w-5 h-5" />
+                        <span class="text-xs mt-1">{{ __('Records') }}</span>
+                    </a>
                     <a href="{{ route('patient.profile') }}"
                        class="flex flex-col items-center justify-center text-sm transition {{ request()->routeIs('patient.profile') ? 'text-zinc-900 dark:text-zinc-100 bg-zinc-100/70 dark:bg-zinc-800/60' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60' }}"
                        wire:navigate>

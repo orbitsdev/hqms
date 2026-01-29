@@ -78,6 +78,9 @@ Route::prefix('patient')->name('patient.')->middleware(['auth', 'role:patient'])
         Route::get('/appointments', Appointments::class)->name('appointments');
         Route::get('/appointments/book', BookAppointment::class)->name('appointments.book');
         Route::get('/appointments/{appointment}', AppointmentShow::class)->name('appointments.show');
+        Route::get('/records', \App\Livewire\Patient\MedicalRecords::class)->name('records');
+        Route::get('/records/{medicalRecord}', \App\Livewire\Patient\MedicalRecordShow::class)->name('records.show');
+        Route::get('/queue', \App\Livewire\Patient\ActiveQueue::class)->name('queue');
     });
 });
 // nurse portal routes
