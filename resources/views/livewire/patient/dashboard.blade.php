@@ -49,7 +49,7 @@
 
         {{-- Primary CTA --}}
         <a href="{{ route('patient.appointments.book') }}"
-           class="mb-4 flex items-center justify-between rounded-2xl bg-gradient-to-r from-primary to-primary/80 p-4 text-white shadow-lg transition hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+           class="mb-4 flex items-center justify-between rounded-2xl bg-gradient-to-r from-primary to-primary/80 p-4 text-white  transition hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
            wire:navigate>
             <div class="flex items-center gap-4">
                 <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
