@@ -272,39 +272,62 @@
         <div class="space-y-4">
             <flux:heading size="lg">{{ $editingPrescriptionId ? __('Edit Prescription') : __('Add Prescription') }}</flux:heading>
 
-            {{-- Hospital Drug Search --}}
-            <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800">
-                <flux:field>
-                    <flux:label>{{ __('Search Hospital Pharmacy') }}</flux:label>
-                    <flux:input wire:model.live.debounce.300ms="drugSearch" placeholder="{{ __('Type drug name...') }}" icon="magnifying-glass" />
-                </flux:field>
-
-                @if($drugs->isNotEmpty())
-                    <div class="mt-2 max-h-32 overflow-y-auto rounded border border-zinc-200 bg-white dark:border-zinc-600 dark:bg-zinc-900">
-                        @foreach($drugs as $drug)
-                            <button
-                                wire:click="selectHospitalDrug({{ $drug->id }})"
-                                type="button"
-                                class="w-full px-3 py-2 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                            >
-                                <span class="font-medium">{{ $drug->drug_name }}</span>
-                                @if($drug->generic_name)
-                                    <span class="text-zinc-500">({{ $drug->generic_name }})</span>
-                                @endif
-                            </button>
-                        @endforeach
-                    </div>
-                @endif
-
+            {{-- Hospital Drug Search (YouTube-style popup) --}}
+            <flux:field>
+                <flux:label>{{ __('Search Hospital Pharmacy') }}</flux:label>
                 @if($hospitalDrugId)
-                    <div class="mt-2 flex items-center justify-between rounded bg-primary/20 px-3 py-2">
-                        <span class="text-sm font-medium text-primary">{{ __('Hospital drug selected') }}</span>
-                        <button wire:click="clearHospitalDrug" type="button" class="text-primary hover:text-primary/80">
+                    {{-- Selected drug display --}}
+                    <div class="flex items-center justify-between rounded-lg border border-primary/30 bg-primary/10 px-3 py-2">
+                        <div class="flex items-center gap-2">
+                            <flux:icon name="check-circle" class="h-4 w-4 text-primary" />
+                            <span class="text-sm font-medium">{{ $medicationName }}</span>
+                            <flux:badge size="sm" color="blue">{{ __('Hospital Pharmacy') }}</flux:badge>
+                        </div>
+                        <button wire:click="clearHospitalDrug" type="button" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
                             <flux:icon name="x-mark" class="h-4 w-4" />
                         </button>
                     </div>
+                @else
+                    {{-- Search input with floating popup results --}}
+                    <div class="relative">
+                        <flux:input
+                            wire:model.live.debounce.300ms="drugSearch"
+                            placeholder="{{ __('Type to search (e.g., para, amox, ceti...)') }}"
+                            icon="magnifying-glass"
+                        />
+
+                        {{-- Floating popup results --}}
+                        @if(strlen($drugSearch) >= 1)
+                            <div class="absolute left-0 right-0 z-50 mt-1 rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+                                @if($drugs->isNotEmpty())
+                                    <div class="max-h-48 overflow-y-auto">
+                                        @foreach($drugs as $drug)
+                                            <button
+                                                wire:click="selectHospitalDrug({{ $drug->id }})"
+                                                type="button"
+                                                class="flex w-full items-center justify-between px-3 py-2.5 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                            >
+                                                <div>
+                                                    <span class="font-medium text-zinc-900 dark:text-white">{{ $drug->drug_name }}</span>
+                                                    @if($drug->generic_name)
+                                                        <span class="text-zinc-500 dark:text-zinc-400">({{ $drug->generic_name }})</span>
+                                                    @endif
+                                                </div>
+                                                <span class="text-xs font-medium text-primary">₱{{ number_format($drug->unit_price, 2) }}</span>
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div class="px-3 py-3 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                                        {{ __('No hospital drugs found for') }} "{{ $drugSearch }}"
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                    <flux:description>{{ __('Search hospital drugs or leave empty for external prescription') }}</flux:description>
                 @endif
-            </div>
+            </flux:field>
 
             <flux:field>
                 <flux:label>{{ __('Medication Name') }} *</flux:label>

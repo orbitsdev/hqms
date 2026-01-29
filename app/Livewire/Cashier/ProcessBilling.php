@@ -369,9 +369,25 @@ class ProcessBilling extends Component
 
     public function processPayment(): void
     {
-        $this->validate([
+        $rules = [
             'paymentMethod' => 'required|in:cash,gcash,card,bank_transfer,philhealth',
             'amountTendered' => 'required|numeric|min:'.$this->totalAmount,
+        ];
+
+        // Require reason for discounts (audit trail)
+        if ($this->discountType !== 'none') {
+            $rules['discountReason'] = 'required|string|min:3';
+        }
+
+        // Require valid percentage for "other" discount
+        if ($this->discountType === 'other') {
+            $rules['discountPercent'] = 'required|numeric|min:0|max:100';
+        }
+
+        $this->validate($rules, [
+            'discountReason.required' => __('Please provide a reason for the discount (e.g., ID number or approval details).'),
+            'discountPercent.required' => __('Please enter a discount percentage.'),
+            'discountPercent.max' => __('Discount cannot exceed 100%.'),
         ]);
 
         DB::transaction(function (): void {

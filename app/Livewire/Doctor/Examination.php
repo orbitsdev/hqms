@@ -157,7 +157,8 @@ class Examination extends Component
     #[Computed]
     public function hospitalDrugs(): \Illuminate\Support\Collection
     {
-        if (strlen($this->drugSearch) < 2) {
+        // Only show results when typing (like YouTube search)
+        if (strlen($this->drugSearch) < 1) {
             return collect();
         }
 

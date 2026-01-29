@@ -150,10 +150,18 @@
                 </flux:select>
 
                 @if($discountType === 'other')
-                    <flux:input wire:model="discountPercent" type="number" min="0" max="100" placeholder="{{ __('Discount %') }}" class="mb-2" />
+                    <div class="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950">
+                        <p class="mb-2 text-xs text-amber-700 dark:text-amber-400">
+                            {{ __('Enter custom discount percentage below. This is for special cases not covered by standard discounts.') }}
+                        </p>
+                        <flux:input wire:model.live="discountPercent" type="number" min="0" max="100" placeholder="{{ __('Enter discount percentage (0-100)') }}" />
+                    </div>
                 @endif
 
-                <flux:input wire:model="discountReason" placeholder="{{ __('Reason (optional)') }}" />
+                <flux:field>
+                    <flux:input wire:model="discountReason" placeholder="{{ __('Reason (e.g., ID number, special approval)') }}" />
+                    <flux:description>{{ __('Required for Senior/PWD (ID number) or Other discounts (approval details)') }}</flux:description>
+                </flux:field>
             </div>
 
             {{-- Payment Summary --}}
