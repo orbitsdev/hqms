@@ -184,79 +184,6 @@
                     </flux:field>
                 </div>
             </div>
-
-            {{-- Fee Override & Discount Recommendation --}}
-            <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
-                <flux:heading size="sm" class="mb-3">{{ __('Billing Adjustments') }}</flux:heading>
-
-                {{-- Current Estimated Total --}}
-                @php $billing = $this->estimatedBilling; @endphp
-                <div class="mb-4 rounded-lg bg-zinc-100 p-3 dark:bg-zinc-800">
-                    <p class="mb-2 text-xs font-medium uppercase text-zinc-500 dark:text-zinc-400">{{ __('Current Estimated Total') }}</p>
-                    <div class="space-y-1 text-sm">
-                        @if($billing['professional_fee'] > 0)
-                            <div class="flex justify-between">
-                                <span class="text-zinc-600 dark:text-zinc-400">{{ __('Professional Fee') }}</span>
-                                <span class="text-zinc-900 dark:text-white">₱{{ number_format($billing['professional_fee'], 2) }}</span>
-                            </div>
-                        @endif
-                        @if($billing['drugs_total'] > 0)
-                            <div class="flex justify-between">
-                                <span class="text-zinc-600 dark:text-zinc-400">{{ __('Hospital Drugs') }}</span>
-                                <span class="text-zinc-900 dark:text-white">₱{{ number_format($billing['drugs_total'], 2) }}</span>
-                            </div>
-                        @endif
-                        <div class="flex justify-between border-t border-zinc-200 pt-1 dark:border-zinc-700">
-                            <span class="font-medium text-zinc-900 dark:text-white">{{ __('Total') }}</span>
-                            <span class="text-lg font-bold text-zinc-900 dark:text-white">₱{{ number_format($billing['total'], 2) }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Fee Override Section --}}
-                <div class="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950">
-                    <p class="mb-2 text-xs font-medium uppercase text-blue-700 dark:text-blue-400">{{ __('Fee Override (Optional)') }}</p>
-                    <p class="mb-3 text-xs text-blue-600 dark:text-blue-300">
-                        {{ __('You can set a lower total fee for empathy/charity cases. This will be the base amount used in billing.') }}
-                    </p>
-                    <div class="relative">
-                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">₱</span>
-                        <flux:input
-                            wire:model="doctorFeeOverride"
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            placeholder="500.00"
-                            class="pl-8"
-                        />
-                    </div>
-                    @if($doctorFeeOverride)
-                        <p class="mt-2 text-xs text-blue-600 dark:text-blue-300">
-                            {{ __('Override fee set:') }} <span class="font-bold">₱{{ number_format($doctorFeeOverride, 2) }}</span>
-                        </p>
-                    @else
-                        <p class="mt-2 text-xs text-blue-600/70 dark:text-blue-300/70">
-                            {{ __('Leave empty for standard pricing') }}
-                        </p>
-                    @endif
-                </div>
-
-                {{-- Discount Recommendation --}}
-                <p class="mb-2 text-xs font-medium uppercase text-zinc-500 dark:text-zinc-400">{{ __('Discount Recommendation') }}</p>
-                <div class="grid gap-3 sm:grid-cols-2">
-                    <flux:select wire:model="suggestedDiscountType" label="{{ __('Discount Type') }}">
-                        <flux:select.option value="none">{{ __('None') }}</flux:select.option>
-                        <flux:select.option value="senior">{{ __('Senior Citizen') }}</flux:select.option>
-                        <flux:select.option value="pwd">{{ __('PWD') }}</flux:select.option>
-                        <flux:select.option value="family">{{ __('Family/Relative') }}</flux:select.option>
-                        <flux:select.option value="employee">{{ __('Employee') }}</flux:select.option>
-                        <flux:select.option value="other">{{ __('Other') }}</flux:select.option>
-                    </flux:select>
-                    @if($suggestedDiscountType !== 'none')
-                        <flux:input wire:model="suggestedDiscountReason" label="{{ __('Reason/Notes') }}" placeholder="{{ __('Optional notes...') }}" />
-                    @endif
-                </div>
-            </div>
         </div>
 
         {{-- Right Panel: Prescriptions --}}
@@ -322,6 +249,77 @@
                         placeholder="{{ __('Additional instructions for patient...') }}"
                     />
                 </flux:field>
+            </div>
+
+            {{-- Billing Adjustments --}}
+            <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+                <flux:heading size="sm" class="mb-3">{{ __('Billing Adjustments') }}</flux:heading>
+
+                {{-- Current Estimated Total --}}
+                @php $billing = $this->estimatedBilling; @endphp
+                <div class="mb-4 rounded-lg bg-zinc-100 p-3 dark:bg-zinc-800">
+                    <p class="mb-2 text-xs font-medium uppercase text-zinc-500 dark:text-zinc-400">{{ __('Current Estimated Total') }}</p>
+                    <div class="space-y-1 text-sm">
+                        @if($billing['professional_fee'] > 0)
+                            <div class="flex justify-between">
+                                <span class="text-zinc-600 dark:text-zinc-400">{{ __('Professional Fee') }}</span>
+                                <span class="text-zinc-900 dark:text-white">₱{{ number_format($billing['professional_fee'], 2) }}</span>
+                            </div>
+                        @endif
+                        @if($billing['drugs_total'] > 0)
+                            <div class="flex justify-between">
+                                <span class="text-zinc-600 dark:text-zinc-400">{{ __('Hospital Drugs') }}</span>
+                                <span class="text-zinc-900 dark:text-white">₱{{ number_format($billing['drugs_total'], 2) }}</span>
+                            </div>
+                        @endif
+                        <div class="flex justify-between border-t border-zinc-200 pt-1 dark:border-zinc-700">
+                            <span class="font-medium text-zinc-900 dark:text-white">{{ __('Total') }}</span>
+                            <span class="text-lg font-bold text-zinc-900 dark:text-white">₱{{ number_format($billing['total'], 2) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Fee Override Section --}}
+                <div class="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950">
+                    <p class="mb-2 text-xs font-medium uppercase text-blue-700 dark:text-blue-400">{{ __('Fee Override (Optional)') }}</p>
+                    <p class="mb-3 text-xs text-blue-600 dark:text-blue-300">
+                        {{ __('This will override the standard fee and be used as the base amount in the cashier billing.') }}
+                    </p>
+                    <div class="relative">
+                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">₱</span>
+                        <flux:input
+                            wire:model="doctorFeeOverride"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            placeholder="500.00"
+                            class="pl-8"
+                        />
+                    </div>
+                    @if($doctorFeeOverride)
+                        <p class="mt-2 text-xs text-blue-600 dark:text-blue-300">
+                            {{ __('Override:') }} <span class="font-bold">₱{{ number_format($doctorFeeOverride, 2) }}</span>
+                        </p>
+                    @else
+                        <p class="mt-2 text-xs text-blue-600/70 dark:text-blue-300/70">
+                            {{ __('Leave empty for standard pricing') }}
+                        </p>
+                    @endif
+                </div>
+
+                {{-- Discount Recommendation --}}
+                <p class="mb-2 text-xs font-medium uppercase text-zinc-500 dark:text-zinc-400">{{ __('Discount Recommendation') }}</p>
+                <flux:select wire:model="suggestedDiscountType" size="sm">
+                    <flux:select.option value="none">{{ __('None') }}</flux:select.option>
+                    <flux:select.option value="senior">{{ __('Senior Citizen') }}</flux:select.option>
+                    <flux:select.option value="pwd">{{ __('PWD') }}</flux:select.option>
+                    <flux:select.option value="family">{{ __('Family/Relative') }}</flux:select.option>
+                    <flux:select.option value="employee">{{ __('Employee') }}</flux:select.option>
+                    <flux:select.option value="other">{{ __('Other') }}</flux:select.option>
+                </flux:select>
+                @if($suggestedDiscountType !== 'none')
+                    <flux:input wire:model="suggestedDiscountReason" class="mt-2" placeholder="{{ __('Reason/Notes...') }}" size="sm" />
+                @endif
             </div>
         </div>
     </div>
