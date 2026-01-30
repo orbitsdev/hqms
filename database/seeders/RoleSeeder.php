@@ -14,12 +14,12 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create roles
-       Role::create(['name' => 'patient']);
-        Role::create(['name' => 'nurse']);
-        Role::create(['name' => 'doctor']);
-        Role::create(['name' => 'cashier']);
-        Role::create(['name' => 'admin']);
+        // Create roles (findOrCreate prevents duplicate errors)
+        Role::findOrCreate('patient', 'web');
+        Role::findOrCreate('nurse', 'web');
+        Role::findOrCreate('doctor', 'web');
+        Role::findOrCreate('cashier', 'web');
+        Role::findOrCreate('admin', 'web');
 
         // TODO: Permissions will be added later
         // $permissions = [
