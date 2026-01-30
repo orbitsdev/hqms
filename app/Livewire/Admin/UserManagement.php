@@ -298,7 +298,7 @@ class UserManagement extends Component
     public function render(): View
     {
         $users = User::query()
-            ->with(['roles', 'personalInformation'])
+            ->with(['roles', 'personalInformation', 'consultationTypes'])
             ->when($this->statusFilter === 'inactive', fn ($q) => $q->onlyTrashed())
             ->when($this->roleFilter, fn ($q) => $q->role($this->roleFilter))
             ->when($this->search, fn ($q) => $q

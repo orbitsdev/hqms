@@ -102,9 +102,25 @@
                             </div>
                         </td>
                         <td class="px-4 py-3">
-                            <flux:badge size="sm" color="zinc">
-                                {{ ucfirst($user->roles->first()?->name ?? 'No role') }}
+                            @php $roleName = $user->roles->first()?->name; @endphp
+                            <flux:badge size="sm" :color="match($roleName) {
+                                'admin' => 'purple',
+                                'doctor' => 'blue',
+                                'nurse' => 'green',
+                                'cashier' => 'amber',
+                                default => 'zinc'
+                            }">
+                                {{ ucfirst($roleName ?? 'No role') }}
                             </flux:badge>
+                            @if($roleName === 'doctor' && $user->consultationTypes->isNotEmpty())
+                                <div class="mt-1 flex flex-wrap gap-1">
+                                    @foreach($user->consultationTypes as $ct)
+                                        <span class="inline-flex items-center rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                                            {{ $ct->code ?? $ct->name }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @endif
                         </td>
                         <td class="px-4 py-3">
                             <p class="text-sm text-zinc-600 dark:text-zinc-400">

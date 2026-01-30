@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use Illuminate\Database\Seeder;
 
 class ServiceSeeder extends Seeder
@@ -12,6 +13,9 @@ class ServiceSeeder extends Seeder
      */
     public function run(): void
     {
+        // Get category IDs
+        $categories = ServiceCategory::pluck('id', 'code')->toArray();
+
         $order = 0;
 
         // Professional/Consultation Fees (must be first in display order)
@@ -25,6 +29,7 @@ class ServiceSeeder extends Seeder
             Service::create([
                 'service_name' => $name,
                 'category' => 'consultation',
+                'service_category_id' => $categories['consultation'] ?? null,
                 'description' => 'Doctor consultation fee',
                 'base_price' => $price,
                 'is_active' => true,
@@ -62,6 +67,7 @@ class ServiceSeeder extends Seeder
             Service::create([
                 'service_name' => $name,
                 'category' => 'ultrasound',
+                'service_category_id' => $categories['ultrasound'] ?? null,
                 'description' => $name.' ultrasound examination',
                 'base_price' => $price,
                 'is_active' => true,
@@ -88,6 +94,7 @@ class ServiceSeeder extends Seeder
             Service::create([
                 'service_name' => $name,
                 'category' => 'consultation',
+                'service_category_id' => $categories['consultation'] ?? null,
                 'description' => 'OB-Gyne service: '.$name,
                 'base_price' => $price,
                 'is_active' => true,
@@ -108,6 +115,7 @@ class ServiceSeeder extends Seeder
             Service::create([
                 'service_name' => $name,
                 'category' => 'laboratory',
+                'service_category_id' => $categories['laboratory'] ?? null,
                 'description' => 'Laboratory test: '.$name,
                 'base_price' => $price,
                 'is_active' => true,
@@ -128,6 +136,7 @@ class ServiceSeeder extends Seeder
             Service::create([
                 'service_name' => $name,
                 'category' => 'procedure',
+                'service_category_id' => $categories['procedure'] ?? null,
                 'description' => 'Medical procedure: '.$name,
                 'base_price' => $price,
                 'is_active' => true,

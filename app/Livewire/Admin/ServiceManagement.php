@@ -3,6 +3,8 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Service;
+use App\Models\ServiceCategory;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
@@ -16,7 +18,7 @@ class ServiceManagement extends Component
 
     public string $search = '';
 
-    public string $categoryFilter = '';
+    public ?int $categoryFilter = null;
 
     public bool $showModal = false;
 
@@ -27,8 +29,8 @@ class ServiceManagement extends Component
     #[Validate('required|string|max:255')]
     public string $serviceName = '';
 
-    #[Validate('required|in:ultrasound,consultation,procedure,laboratory,other')]
-    public string $category = 'consultation';
+    #[Validate('required|exists:service_categories,id')]
+    public ?int $serviceCategoryId = null;
 
     public string $description = '';
 
@@ -38,6 +40,13 @@ class ServiceManagement extends Component
     public bool $isActive = true;
 
     public int $displayOrder = 0;
+
+    public function mount(): void
+    {
+        // Set default category to first active category
+        $defaultCategory = ServiceCategory::active()->ordered()->first();
+        $this->serviceCategoryId = $defaultCategory?->id;
+    }
 
     public function updatedSearch(): void
     {
@@ -50,15 +59,9 @@ class ServiceManagement extends Component
     }
 
     #[Computed]
-    public function categories(): array
+    public function categories(): Collection
     {
-        return [
-            'consultation' => 'Consultation / Professional Fee',
-            'ultrasound' => 'Ultrasound',
-            'procedure' => 'Procedure',
-            'laboratory' => 'Laboratory',
-            'other' => 'Other',
-        ];
+        return ServiceCategory::active()->ordered()->get();
     }
 
     public function openCreateModal(): void
@@ -74,7 +77,7 @@ class ServiceManagement extends Component
 
         $this->editingId = $service->id;
         $this->serviceName = $service->service_name;
-        $this->category = $service->category;
+        $this->serviceCategoryId = $service->service_category_id;
         $this->description = $service->description ?? '';
         $this->basePrice = (float) $service->base_price;
         $this->isActive = $service->is_active;
@@ -94,7 +97,8 @@ class ServiceManagement extends Component
     {
         $this->editingId = null;
         $this->serviceName = '';
-        $this->category = 'consultation';
+        $defaultCategory = ServiceCategory::active()->ordered()->first();
+        $this->serviceCategoryId = $defaultCategory?->id;
         $this->description = '';
         $this->basePrice = 0;
         $this->isActive = true;
@@ -106,9 +110,13 @@ class ServiceManagement extends Component
     {
         $this->validate();
 
+        // Get category code for backward compatibility
+        $category = ServiceCategory::find($this->serviceCategoryId);
+
         $data = [
             'service_name' => $this->serviceName,
-            'category' => $this->category,
+            'service_category_id' => $this->serviceCategoryId,
+            'category' => $category?->code ?? 'other',
             'description' => $this->description ?: null,
             'base_price' => $this->basePrice,
             'is_active' => $this->isActive,
@@ -147,11 +155,12 @@ class ServiceManagement extends Component
     public function render(): View
     {
         $services = Service::query()
+            ->with('serviceCategory')
             ->when($this->search, fn ($q) => $q
                 ->where('service_name', 'like', "%{$this->search}%"))
             ->when($this->categoryFilter, fn ($q) => $q
-                ->where('category', $this->categoryFilter))
-            ->orderBy('category')
+                ->where('service_category_id', $this->categoryFilter))
+            ->orderBy('service_category_id')
             ->orderBy('display_order')
             ->orderBy('service_name')
             ->paginate(15);

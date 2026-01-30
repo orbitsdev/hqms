@@ -1,4 +1,4 @@
-<div class="flex h-full w-full flex-1 flex-col gap-6 p-6 overflow-auto">
+<div class="flex h-full w-full flex-1 flex-col gap-6 overflow-auto p-6">
     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <flux:heading size="xl">{{ __('Service & Fee Management') }}</flux:heading>
@@ -20,14 +20,14 @@
         </div>
         <flux:select wire:model.live="categoryFilter" class="sm:w-64">
             <option value="">{{ __('All Categories') }}</option>
-            @foreach($this->categories as $value => $label)
-                <option value="{{ $value }}">{{ $label }}</option>
+            @foreach($this->categories as $category)
+                <option value="{{ $category->id }}">{{ $category->name }}</option>
             @endforeach
         </flux:select>
     </div>
 
     {{-- Services Table --}}
-    <div class="rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+    <div class="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-zinc-50 dark:bg-zinc-800">
@@ -45,27 +45,32 @@
                             <td class="px-4 py-3">
                                 <div class="font-medium text-zinc-900 dark:text-zinc-100">{{ $service->service_name }}</div>
                                 @if($service->description)
-                                    <div class="text-xs text-zinc-500 truncate max-w-xs">{{ $service->description }}</div>
+                                    <div class="max-w-xs truncate text-xs text-zinc-500">{{ $service->description }}</div>
                                 @endif
                             </td>
                             <td class="px-4 py-3">
-                                <flux:badge size="sm" :variant="match($service->category) {
-                                    'consultation' => 'primary',
-                                    'ultrasound' => 'info',
-                                    'procedure' => 'warning',
-                                    'laboratory' => 'success',
-                                    default => 'default'
+                                @php
+                                    $categoryCode = $service->serviceCategory?->code ?? $service->category;
+                                @endphp
+                                <flux:badge size="sm" :color="match($categoryCode) {
+                                    'consultation' => 'blue',
+                                    'ultrasound' => 'cyan',
+                                    'procedure' => 'amber',
+                                    'laboratory' => 'green',
+                                    default => 'zinc'
                                 }">
-                                    {{ $this->categories[$service->category] ?? ucfirst($service->category) }}
+                                    {{ $service->serviceCategory?->name ?? ucfirst($service->category) }}
                                 </flux:badge>
                             </td>
                             <td class="px-4 py-3 text-right font-mono">
-                                ₱{{ number_format($service->base_price, 2) }}
+                                P{{ number_format($service->base_price, 2) }}
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <flux:badge size="sm" :variant="$service->is_active ? 'success' : 'danger'">
-                                    {{ $service->is_active ? __('Active') : __('Inactive') }}
-                                </flux:badge>
+                                @if($service->is_active)
+                                    <flux:badge size="sm" color="green">{{ __('Active') }}</flux:badge>
+                                @else
+                                    <flux:badge size="sm" color="red">{{ __('Inactive') }}</flux:badge>
+                                @endif
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-center gap-1">
@@ -77,8 +82,12 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-8 text-center text-zinc-500">
-                                {{ __('No services found.') }}
+                            <td colspan="5" class="px-4 py-12 text-center">
+                                <flux:icon name="document-plus" class="mx-auto h-10 w-10 text-zinc-300 dark:text-zinc-600" />
+                                <p class="mt-2 text-zinc-500">{{ __('No services found.') }}</p>
+                                <flux:button wire:click="openCreateModal" variant="ghost" size="sm" class="mt-3">
+                                    {{ __('Add your first service') }}
+                                </flux:button>
                             </td>
                         </tr>
                     @endforelse
@@ -109,9 +118,9 @@
                     required
                 />
 
-                <flux:select wire:model="category" label="{{ __('Category') }}" required>
-                    @foreach($this->categories as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
+                <flux:select wire:model="serviceCategoryId" label="{{ __('Category') }}" required>
+                    @foreach($this->categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
                     @endforeach
                 </flux:select>
 
@@ -120,7 +129,7 @@
                     type="number"
                     step="0.01"
                     min="0"
-                    label="{{ __('Base Price (₱)') }}"
+                    label="{{ __('Base Price (P)') }}"
                     placeholder="0.00"
                     required
                 />
@@ -142,7 +151,7 @@
 
                 <flux:switch wire:model="isActive" label="{{ __('Active') }}" />
 
-                <div class="flex justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                <div class="flex justify-end gap-3 border-t border-zinc-200 pt-4 dark:border-zinc-700">
                     <flux:button variant="ghost" wire:click="closeModal">
                         {{ __('Cancel') }}
                     </flux:button>

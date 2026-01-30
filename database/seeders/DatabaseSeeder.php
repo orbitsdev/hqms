@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
-
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -25,7 +24,8 @@ class DatabaseSeeder extends Seeder
             // 4. Doctor Schedules (depends on users and consultation types)
             DoctorScheduleSeeder::class,
 
-            // 5. Services & Drugs (independent)
+            // 5. Service Categories, Services & Drugs
+            ServiceCategorySeeder::class,
             ServiceSeeder::class,
             HospitalDrugSeeder::class,
 

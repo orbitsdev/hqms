@@ -139,6 +139,9 @@
                         <flux:sidebar.item icon="beaker" :href="route('admin.drugs')" :current="request()->routeIs('admin.drugs')" wire:navigate>
                             {{ __('Hospital Drugs') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="receipt-percent" :href="route('admin.discounts')" :current="request()->routeIs('admin.discounts')" wire:navigate>
+                            {{ __('Discounts') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="cog" :href="route('profile.edit')" :current="request()->routeIs('profile.edit')" wire:navigate>
                             {{ __('Settings') }}
                         </flux:sidebar.item>

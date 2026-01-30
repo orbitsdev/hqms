@@ -3,6 +3,7 @@
 namespace App\Livewire\Doctor;
 
 use App\Models\Admission;
+use App\Models\Discount;
 use App\Models\HospitalDrug;
 use App\Models\MedicalRecord;
 use App\Models\Prescription;
@@ -177,10 +178,26 @@ class Examination extends Component
             ->get();
     }
 
+    #[Computed]
+    public function discounts(): \Illuminate\Support\Collection
+    {
+        return Discount::active()->ordered()->get();
+    }
+
+    #[Computed]
+    public function selectedDiscount(): ?Discount
+    {
+        if ($this->suggestedDiscountType === 'none') {
+            return null;
+        }
+
+        return Discount::where('code', $this->suggestedDiscountType)->first();
+    }
+
     /**
-     * Calculate estimated total (Professional Fee + Hospital Drugs).
+     * Calculate estimated total (Professional Fee + Hospital Drugs) with discount.
      *
-     * @return array{professional_fee: float, drugs_total: float, total: float}
+     * @return array{professional_fee: float, drugs_total: float, subtotal: float, discount_amount: float, discount_percentage: float, total: float}
      */
     #[Computed]
     public function estimatedBilling(): array
@@ -213,10 +230,23 @@ class Examination extends Component
             ->filter(fn ($p) => $p->is_hospital_drug && $p->hospitalDrug)
             ->sum(fn ($p) => ($p->hospitalDrug->unit_price ?? 0) * ($p->quantity ?? 1));
 
+        // Use override if set, otherwise use calculated total
+        $subtotal = $this->doctorFeeOverride ?? ($professionalFee + $drugsTotal);
+
+        // Calculate discount if selected
+        $discount = $this->selectedDiscount;
+        $discountPercentage = $discount?->percentage ?? 0;
+        $discountAmount = $subtotal * ($discountPercentage / 100);
+        $total = $subtotal - $discountAmount;
+
         return [
             'professional_fee' => $professionalFee,
             'drugs_total' => $drugsTotal,
-            'total' => $professionalFee + $drugsTotal,
+            'subtotal' => $professionalFee + $drugsTotal,
+            'override' => $this->doctorFeeOverride,
+            'discount_percentage' => $discountPercentage,
+            'discount_amount' => $discountAmount,
+            'total' => $total,
         ];
     }
 
@@ -506,6 +536,7 @@ class Examination extends Component
             'prescriptions' => $this->medicalRecord->prescriptions,
             'history' => $this->patientHistory,
             'drugs' => $this->hospitalDrugs,
+            'discountOptions' => $this->discounts,
         ])->layout('layouts.app');
     }
 }
