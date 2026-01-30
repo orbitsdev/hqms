@@ -443,43 +443,23 @@
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('First Name') }} *</flux:label>
-                            <flux:input wire:model="patientFirstName" />
+                            <flux:input wire:model="patientFirstName" placeholder="{{ __('Juan') }}" />
                             <flux:error name="patientFirstName" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('Middle Name') }}</flux:label>
-                            <flux:input wire:model="patientMiddleName" />
+                            <flux:input wire:model="patientMiddleName" placeholder="{{ __('Santos') }}" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('Last Name') }} *</flux:label>
-                            <flux:input wire:model="patientLastName" />
+                            <flux:input wire:model="patientLastName" placeholder="{{ __('Dela Cruz') }}" />
                             <flux:error name="patientLastName" />
                         </flux:field>
                         <flux:field>
-                            <flux:label>{{ __('Date of Birth') }}</flux:label>
-                            <flux:input type="date" wire:model.live="patientDateOfBirth" max="{{ now()->format('Y-m-d') }}" />
-                            <flux:description>{{ __('Age will auto-calculate') }}</flux:description>
+                            <flux:label>{{ __('Date of Birth') }} *</flux:label>
+                            <flux:input type="date" wire:model="patientDateOfBirth" max="{{ now()->format('Y-m-d') }}" />
+                            <flux:error name="patientDateOfBirth" />
                         </flux:field>
-                        <div class="sm:col-span-2">
-                            <flux:label class="mb-2">{{ __('Age at Visit') }} *</flux:label>
-                            <div class="flex items-center gap-3">
-                                <flux:field class="flex-1">
-                                    <div class="flex items-center gap-2">
-                                        <flux:input type="number" wire:model="patientAgeYears" min="0" max="150" placeholder="0" class="w-20" />
-                                        <span class="text-sm text-zinc-500">{{ __('years') }}</span>
-                                    </div>
-                                    <flux:error name="patientAgeYears" />
-                                </flux:field>
-                                <flux:field class="flex-1">
-                                    <div class="flex items-center gap-2">
-                                        <flux:input type="number" wire:model="patientAgeMonths" min="0" max="11" placeholder="0" class="w-20" />
-                                        <span class="text-sm text-zinc-500">{{ __('months') }}</span>
-                                    </div>
-                                    <flux:error name="patientAgeMonths" />
-                                </flux:field>
-                            </div>
-                            <p class="mt-1 text-xs text-zinc-500">{{ __('Important for pediatric patients. Auto-fills from DOB.') }}</p>
-                        </div>
                         <flux:field>
                             <flux:label>{{ __('Gender') }}</flux:label>
                             <flux:select wire:model="patientGender">
@@ -580,19 +560,19 @@
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('Allergies') }}</flux:label>
-                            <flux:input wire:model="patientAllergies" placeholder="{{ __('e.g., Penicillin') }}" />
+                            <flux:input wire:model="patientAllergies" placeholder="{{ __('e.g., Penicillin, Seafood') }}" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('Chronic Conditions') }}</flux:label>
-                            <flux:input wire:model="patientChronicConditions" />
+                            <flux:input wire:model="patientChronicConditions" placeholder="{{ __('e.g., Diabetes, Hypertension') }}" />
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('Current Medications') }}</flux:label>
-                            <flux:input wire:model="patientCurrentMedications" />
+                            <flux:input wire:model="patientCurrentMedications" placeholder="{{ __('e.g., Metformin 500mg') }}" />
                         </flux:field>
                         <flux:field class="sm:col-span-2">
                             <flux:label>{{ __('Past Medical History') }}</flux:label>
-                            <flux:textarea wire:model="patientPastMedicalHistory" rows="2" />
+                            <flux:textarea wire:model="patientPastMedicalHistory" rows="2" placeholder="{{ __('e.g., Previous surgeries, hospitalizations') }}" />
                         </flux:field>
                     </div>
 
@@ -671,16 +651,16 @@
                             </flux:field>
                             <flux:field>
                                 <flux:label>{{ __('Weight') }} (kg)</flux:label>
-                                <flux:input type="number" wire:model="weight" step="0.1" />
+                                <flux:input type="number" wire:model="weight" step="0.1" placeholder="65.5" />
                             </flux:field>
                             <flux:field>
                                 <flux:label>{{ __('Height') }} (cm)</flux:label>
-                                <flux:input type="number" wire:model="height" step="0.1" />
+                                <flux:input type="number" wire:model="height" step="0.1" placeholder="165" />
                             </flux:field>
                             @if($isPedia)
                                 <flux:field>
                                     <flux:label>{{ __('Head Circ.') }} (cm)</flux:label>
-                                    <flux:input type="number" wire:model="headCircumference" step="0.1" />
+                                    <flux:input type="number" wire:model="headCircumference" step="0.1" placeholder="35" />
                                 </flux:field>
                             @endif
                             @if($isOb)
@@ -693,11 +673,11 @@
                                             </span>
                                         @endif
                                     </flux:label>
-                                    <flux:input type="number" wire:model.live.debounce.500ms="fetalHeartTone" class="{{ isset($vitalAlerts['fetalHeartTone']) ? ($vitalAlerts['fetalHeartTone']['level'] === 'danger' ? 'border-destructive! ring-destructive!' : 'border-warning! ring-warning!') : '' }}" />
+                                    <flux:input type="number" wire:model.live.debounce.500ms="fetalHeartTone" placeholder="140" class="{{ isset($vitalAlerts['fetalHeartTone']) ? ($vitalAlerts['fetalHeartTone']['level'] === 'danger' ? 'border-destructive! ring-destructive!' : 'border-warning! ring-warning!') : '' }}" />
                                 </flux:field>
                                 <flux:field>
                                     <flux:label>{{ __('Fundal Height') }} (cm)</flux:label>
-                                    <flux:input type="number" wire:model="fundalHeight" step="0.1" />
+                                    <flux:input type="number" wire:model="fundalHeight" step="0.1" placeholder="28" />
                                 </flux:field>
                                 <flux:field>
                                     <flux:label>{{ __('LMP') }}</flux:label>
@@ -707,7 +687,7 @@
                         </div>
                         <flux:field>
                             <flux:label>{{ __('Updated Chief Complaints') }}</flux:label>
-                            <flux:textarea wire:model="chiefComplaintsUpdated" rows="2" />
+                            <flux:textarea wire:model="chiefComplaintsUpdated" rows="2" placeholder="{{ __('Additional symptoms or updates to initial complaint...') }}" />
                         </flux:field>
                     </div>
                 @endif

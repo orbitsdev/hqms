@@ -74,17 +74,18 @@ class MedicalRecord extends Model
     }
 
     /**
-     * Get patient's age at time of visit (recorded/frozen).
+     * Get patient's age at time of visit (calculated from DOB + visit_date).
      * Returns formatted string like "2 years 6 months" or "3 months".
      */
     public function getPatientAgeAtVisitAttribute(): ?string
     {
-        if ($this->patient_age_years === null && $this->patient_age_months === null) {
+        $calculated = $this->calculateAgeFromDob();
+        if ($calculated === null) {
             return null;
         }
 
-        $years = $this->patient_age_years ?? 0;
-        $months = $this->patient_age_months ?? 0;
+        $years = $calculated['years'];
+        $months = $calculated['months'];
 
         if ($years === 0 && $months === 0) {
             return __('Newborn');
@@ -113,12 +114,13 @@ class MedicalRecord extends Model
      */
     public function getPatientAgeAtVisitShortAttribute(): ?string
     {
-        if ($this->patient_age_years === null && $this->patient_age_months === null) {
+        $calculated = $this->calculateAgeFromDob();
+        if ($calculated === null) {
             return null;
         }
 
-        $years = $this->patient_age_years ?? 0;
-        $months = $this->patient_age_months ?? 0;
+        $years = $calculated['years'];
+        $months = $calculated['months'];
 
         if ($years === 0 && $months === 0) {
             return __('NB'); // Newborn

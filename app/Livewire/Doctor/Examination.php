@@ -6,6 +6,7 @@ use App\Models\Admission;
 use App\Models\HospitalDrug;
 use App\Models\MedicalRecord;
 use App\Models\Prescription;
+use App\Models\Service;
 use App\Notifications\GenericNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -174,6 +175,49 @@ class Examination extends Component
             })
             ->limit(10)
             ->get();
+    }
+
+    /**
+     * Calculate estimated total (Professional Fee + Hospital Drugs).
+     *
+     * @return array{professional_fee: float, drugs_total: float, total: float}
+     */
+    #[Computed]
+    public function estimatedBilling(): array
+    {
+        $record = $this->medicalRecord;
+
+        // Get professional fee based on consultation type
+        $consultationType = $record->consultationType;
+        $feeServiceName = match ($consultationType->code ?? '') {
+            'ob' => 'Professional Fee - OB',
+            'pedia' => 'Professional Fee - Pediatrics',
+            default => 'Professional Fee - General',
+        };
+
+        $consultationService = Service::where('service_name', $feeServiceName)
+            ->where('is_active', true)
+            ->first();
+
+        if (! $consultationService) {
+            $consultationService = Service::where('category', 'consultation')
+                ->where('service_name', 'like', 'Professional Fee%')
+                ->where('is_active', true)
+                ->first();
+        }
+
+        $professionalFee = (float) ($consultationService?->base_price ?? 0);
+
+        // Calculate drugs total
+        $drugsTotal = $record->prescriptions
+            ->filter(fn ($p) => $p->is_hospital_drug && $p->hospitalDrug)
+            ->sum(fn ($p) => ($p->hospitalDrug->unit_price ?? 0) * ($p->quantity ?? 1));
+
+        return [
+            'professional_fee' => $professionalFee,
+            'drugs_total' => $drugsTotal,
+            'total' => $professionalFee + $drugsTotal,
+        ];
     }
 
     public function saveDraft(): void

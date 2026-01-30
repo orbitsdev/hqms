@@ -98,11 +98,6 @@ class TodayQueue extends Component
 
     public ?string $patientDateOfBirth = null;
 
-    // Patient Age at Visit (recorded)
-    public ?int $patientAgeYears = null;
-
-    public ?int $patientAgeMonths = null;
-
     public ?string $patientGender = null;
 
     public ?string $patientContactNumber = null;
@@ -175,27 +170,6 @@ class TodayQueue extends Component
     public function setStatus(string $status): void
     {
         $this->status = $status;
-    }
-
-    /**
-     * Auto-calculate age when DOB is changed.
-     */
-    public function updatedPatientDateOfBirth(?string $value): void
-    {
-        if (! $value) {
-            return;
-        }
-
-        try {
-            $dob = \Carbon\Carbon::parse($value);
-            $now = now();
-            $diff = $dob->diff($now);
-
-            $this->patientAgeYears = $diff->y;
-            $this->patientAgeMonths = $diff->m;
-        } catch (\Exception $e) {
-            // Invalid date, don't update age
-        }
     }
 
     public function setConsultationType(string $typeId): void
@@ -791,19 +765,6 @@ class TodayQueue extends Component
             $this->patientContactNumber = $record->patient_contact_number;
             $this->patientEmail = $record->patient_email;
 
-            // Patient Age - load existing or calculate from DOB
-            $this->patientAgeYears = $record->patient_age_years;
-            $this->patientAgeMonths = $record->patient_age_months;
-
-            // Auto-calculate age from DOB if not yet recorded
-            if ($this->patientAgeYears === null && $this->patientAgeMonths === null) {
-                $calculatedAge = $record->calculateAgeFromDob();
-                if ($calculatedAge) {
-                    $this->patientAgeYears = $calculatedAge['years'];
-                    $this->patientAgeMonths = $calculatedAge['months'];
-                }
-            }
-
             // Address
             $this->patientProvince = $record->patient_province;
             $this->patientMunicipality = $record->patient_municipality;
@@ -888,8 +849,6 @@ class TodayQueue extends Component
         $this->patientMiddleName = null;
         $this->patientLastName = null;
         $this->patientDateOfBirth = null;
-        $this->patientAgeYears = null;
-        $this->patientAgeMonths = null;
         $this->patientGender = null;
         $this->patientContactNumber = null;
         $this->patientEmail = null;
@@ -940,9 +899,7 @@ class TodayQueue extends Component
             'patientFirstName' => ['required', 'string', 'max:100'],
             'patientLastName' => ['required', 'string', 'max:100'],
             'patientMiddleName' => ['nullable', 'string', 'max:100'],
-            'patientDateOfBirth' => ['nullable', 'date', 'before_or_equal:today'],
-            'patientAgeYears' => ['nullable', 'integer', 'min:0', 'max:150'],
-            'patientAgeMonths' => ['nullable', 'integer', 'min:0', 'max:11'],
+            'patientDateOfBirth' => ['required', 'date', 'before_or_equal:today'],
             'patientGender' => ['nullable', 'in:male,female'],
             'patientContactNumber' => ['nullable', 'string', 'max:20'],
             'patientEmail' => ['nullable', 'email', 'max:255'],
@@ -1000,9 +957,7 @@ class TodayQueue extends Component
                 'patient_first_name' => $this->patientFirstName,
                 'patient_middle_name' => $this->patientMiddleName,
                 'patient_last_name' => $this->patientLastName,
-                'patient_date_of_birth' => $this->patientDateOfBirth ?: null,
-                'patient_age_years' => $this->patientAgeYears,
-                'patient_age_months' => $this->patientAgeMonths,
+                'patient_date_of_birth' => $this->patientDateOfBirth,
                 'patient_gender' => $this->patientGender ?: null,
                 'patient_contact_number' => $this->patientContactNumber,
                 'patient_email' => $this->patientEmail,
