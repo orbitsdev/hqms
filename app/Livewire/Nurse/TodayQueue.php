@@ -549,6 +549,9 @@ class TodayQueue extends Component
         // Broadcast queue update
         event(new QueueUpdated($queue->fresh(), 'serving'));
 
+        // Automatically switch to the "Serving" tab
+        $this->status = 'serving';
+
         Toaster::success(__('Now serving patient: :number', ['number' => $queue->formatted_number]));
     }
 
