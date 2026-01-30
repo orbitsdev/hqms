@@ -283,7 +283,7 @@
                 <div class="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950">
                     <p class="mb-2 text-xs font-medium uppercase text-blue-700 dark:text-blue-400">{{ __('Fee Override (Optional)') }}</p>
                     <p class="mb-3 text-xs text-blue-600 dark:text-blue-300">
-                        {{ __('This will override the standard fee and be used as the base amount in the cashier billing.') }}
+                        {{ __('Overrides the standard fee. Cashier can still add additional items on top of this amount.') }}
                     </p>
                     <div class="relative">
                         <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">₱</span>
