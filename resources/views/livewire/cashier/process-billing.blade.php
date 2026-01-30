@@ -43,6 +43,24 @@
                 </div>
             </div>
 
+            {{-- Doctor Fee Override Notice --}}
+            @if($doctorFeeOverride !== null)
+                <div class="rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950">
+                    <div class="flex items-start gap-3">
+                        <flux:icon name="information-circle" class="h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
+                        <div>
+                            <p class="font-medium text-blue-800 dark:text-blue-200">{{ __('Doctor Fee Override Applied') }}</p>
+                            <p class="mt-1 text-sm text-blue-700 dark:text-blue-300">
+                                {{ __('The doctor has set a reduced fee of') }} <span class="font-bold">₱{{ number_format($doctorFeeOverride, 2) }}</span> {{ __('for this patient (empathy/charity case).') }}
+                            </p>
+                            <p class="mt-1 text-xs text-blue-600 dark:text-blue-400">
+                                {{ __('You can still add additional items below if needed.') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             {{-- Billing Items --}}
             <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="mb-3 flex items-center justify-between">
@@ -66,19 +84,30 @@
                             </thead>
                             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
                                 @foreach($billingItems as $index => $item)
-                                    <tr wire:key="item-{{ $index }}">
+                                    <tr wire:key="item-{{ $index }}" @class([
+                                        'bg-blue-50 dark:bg-blue-950/30' => ($item['is_override'] ?? false),
+                                    ])>
                                         <td class="py-2">
                                             <p class="text-zinc-900 dark:text-white">{{ $item['description'] }}</p>
-                                            <p class="text-xs text-zinc-500">{{ ucfirst(str_replace('_', ' ', $item['type'])) }}</p>
+                                            <div class="flex items-center gap-2">
+                                                <p class="text-xs text-zinc-500">{{ ucfirst(str_replace('_', ' ', $item['type'])) }}</p>
+                                                @if($item['is_override'] ?? false)
+                                                    <flux:badge size="sm" color="blue">{{ __('Doctor Override') }}</flux:badge>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td class="py-2 text-center">
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                value="{{ $item['quantity'] }}"
-                                                wire:change="updateItemQuantity({{ $index }}, $event.target.value)"
-                                                class="w-16 rounded border border-zinc-200 bg-white px-2 py-1 text-center text-sm dark:border-zinc-700 dark:bg-zinc-800"
-                                            />
+                                            @if($item['is_override'] ?? false)
+                                                <span class="text-sm text-zinc-600 dark:text-zinc-400">{{ $item['quantity'] }}</span>
+                                            @else
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    value="{{ $item['quantity'] }}"
+                                                    wire:change="updateItemQuantity({{ $index }}, $event.target.value)"
+                                                    class="w-16 rounded border border-zinc-200 bg-white px-2 py-1 text-center text-sm dark:border-zinc-700 dark:bg-zinc-800"
+                                                />
+                                            @endif
                                         </td>
                                         <td class="py-2 text-right text-zinc-600 dark:text-zinc-400">
                                             ₱{{ number_format($item['unit_price'], 2) }}
@@ -87,7 +116,13 @@
                                             ₱{{ number_format($item['total_price'], 2) }}
                                         </td>
                                         <td class="py-2 text-right">
-                                            <flux:button wire:click="removeItem({{ $index }})" variant="ghost" size="sm" icon="x-mark" class="text-destructive hover:text-destructive/80" />
+                                            @if(!($item['is_override'] ?? false))
+                                                <flux:button wire:click="removeItem({{ $index }})" variant="ghost" size="sm" icon="x-mark" class="text-destructive hover:text-destructive/80" />
+                                            @else
+                                                <flux:tooltip content="{{ __('Cannot remove doctor override') }}">
+                                                    <flux:icon name="lock-closed" class="h-4 w-4 text-zinc-400" />
+                                                </flux:tooltip>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -132,9 +167,19 @@
             <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
                 <flux:heading size="sm" class="mb-3">{{ __('Discount') }}</flux:heading>
 
+                @if($doctorFeeOverride !== null)
+                    <div class="mb-3 rounded-lg border border-blue-200 bg-blue-50 p-2 text-xs dark:border-blue-900 dark:bg-blue-950">
+                        <p class="text-blue-700 dark:text-blue-300">
+                            <flux:icon name="information-circle" class="inline h-3.5 w-3.5" />
+                            {{ __('Doctor set fee override:') }}
+                            <span class="font-bold">₱{{ number_format($doctorFeeOverride, 2) }}</span>
+                        </p>
+                    </div>
+                @endif
+
                 @if($this->medicalRecord->suggested_discount_type && $this->medicalRecord->suggested_discount_type !== 'none')
                     <div class="mb-3 rounded-lg bg-zinc-100 p-2 text-xs dark:bg-zinc-800">
-                        <p class="text-zinc-600 dark:text-zinc-400">{{ __('Doctor suggested:') }}
+                        <p class="text-zinc-600 dark:text-zinc-400">{{ __('Doctor suggested discount:') }}
                             <span class="font-medium text-zinc-900 dark:text-white">{{ ucfirst($this->medicalRecord->suggested_discount_type) }}</span>
                         </p>
                     </div>

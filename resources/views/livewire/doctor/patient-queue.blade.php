@@ -97,8 +97,10 @@
                                 </div>
                                 <p class="text-sm text-zinc-600 dark:text-zinc-400">
                                     {{ $queue->consultationType?->name }}
-                                    @if($record?->patient_age)
-                                        &bull; {{ $record->patient_age }} {{ __('yrs') }}
+                                    @if($record?->patient_age_at_visit_short)
+                                        &bull; {{ $record->patient_age_at_visit_short }}
+                                    @elseif($record?->patient_age)
+                                        &bull; {{ $record->patient_age }}{{ __('y') }}
                                     @endif
                                     @if($record?->patient_gender)
                                         &bull; {{ ucfirst($record->patient_gender) }}
@@ -193,7 +195,9 @@
                             <p class="mb-2 text-xs font-medium uppercase text-zinc-500">{{ __('Patient') }}</p>
                             <p class="font-semibold text-zinc-900 dark:text-white">{{ $sr->patient_full_name }}</p>
                             <div class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                                @if($sr->patient_age)
+                                @if($sr->patient_age_at_visit)
+                                    {{ $sr->patient_age_at_visit }}
+                                @elseif($sr->patient_age)
                                     {{ $sr->patient_age }} {{ __('years old') }}
                                 @endif
                                 @if($sr->patient_gender)

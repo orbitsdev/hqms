@@ -25,6 +25,12 @@ class ProcessBilling extends Component
     // Billing items (stored temporarily before saving)
     public array $billingItems = [];
 
+    // Doctor fee override
+    public ?float $doctorFeeOverride = null;
+
+    // Items added by cashier (on top of override if set)
+    public array $additionalItems = [];
+
     // Add item modal
     public bool $showAddItemModal = false;
 
@@ -89,6 +95,9 @@ class ProcessBilling extends Component
         $this->discountReason = $medicalRecord->suggested_discount_reason ?? '';
         $this->setDiscountPercent();
 
+        // Load doctor's fee override if set
+        $this->doctorFeeOverride = $medicalRecord->doctor_fee_override;
+
         // Check if it's after 5pm, Sunday, or holiday
         $now = now();
         $this->isAfter5pm = $now->hour >= 17;
@@ -102,7 +111,23 @@ class ProcessBilling extends Component
     {
         $record = $this->medicalRecord;
 
-        // 1. Add professional fee based on consultation type
+        // If doctor set a fee override, use that as the single base item
+        if ($this->doctorFeeOverride !== null) {
+            $this->billingItems[] = [
+                'type' => 'doctor_override',
+                'description' => __('Doctor Fee Override (includes consultation & prescribed items)'),
+                'service_id' => null,
+                'drug_id' => null,
+                'quantity' => 1,
+                'unit_price' => $this->doctorFeeOverride,
+                'total_price' => $this->doctorFeeOverride,
+                'is_override' => true,
+            ];
+
+            return;
+        }
+
+        // Standard billing: Add professional fee based on consultation type
         $consultationType = $record->consultationType;
         $feeServiceName = match ($consultationType->code ?? '') {
             'ob' => 'Professional Fee - OB',
@@ -134,7 +159,7 @@ class ProcessBilling extends Component
             ];
         }
 
-        // 2. Add hospital drugs from prescriptions
+        // Add hospital drugs from prescriptions
         $prescriptions = $record->prescriptions()
             ->where('is_hospital_drug', true)
             ->with('hospitalDrug')
@@ -335,6 +360,13 @@ class ProcessBilling extends Component
     public function removeItem(int $index): void
     {
         if (isset($this->billingItems[$index])) {
+            // Prevent removal of doctor override item
+            if ($this->billingItems[$index]['is_override'] ?? false) {
+                Toaster::error(__('Cannot remove doctor fee override.'));
+
+                return;
+            }
+
             unset($this->billingItems[$index]);
             $this->billingItems = array_values($this->billingItems);
             Toaster::info(__('Item removed.'));
@@ -344,6 +376,11 @@ class ProcessBilling extends Component
     public function updateItemQuantity(int $index, int $quantity): void
     {
         if (isset($this->billingItems[$index]) && $quantity > 0) {
+            // Prevent changing quantity of doctor override item
+            if ($this->billingItems[$index]['is_override'] ?? false) {
+                return;
+            }
+
             $this->billingItems[$index]['quantity'] = $quantity;
             $this->billingItems[$index]['total_price'] = $quantity * $this->billingItems[$index]['unit_price'];
         }

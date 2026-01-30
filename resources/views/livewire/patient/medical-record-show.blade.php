@@ -41,10 +41,10 @@
                     <p class="text-zinc-500 dark:text-zinc-400">{{ __('Name') }}</p>
                     <p class="font-medium text-zinc-900 dark:text-white">{{ $record->patient_full_name }}</p>
                 </div>
-                @if($record->patient_date_of_birth)
+                @if($record->patient_age_at_visit || $record->patient_date_of_birth)
                     <div>
-                        <p class="text-zinc-500 dark:text-zinc-400">{{ __('Age') }}</p>
-                        <p class="font-medium text-zinc-900 dark:text-white">{{ $record->patient_age }} {{ __('years old') }}</p>
+                        <p class="text-zinc-500 dark:text-zinc-400">{{ __('Age at Visit') }}</p>
+                        <p class="font-medium text-zinc-900 dark:text-white">{{ $record->patient_age_at_visit ?? $record->patient_age . ' ' . __('years old') }}</p>
                     </div>
                 @endif
                 @if($record->patient_gender)

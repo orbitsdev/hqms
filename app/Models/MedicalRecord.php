@@ -20,6 +20,7 @@ class MedicalRecord extends Model
         'vital_signs_recorded_at' => 'datetime',
         'examined_at' => 'datetime',
         'examination_ended_at' => 'datetime',
+        'doctor_fee_override' => 'decimal:2',
     ];
 
     protected static function booted(): void
@@ -60,6 +61,9 @@ class MedicalRecord extends Model
         return implode(' ', $parts);
     }
 
+    /**
+     * Get patient's current age (calculated from DOB).
+     */
     public function getPatientAgeAttribute(): ?int
     {
         if (! $this->patient_date_of_birth) {
@@ -67,5 +71,89 @@ class MedicalRecord extends Model
         }
 
         return $this->patient_date_of_birth->age;
+    }
+
+    /**
+     * Get patient's age at time of visit (recorded/frozen).
+     * Returns formatted string like "2 years 6 months" or "3 months".
+     */
+    public function getPatientAgeAtVisitAttribute(): ?string
+    {
+        if ($this->patient_age_years === null && $this->patient_age_months === null) {
+            return null;
+        }
+
+        $years = $this->patient_age_years ?? 0;
+        $months = $this->patient_age_months ?? 0;
+
+        if ($years === 0 && $months === 0) {
+            return __('Newborn');
+        }
+
+        if ($years === 0) {
+            return $months === 1
+                ? __(':months month', ['months' => $months])
+                : __(':months months', ['months' => $months]);
+        }
+
+        if ($months === 0) {
+            return $years === 1
+                ? __(':years year', ['years' => $years])
+                : __(':years years', ['years' => $years]);
+        }
+
+        $yearText = $years === 1 ? __(':years year', ['years' => $years]) : __(':years years', ['years' => $years]);
+        $monthText = $months === 1 ? __(':months month', ['months' => $months]) : __(':months months', ['months' => $months]);
+
+        return "{$yearText} {$monthText}";
+    }
+
+    /**
+     * Get patient's age at visit as short format (e.g., "2y 6m" or "3m").
+     */
+    public function getPatientAgeAtVisitShortAttribute(): ?string
+    {
+        if ($this->patient_age_years === null && $this->patient_age_months === null) {
+            return null;
+        }
+
+        $years = $this->patient_age_years ?? 0;
+        $months = $this->patient_age_months ?? 0;
+
+        if ($years === 0 && $months === 0) {
+            return __('NB'); // Newborn
+        }
+
+        if ($years === 0) {
+            return "{$months}m";
+        }
+
+        if ($months === 0) {
+            return "{$years}y";
+        }
+
+        return "{$years}y {$months}m";
+    }
+
+    /**
+     * Calculate age from DOB relative to visit date.
+     *
+     * @return array{years: int, months: int}|null
+     */
+    public function calculateAgeFromDob(): ?array
+    {
+        if (! $this->patient_date_of_birth || ! $this->visit_date) {
+            return null;
+        }
+
+        $dob = $this->patient_date_of_birth;
+        $visitDate = $this->visit_date;
+
+        $diff = $dob->diff($visitDate);
+
+        return [
+            'years' => $diff->y,
+            'months' => $diff->m,
+        ];
     }
 }

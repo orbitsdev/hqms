@@ -25,6 +25,7 @@ Hospital Queue Management System (HQMS) - Production Setup for DigitalOcean with
 5. **[05-ENV-PRODUCTION.md](./05-ENV-PRODUCTION.md)** - Production environment variables
 6. **[06-SSL-SETUP.md](./06-SSL-SETUP.md)** - HTTPS with Let's Encrypt
 7. **[07-MAINTENANCE.md](./07-MAINTENANCE.md)** - Updates, backups, and monitoring
+8. **[08-SMS-SETUP.md](./08-SMS-SETUP.md)** - SMS notifications (queue alerts, reminders)
 
 ## Quick Start Checklist
 

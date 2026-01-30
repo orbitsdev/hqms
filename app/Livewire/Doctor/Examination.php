@@ -43,6 +43,9 @@ class Examination extends Component
 
     public string $suggestedDiscountReason = '';
 
+    // Fee override (doctor can set a lower fee out of empathy)
+    public ?float $doctorFeeOverride = null;
+
     // Prescription modal
     public bool $showPrescriptionModal = false;
 
@@ -114,6 +117,7 @@ class Examination extends Component
         $this->prescriptionNotes = $medicalRecord->prescription_notes ?? '';
         $this->suggestedDiscountType = $medicalRecord->suggested_discount_type ?? 'none';
         $this->suggestedDiscountReason = $medicalRecord->suggested_discount_reason ?? '';
+        $this->doctorFeeOverride = $medicalRecord->doctor_fee_override;
 
         // Mark as being examined if not already
         if (! $medicalRecord->examined_at) {
@@ -190,6 +194,7 @@ class Examination extends Component
             'prescription_notes' => $this->prescriptionNotes ?: null,
             'suggested_discount_type' => $this->suggestedDiscountType,
             'suggested_discount_reason' => $this->suggestedDiscountReason ?: null,
+            'doctor_fee_override' => $this->doctorFeeOverride,
         ]);
 
         Toaster::success(__('Draft saved.'));
@@ -358,6 +363,7 @@ class Examination extends Component
                 'prescription_notes' => $this->prescriptionNotes ?: null,
                 'suggested_discount_type' => $this->suggestedDiscountType,
                 'suggested_discount_reason' => $this->suggestedDiscountReason ?: null,
+                'doctor_fee_override' => $this->doctorFeeOverride,
                 'examination_ended_at' => now(),
                 'status' => $this->completionAction,
             ]);

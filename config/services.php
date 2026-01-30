@@ -52,6 +52,10 @@ return [
         'blacklist_enabled' => env('SMS_BLACKLIST_ENABLED', false),
         'blacklist_threshold' => env('SMS_BLACKLIST_THRESHOLD', 10),
         'blacklist_period_days' => env('SMS_BLACKLIST_PERIOD_DAYS', 30),
+
+        // Queue SMS Notifications
+        'queue_notifications_enabled' => env('SMS_QUEUE_NOTIFICATIONS_ENABLED', false),
+        'queue_near_threshold' => env('SMS_QUEUE_NEAR_THRESHOLD', 3), // Notify when X positions away
     ],
 
     'semaphore' => [

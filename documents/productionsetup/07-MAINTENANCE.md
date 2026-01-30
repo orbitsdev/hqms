@@ -347,27 +347,115 @@ php artisan config:cache
 sudo supervisorctl restart all
 ```
 
-## Scheduled Tasks
+## Scheduled Tasks (Cron Setup)
 
-### Laravel Scheduler Status
+### Setup Laravel Scheduler
+
+The Laravel scheduler requires a single cron entry that runs every minute:
 
 ```bash
-# Check if scheduler is running
-grep "schedule:run" /var/log/syslog | tail -10
-
-# Run scheduler manually to test
-cd /var/www/hqms
-php artisan schedule:list
-php artisan schedule:run
+# Edit crontab for deploy user
+crontab -e
 ```
 
-### Common Scheduled Tasks
+Add this line:
+```cron
+* * * * * cd /var/www/hqms && php artisan schedule:run >> /dev/null 2>&1
+```
 
-The scheduler (`routes/console.php` or commands) might include:
-- Clear expired sessions
-- Clean up old queue jobs
-- Generate daily reports
-- Send reminder notifications
+**Alternative with logging:**
+```cron
+* * * * * cd /var/www/hqms && php artisan schedule:run >> /var/www/hqms/storage/logs/scheduler.log 2>&1
+```
+
+### Verify Scheduler is Working
+
+```bash
+# List all scheduled tasks
+php artisan schedule:list
+
+# Run scheduler manually to test
+php artisan schedule:run
+
+# Check scheduler logs
+sudo grep CRON /var/log/syslog | tail -20
+
+# Or check custom log (if using alternative above)
+tail -f /var/www/hqms/storage/logs/scheduler.log
+```
+
+### Laravel 12 Scheduler Location
+
+In Laravel 12, scheduled tasks are defined in `bootstrap/app.php` using `withSchedule()`:
+
+```php
+// bootstrap/app.php
+->withSchedule(function (Schedule $schedule): void {
+    $schedule->command('cache:prune-stale-tags')->daily();
+    $schedule->call(function () {
+        // Custom cleanup logic
+    })->daily()->at('00:00');
+})
+```
+
+> **Note:** In Laravel 12, do NOT use `routes/console.php` for scheduling.
+> That file is only for custom Artisan commands.
+
+### Current Scheduled Tasks
+
+The system includes these automated tasks (defined in `bootstrap/app.php`):
+
+| Task | Schedule | Description |
+|------|----------|-------------|
+| Cleanup old queues | Daily 00:00 | Delete queue records older than 90 days |
+| Prune notifications | Daily 01:00 | Delete read notifications older than 30 days |
+| Cleanup SMS logs | Weekly Sun 02:00 | Delete sent SMS logs older than 60 days |
+| Cache cleanup | Daily 03:00 | Prune stale cache tags |
+| Optimize | Daily 04:00 | Rebuild config/route/view caches (prod only) |
+| Health check | Hourly | Log scheduler health status |
+
+### Full Production Crontab Example
+
+```bash
+crontab -e
+```
+
+```cron
+# Laravel Scheduler (runs every minute) - REQUIRED
+* * * * * cd /var/www/hqms && php artisan schedule:run >> /dev/null 2>&1
+
+# Database Backup (daily at 2 AM)
+0 2 * * * /home/deploy/scripts/backup-database.sh
+
+# Application Backup (daily at 2:30 AM)
+30 2 * * * /home/deploy/scripts/backup-app.sh
+
+# Sync backups to cloud (daily at 3 AM)
+0 3 * * * aws s3 sync /home/deploy/backups s3://your-bucket/hqms-backups --delete
+
+# System updates check (weekly on Sunday 5 AM)
+0 5 * * 0 sudo apt update && sudo apt upgrade -y >> /var/log/apt-upgrade.log 2>&1
+```
+
+### Troubleshooting Cron
+
+```bash
+# Check if cron service is running
+sudo systemctl status cron
+
+# View cron logs
+sudo grep CRON /var/log/syslog | tail -20
+
+# Check crontab for current user
+crontab -l
+
+# Check crontab for deploy user
+sudo crontab -u deploy -l
+
+# Test scheduler manually
+cd /var/www/hqms && php artisan schedule:list
+cd /var/www/hqms && php artisan schedule:run
+```
 
 ## Performance Optimization
 

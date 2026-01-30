@@ -9,6 +9,8 @@ use App\Models\MedicalRecord;
 use App\Models\Queue;
 use App\Models\User;
 use App\Notifications\GenericNotification;
+use App\Services\QueueSmsService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -96,6 +98,11 @@ class TodayQueue extends Component
 
     public ?string $patientDateOfBirth = null;
 
+    // Patient Age at Visit (recorded)
+    public ?int $patientAgeYears = null;
+
+    public ?int $patientAgeMonths = null;
+
     public ?string $patientGender = null;
 
     public ?string $patientContactNumber = null;
@@ -168,6 +175,27 @@ class TodayQueue extends Component
     public function setStatus(string $status): void
     {
         $this->status = $status;
+    }
+
+    /**
+     * Auto-calculate age when DOB is changed.
+     */
+    public function updatedPatientDateOfBirth(?string $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        try {
+            $dob = \Carbon\Carbon::parse($value);
+            $now = now();
+            $diff = $dob->diff($now);
+
+            $this->patientAgeYears = $diff->y;
+            $this->patientAgeMonths = $diff->m;
+        } catch (\Exception $e) {
+            // Invalid date, don't update age
+        }
     }
 
     public function setConsultationType(string $typeId): void
@@ -397,7 +425,7 @@ class TodayQueue extends Component
     // Queue Actions
     public function callPatient(int $queueId): void
     {
-        $queue = Queue::find($queueId);
+        $queue = Queue::with(['appointment', 'consultationType'])->find($queueId);
 
         if (! $queue || $queue->status !== 'waiting') {
             Toaster::error(__('This patient cannot be called.'));
@@ -413,6 +441,7 @@ class TodayQueue extends Component
         // Broadcast queue update
         event(new QueueUpdated($queue->fresh(), 'called'));
 
+        // Send in-app notification
         if ($queue->appointment?->user) {
             $queue->appointment->user->notify(new GenericNotification([
                 'type' => 'queue.called',
@@ -425,6 +454,15 @@ class TodayQueue extends Component
                 'sender_role' => 'nurse',
             ]));
         }
+
+        // Send SMS notification if enabled and not already notified
+        // TODO: Uncomment when SMS is configured in production
+        // $cacheKey = "queue_sms_called_{$queue->id}";
+        // if (! Cache::has($cacheKey)) {
+        //     $smsService = app(QueueSmsService::class);
+        //     $smsService->notifyPatientCalled($queue);
+        //     Cache::put($cacheKey, true, now()->endOfDay());
+        // }
 
         Toaster::success(__('Patient called: :number', ['number' => $queue->formatted_number]));
     }
@@ -750,6 +788,19 @@ class TodayQueue extends Component
             $this->patientContactNumber = $record->patient_contact_number;
             $this->patientEmail = $record->patient_email;
 
+            // Patient Age - load existing or calculate from DOB
+            $this->patientAgeYears = $record->patient_age_years;
+            $this->patientAgeMonths = $record->patient_age_months;
+
+            // Auto-calculate age from DOB if not yet recorded
+            if ($this->patientAgeYears === null && $this->patientAgeMonths === null) {
+                $calculatedAge = $record->calculateAgeFromDob();
+                if ($calculatedAge) {
+                    $this->patientAgeYears = $calculatedAge['years'];
+                    $this->patientAgeMonths = $calculatedAge['months'];
+                }
+            }
+
             // Address
             $this->patientProvince = $record->patient_province;
             $this->patientMunicipality = $record->patient_municipality;
@@ -834,6 +885,8 @@ class TodayQueue extends Component
         $this->patientMiddleName = null;
         $this->patientLastName = null;
         $this->patientDateOfBirth = null;
+        $this->patientAgeYears = null;
+        $this->patientAgeMonths = null;
         $this->patientGender = null;
         $this->patientContactNumber = null;
         $this->patientEmail = null;
@@ -885,6 +938,8 @@ class TodayQueue extends Component
             'patientLastName' => ['required', 'string', 'max:100'],
             'patientMiddleName' => ['nullable', 'string', 'max:100'],
             'patientDateOfBirth' => ['nullable', 'date', 'before_or_equal:today'],
+            'patientAgeYears' => ['nullable', 'integer', 'min:0', 'max:150'],
+            'patientAgeMonths' => ['nullable', 'integer', 'min:0', 'max:11'],
             'patientGender' => ['nullable', 'in:male,female'],
             'patientContactNumber' => ['nullable', 'string', 'max:20'],
             'patientEmail' => ['nullable', 'email', 'max:255'],
@@ -943,6 +998,8 @@ class TodayQueue extends Component
                 'patient_middle_name' => $this->patientMiddleName,
                 'patient_last_name' => $this->patientLastName,
                 'patient_date_of_birth' => $this->patientDateOfBirth ?: null,
+                'patient_age_years' => $this->patientAgeYears,
+                'patient_age_months' => $this->patientAgeMonths,
                 'patient_gender' => $this->patientGender ?: null,
                 'patient_contact_number' => $this->patientContactNumber,
                 'patient_email' => $this->patientEmail,
@@ -1133,6 +1190,8 @@ class TodayQueue extends Component
             return;
         }
 
+        $consultationTypeId = $queue->consultation_type_id;
+
         DB::transaction(function () use ($queue): void {
             $queue->update([
                 'status' => 'completed',
@@ -1170,7 +1229,64 @@ class TodayQueue extends Component
         // Broadcast queue update
         event(new QueueUpdated($queue->fresh(), 'forwarded'));
 
+        // Notify patients who are near in queue (queue has advanced)
+        $this->notifyNearQueuePatients($consultationTypeId);
+
         Toaster::success(__('Patient forwarded to doctor successfully.'));
+    }
+
+    /**
+     * Notify patients who are near in queue (both in-app and SMS).
+     */
+    protected function notifyNearQueuePatients(?int $consultationTypeId = null): void
+    {
+        $threshold = (int) config('services.sms.queue_near_threshold', 3);
+
+        $waitingQueues = Queue::query()
+            ->with(['appointment.user', 'consultationType'])
+            ->today()
+            ->where('status', 'waiting')
+            ->when($consultationTypeId, fn ($q) => $q->where('consultation_type_id', $consultationTypeId))
+            ->orderByRaw("CASE priority WHEN 'emergency' THEN 1 WHEN 'urgent' THEN 2 WHEN 'normal' THEN 3 ELSE 4 END")
+            ->orderBy('queue_number')
+            ->limit($threshold)
+            ->get();
+
+        foreach ($waitingQueues as $index => $waitingQueue) {
+            $position = $index + 1;
+            $estimatedMinutes = ($position - 1) * 10;
+
+            // Use cache to prevent duplicate notifications (expires at end of day)
+            $cacheKey = "queue_near_notified_{$waitingQueue->id}";
+
+            if (Cache::has($cacheKey)) {
+                continue; // Already notified today
+            }
+
+            // Send in-app notification if patient has account
+            if ($waitingQueue->appointment?->user) {
+                $waitingQueue->appointment->user->notify(new GenericNotification([
+                    'type' => 'queue.near',
+                    'title' => __('Almost Your Turn!'),
+                    'message' => __('Your queue :number is #:position in line (~:minutes min). Please stay nearby.', [
+                        'number' => $waitingQueue->formatted_number,
+                        'position' => $position,
+                        'minutes' => $estimatedMinutes,
+                    ]),
+                    'queue_id' => $waitingQueue->id,
+                    'sender_id' => Auth::id(),
+                    'sender_role' => 'nurse',
+                ]));
+            }
+
+            // Send SMS notification if enabled
+            // TODO: Uncomment when SMS is configured in production
+            // $smsService = app(QueueSmsService::class);
+            // $smsService->notifyPatientNearQueue($waitingQueue, $position);
+
+            // Mark as notified in cache (expires at end of day)
+            Cache::put($cacheKey, true, now()->endOfDay());
+        }
     }
 
     public function render(): View

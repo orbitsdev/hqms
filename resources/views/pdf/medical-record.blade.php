@@ -234,7 +234,7 @@
                         </tr>
                         <tr>
                             <td>Age:</td>
-                            <td>{{ $record->patient_age ? $record->patient_age . ' years' : '-' }}</td>
+                            <td>{{ $record->patient_age_at_visit ?? ($record->patient_age ? $record->patient_age . ' years' : '-') }}</td>
                         </tr>
                         <tr>
                             <td>Gender:</td>

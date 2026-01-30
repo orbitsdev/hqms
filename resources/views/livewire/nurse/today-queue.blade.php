@@ -457,8 +457,29 @@
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('Date of Birth') }}</flux:label>
-                            <flux:input type="date" wire:model="patientDateOfBirth" max="{{ now()->format('Y-m-d') }}" />
+                            <flux:input type="date" wire:model.live="patientDateOfBirth" max="{{ now()->format('Y-m-d') }}" />
+                            <flux:description>{{ __('Age will auto-calculate') }}</flux:description>
                         </flux:field>
+                        <div class="sm:col-span-2">
+                            <flux:label class="mb-2">{{ __('Age at Visit') }} *</flux:label>
+                            <div class="flex items-center gap-3">
+                                <flux:field class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <flux:input type="number" wire:model="patientAgeYears" min="0" max="150" placeholder="0" class="w-20" />
+                                        <span class="text-sm text-zinc-500">{{ __('years') }}</span>
+                                    </div>
+                                    <flux:error name="patientAgeYears" />
+                                </flux:field>
+                                <flux:field class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <flux:input type="number" wire:model="patientAgeMonths" min="0" max="11" placeholder="0" class="w-20" />
+                                        <span class="text-sm text-zinc-500">{{ __('months') }}</span>
+                                    </div>
+                                    <flux:error name="patientAgeMonths" />
+                                </flux:field>
+                            </div>
+                            <p class="mt-1 text-xs text-zinc-500">{{ __('Important for pediatric patients. Auto-fills from DOB.') }}</p>
+                        </div>
                         <flux:field>
                             <flux:label>{{ __('Gender') }}</flux:label>
                             <flux:select wire:model="patientGender">

@@ -195,9 +195,9 @@
                                     <div class="text-sm font-medium text-zinc-900 dark:text-white">
                                         {{ $record->patient_full_name }}
                                     </div>
-                                    @if($record->patient_age)
+                                    @if($record->patient_age_at_visit_short || $record->patient_age)
                                         <div class="text-xs text-zinc-500 dark:text-zinc-400">
-                                            {{ $record->patient_age }} {{ __('years old') }} &bull; {{ ucfirst($record->patient_gender ?? '-') }}
+                                            {{ $record->patient_age_at_visit_short ?? $record->patient_age . 'y' }} &bull; {{ ucfirst($record->patient_gender ?? '-') }}
                                         </div>
                                     @endif
                                 </td>
