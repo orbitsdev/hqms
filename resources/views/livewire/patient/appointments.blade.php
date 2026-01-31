@@ -1,5 +1,5 @@
-<div class="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-zinc-800">
-    <div class="mx-auto max-w-2xl px-4 py-6 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900 dark:to-zinc-800 -m-6 lg:-m-8 p-4 sm:p-6 lg:p-8">
+    <div class="mx-auto sm:max-w-2xl">
 
         {{-- Header --}}
         <div class="mb-6 flex items-center justify-between">
