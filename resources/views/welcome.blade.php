@@ -68,17 +68,17 @@
                 <span class="text-xl font-bold tracking-tight text-white drop-shadow-lg">{{ config('app.name') }}</span>
             </a>
 
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 sm:gap-4">
                 @auth
-                    <a href="{{ url('/dashboard') }}" class="magnetic-btn rounded-lg bg-white/20 px-5 py-2.5 text-sm font-medium text-white shadow-lg backdrop-blur-sm transition hover:bg-white/30">
+                    <a href="{{ url('/dashboard') }}" class="magnetic-btn whitespace-nowrap rounded-lg bg-white/20 px-3 sm:px-5 py-2 sm:py-2.5 text-sm font-medium text-white shadow-lg backdrop-blur-sm transition hover:bg-white/30">
                         {{ __('Dashboard') }}
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="nav-link magnetic-btn rounded-lg bg-white/10 px-5 py-2.5 text-sm font-medium text-white shadow-lg backdrop-blur-sm transition hover:bg-white/20">
+                    <a href="{{ route('login') }}" class="nav-link magnetic-btn whitespace-nowrap rounded-lg bg-white/10 px-3 sm:px-5 py-2 sm:py-2.5 text-sm font-medium text-white shadow-lg backdrop-blur-sm transition hover:bg-white/20">
                         {{ __('Log in') }}
                     </a>
                     @if (Route::has('register'))
-                        <a href="{{ route('register') }}" class="nav-link magnetic-btn glow-hover rounded-lg bg-white px-5 py-2.5 text-sm font-medium text-primary shadow-lg transition hover:bg-zinc-100 hover:shadow-xl">
+                        <a href="{{ route('register') }}" class="nav-link magnetic-btn glow-hover whitespace-nowrap rounded-lg bg-white px-3 sm:px-5 py-2 sm:py-2.5 text-sm font-medium text-primary shadow-lg transition hover:bg-zinc-100 hover:shadow-xl">
                             {{ __('Sign up') }}
                         </a>
                     @endif
