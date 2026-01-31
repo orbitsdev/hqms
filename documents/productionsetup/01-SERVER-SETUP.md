@@ -1,14 +1,22 @@
 # Server Setup - DigitalOcean Droplet
 
+## Server Details
+
+| Item | Value |
+|------|-------|
+| **Server IP** | `146.190.100.242` |
+| **Hostname** | `caretime-server` |
+| **Application** | CareTime (HQMS) |
+
 ## Create Droplet
 
 1. Log in to DigitalOcean
 2. Create Droplet:
-   - **Image**: Ubuntu 22.04 (LTS) x64
+   - **Image**: Ubuntu 22.04/24.04 (LTS) x64
    - **Plan**: Basic, Regular Intel, $24/mo (4GB RAM, 2 vCPUs)
-   - **Region**: Choose closest to your users (e.g., Singapore for Philippines)
+   - **Region**: Singapore (closest to Philippines)
    - **Authentication**: SSH Key (recommended)
-   - **Hostname**: hqms-production
+   - **Hostname**: caretime-server
 
 ## Initial Server Configuration
 

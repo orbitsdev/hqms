@@ -10,9 +10,9 @@ use App\Models\Queue;
 use App\Models\User;
 use App\Notifications\GenericNotification;
 use App\Services\QueueSmsService;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Livewire\Attributes\Locked;
@@ -430,13 +430,12 @@ class TodayQueue extends Component
         }
 
         // Send SMS notification if enabled and not already notified
-        // TODO: Uncomment when SMS is configured in production
-        // $cacheKey = "queue_sms_called_{$queue->id}";
-        // if (! Cache::has($cacheKey)) {
-        //     $smsService = app(QueueSmsService::class);
-        //     $smsService->notifyPatientCalled($queue);
-        //     Cache::put($cacheKey, true, now()->endOfDay());
-        // }
+        $cacheKey = "queue_sms_called_{$queue->id}";
+        if (! Cache::has($cacheKey)) {
+            $smsService = app(QueueSmsService::class);
+            $smsService->notifyPatientCalled($queue);
+            Cache::put($cacheKey, true, now()->endOfDay());
+        }
 
         Toaster::success(__('Patient called: :number', ['number' => $queue->formatted_number]));
     }
@@ -1238,9 +1237,8 @@ class TodayQueue extends Component
             }
 
             // Send SMS notification if enabled
-            // TODO: Uncomment when SMS is configured in production
-            // $smsService = app(QueueSmsService::class);
-            // $smsService->notifyPatientNearQueue($waitingQueue, $position);
+            $smsService = app(QueueSmsService::class);
+            $smsService->notifyPatientNearQueue($waitingQueue, $position);
 
             // Mark as notified in cache (expires at end of day)
             Cache::put($cacheKey, true, now()->endOfDay());

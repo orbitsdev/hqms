@@ -1,6 +1,16 @@
 # Production Deployment Guide
 
-Hospital Queue Management System (HQMS) - Production Setup for DigitalOcean with Nginx
+**CareTime** - Hospital Queue Management System (HQMS)
+
+Production Setup for DigitalOcean with Nginx
+
+## Server Details
+
+| Item | Value |
+|------|-------|
+| **Server IP** | `146.190.100.242` |
+| **Hostname** | `caretime-server` |
+| **Application URL** | `http://146.190.100.242` |
 
 ## Stack Overview
 
@@ -18,6 +28,7 @@ Hospital Queue Management System (HQMS) - Production Setup for DigitalOcean with
 
 ## Documentation Structure
 
+0. **[00-PHP-UPGRADE.md](./00-PHP-UPGRADE.md)** - Upgrade PHP on existing LEMP server
 1. **[01-SERVER-SETUP.md](./01-SERVER-SETUP.md)** - Initial DigitalOcean droplet setup
 2. **[02-NGINX-CONFIG.md](./02-NGINX-CONFIG.md)** - Nginx configuration for Laravel
 3. **[03-LARAVEL-DEPLOYMENT.md](./03-LARAVEL-DEPLOYMENT.md)** - Deploy the application
@@ -26,6 +37,7 @@ Hospital Queue Management System (HQMS) - Production Setup for DigitalOcean with
 6. **[06-SSL-SETUP.md](./06-SSL-SETUP.md)** - HTTPS with Let's Encrypt
 7. **[07-MAINTENANCE.md](./07-MAINTENANCE.md)** - Updates, backups, and monitoring
 8. **[08-SMS-SETUP.md](./08-SMS-SETUP.md)** - SMS notifications (queue alerts, reminders)
+9. **[09-MYSQL-USERS.md](./09-MYSQL-USERS.md)** - MySQL database & user management
 
 ## Quick Start Checklist
 

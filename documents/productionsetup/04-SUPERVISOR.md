@@ -2,11 +2,24 @@
 
 Supervisor manages the Laravel queue workers and Laravel Reverb (WebSocket server) processes.
 
+## Install Supervisor
+
+```bash
+sudo apt install supervisor -y
+sudo systemctl enable supervisor
+sudo systemctl start supervisor
+```
+
+Verify installation:
+```bash
+sudo supervisorctl status
+```
+
 ## Laravel Queue Worker
 
 The queue worker processes background jobs like notifications, emails, and other async tasks.
 
-### Create Queue Worker Configuration
+### Create Queue Worker Configuration (Copy-Paste Ready)
 
 ```bash
 sudo nano /etc/supervisor/conf.d/hqms-worker.conf
@@ -20,7 +33,7 @@ autostart=true
 autorestart=true
 stopasgroup=true
 killasgroup=true
-user=deploy
+user=www-data
 numprocs=2
 redirect_stderr=true
 stdout_logfile=/var/www/hqms/storage/logs/worker.log
@@ -40,7 +53,7 @@ stopwaitsecs=3600
 
 Reverb handles real-time WebSocket connections for queue display updates, notifications, etc.
 
-### Create Reverb Configuration
+### Create Reverb Configuration (Copy-Paste Ready)
 
 ```bash
 sudo nano /etc/supervisor/conf.d/hqms-reverb.conf
@@ -54,7 +67,7 @@ autostart=true
 autorestart=true
 stopasgroup=true
 killasgroup=true
-user=deploy
+user=www-data
 numprocs=1
 redirect_stderr=true
 stdout_logfile=/var/www/hqms/storage/logs/reverb.log

@@ -1,0 +1,87 @@
+# Production .env - CareTime Server (146.190.100.242)
+
+Copy this to `/var/www/hqms/.env`:
+
+```bash
+nano /var/www/hqms/.env
+```
+
+```env
+APP_NAME=CareTime
+APP_ENV=production
+APP_KEY=base64:CH1tVUZHHqf/HImAhMqhE2ArIxtWN8wza4B2KKPOMqg=
+APP_DEBUG=false
+APP_URL=http://146.190.100.242
+APP_TIMEZONE=Asia/Manila
+
+APP_LOCALE=en
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=en_US
+
+APP_MAINTENANCE_DRIVER=file
+
+BCRYPT_ROUNDS=12
+
+LOG_CHANNEL=stack
+LOG_STACK=single
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=error
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=hqms
+DB_USERNAME=caretime_user
+DB_PASSWORD=caretime_password
+
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=null
+
+BROADCAST_CONNECTION=reverb
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=database
+
+CACHE_STORE=database
+
+REDIS_CLIENT=phpredis
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+MAIL_MAILER=log
+MAIL_HOST=127.0.0.1
+MAIL_PORT=2525
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_FROM_ADDRESS="hello@caretime.com"
+MAIL_FROM_NAME="${APP_NAME}"
+
+VITE_APP_NAME="${APP_NAME}"
+
+REVERB_APP_ID=hqms
+REVERB_APP_KEY=hqms-key
+REVERB_APP_SECRET=hqms-secret
+REVERB_HOST=127.0.0.1
+REVERB_PORT=8080
+REVERB_SCHEME=http
+
+VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
+VITE_REVERB_HOST="146.190.100.242"
+VITE_REVERB_PORT=80
+VITE_REVERB_SCHEME=http
+
+SMS_PROVIDER=semaphore
+SEMAPHORE_API_KEY=c5ccc88d33b5bdcc3313f7f2cc0cf77d
+SEMAPHORE_SENDER_NAME=CareTime
+```
+
+## After saving, run:
+
+```bash
+cd /var/www/hqms
+php artisan config:clear
+php artisan cache:clear
+```

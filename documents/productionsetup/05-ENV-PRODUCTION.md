@@ -12,15 +12,24 @@ nano /var/www/hqms/.env
 #──────────────────────────────────────────────────────────────────────────────
 # APPLICATION
 #──────────────────────────────────────────────────────────────────────────────
-APP_NAME="CareTime"
+APP_NAME=CareTime
 APP_ENV=production
 APP_KEY=base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 APP_DEBUG=false
 APP_TIMEZONE=Asia/Manila
-APP_URL=https://your-domain.com
+APP_URL=http://146.190.100.242
 APP_LOCALE=en
 APP_FALLBACK_LOCALE=en
 APP_FAKER_LOCALE=en_US
+
+APP_MAINTENANCE_DRIVER=file
+
+BCRYPT_ROUNDS=12
+
+LOG_CHANNEL=stack
+LOG_STACK=single
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=error
 
 #──────────────────────────────────────────────────────────────────────────────
 # DATABASE
@@ -29,113 +38,68 @@ DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=hqms
-DB_USERNAME=hqms_user
-DB_PASSWORD=your_strong_database_password
+DB_USERNAME=caretime_user
+DB_PASSWORD=caretime_password
 
 #──────────────────────────────────────────────────────────────────────────────
 # CACHE, SESSION, QUEUE
 #──────────────────────────────────────────────────────────────────────────────
-# Use Redis for better performance in production
-CACHE_STORE=redis
-SESSION_DRIVER=redis
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=null
+
+BROADCAST_CONNECTION=reverb
+FILESYSTEM_DISK=local
 QUEUE_CONNECTION=database
 
-SESSION_LIFETIME=120
-SESSION_ENCRYPT=true
-SESSION_PATH=/
-SESSION_DOMAIN=your-domain.com
-SESSION_SECURE_COOKIE=true
+CACHE_STORE=database
 
 #──────────────────────────────────────────────────────────────────────────────
-# REDIS
+# REDIS (optional - for better performance)
 #──────────────────────────────────────────────────────────────────────────────
 REDIS_CLIENT=phpredis
 REDIS_HOST=127.0.0.1
 REDIS_PASSWORD=null
 REDIS_PORT=6379
-REDIS_CACHE_DB=1
-REDIS_SESSION_DB=2
 
 #──────────────────────────────────────────────────────────────────────────────
 # BROADCASTING (Laravel Reverb)
 #──────────────────────────────────────────────────────────────────────────────
-BROADCAST_CONNECTION=reverb
-
 REVERB_APP_ID=hqms
-REVERB_APP_KEY=your-reverb-app-key
-REVERB_APP_SECRET=your-reverb-app-secret
+REVERB_APP_KEY=hqms-key
+REVERB_APP_SECRET=hqms-secret
 REVERB_HOST=127.0.0.1
 REVERB_PORT=8080
 REVERB_SCHEME=http
 
-# Client-side Reverb configuration
+# Client-side Reverb configuration (browser connects via Nginx proxy)
 VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
-VITE_REVERB_HOST=your-domain.com
-VITE_REVERB_PORT=443
-VITE_REVERB_SCHEME=https
+VITE_REVERB_HOST="146.190.100.242"
+VITE_REVERB_PORT=80
+VITE_REVERB_SCHEME=http
 
 #──────────────────────────────────────────────────────────────────────────────
 # MAIL
 #──────────────────────────────────────────────────────────────────────────────
-MAIL_MAILER=smtp
-MAIL_HOST=smtp.mailgun.org
-MAIL_PORT=587
-MAIL_USERNAME=your-mailgun-username
-MAIL_PASSWORD=your-mailgun-password
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS="noreply@your-domain.com"
+MAIL_MAILER=log
+MAIL_SCHEME=null
+MAIL_HOST=127.0.0.1
+MAIL_PORT=2525
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_FROM_ADDRESS="hello@example.com"
 MAIL_FROM_NAME="${APP_NAME}"
 
-# Alternative: Use SendGrid, Amazon SES, etc.
-# MAIL_MAILER=ses
-# AWS_ACCESS_KEY_ID=your-access-key
-# AWS_SECRET_ACCESS_KEY=your-secret-key
-# AWS_DEFAULT_REGION=us-east-1
+#──────────────────────────────────────────────────────────────────────────────
+# SMS Configuration (Semaphore)
+#──────────────────────────────────────────────────────────────────────────────
+SMS_PROVIDER=semaphore
+SEMAPHORE_API_KEY=your-semaphore-api-key
+SEMAPHORE_SENDER_NAME=CareTime
 
-#──────────────────────────────────────────────────────────────────────────────
-# LOGGING
-#──────────────────────────────────────────────────────────────────────────────
-LOG_CHANNEL=stack
-LOG_STACK=single
-LOG_DEPRECATIONS_CHANNEL=null
-LOG_LEVEL=error
-
-#──────────────────────────────────────────────────────────────────────────────
-# PDF GENERATION (spatie/browsershot)
-#──────────────────────────────────────────────────────────────────────────────
-# Chromium path on Ubuntu
-BROWSERSHOT_CHROME_PATH=/usr/bin/chromium-browser
-
-# Or if using puppeteer
-# BROWSERSHOT_NODE_PATH=/usr/bin/node
-# BROWSERSHOT_NPM_PATH=/usr/bin/npm
-
-#──────────────────────────────────────────────────────────────────────────────
-# SANCTUM (API Authentication)
-#──────────────────────────────────────────────────────────────────────────────
-SANCTUM_STATEFUL_DOMAINS=your-domain.com,api.your-domain.com
-
-#──────────────────────────────────────────────────────────────────────────────
-# SECURITY
-#──────────────────────────────────────────────────────────────────────────────
-# Trusted proxies (DigitalOcean load balancers, Cloudflare, etc.)
-TRUSTED_PROXIES=*
-
-# Force HTTPS
-FORCE_HTTPS=true
-
-#──────────────────────────────────────────────────────────────────────────────
-# HQMS SPECIFIC SETTINGS
-#──────────────────────────────────────────────────────────────────────────────
-# Clinic information
-CLINIC_NAME="Guardiano Maternity and Children Clinic and Hospital"
-CLINIC_ADDRESS="123 Main Street, City, Province"
-CLINIC_PHONE="+63 123 456 7890"
-CLINIC_EMAIL="info@your-domain.com"
-
-# Operating hours
-CLINIC_OPEN_TIME=08:00
-CLINIC_CLOSE_TIME=17:00
+VITE_APP_NAME="${APP_NAME}"
 ```
 
 ## Key Differences: Local vs Production

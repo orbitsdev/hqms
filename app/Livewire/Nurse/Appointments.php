@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Nurse;
 
-// use App\Jobs\SendSmsJob;
+use App\Jobs\SendSmsJob;
 use App\Models\Appointment;
 use App\Models\ConsultationType;
 use App\Models\Queue;
@@ -220,23 +220,22 @@ class Appointments extends Component
         });
 
         // Send SMS if patient has phone number
-        // TODO: Uncomment when SMS is ready
-        // $phoneNumber = $appointment->patient_phone;
-        // if ($phoneNumber && $queue) {
-        //     $smsMessage = __('Your appointment for :type on :date has been approved. Queue number: :queue. Please arrive on time.', [
-        //         'type' => $appointment->consultationType->name,
-        //         'date' => $appointment->appointment_date->format('M d, Y'),
-        //         'queue' => $queue->formatted_number,
-        //     ]);
+        $phoneNumber = $appointment->patient_phone;
+        if ($phoneNumber && $queue) {
+            $smsMessage = __('Your appointment for :type on :date has been approved. Queue number: :queue. Please arrive on time.', [
+                'type' => $appointment->consultationType->name,
+                'date' => $appointment->appointment_date->format('M d, Y'),
+                'queue' => $queue->formatted_number,
+            ]);
 
-        //     SendSmsJob::dispatch(
-        //         $phoneNumber,
-        //         $smsMessage,
-        //         'appointment.approved',
-        //         $appointment->user_id,
-        //         $nurse->id
-        //     );
-        // }
+            SendSmsJob::dispatch(
+                $phoneNumber,
+                $smsMessage,
+                'appointment.approved',
+                $appointment->user_id,
+                $nurse->id
+            );
+        }
 
         $this->closeApproveModal();
         $this->closeViewModal();
@@ -300,23 +299,22 @@ class Appointments extends Component
         });
 
         // Send SMS if patient has phone number
-        // TODO: Uncomment when SMS is ready
-        // $phoneNumber = $appointment->patient_phone;
-        // if ($phoneNumber) {
-        //     $smsMessage = __('Your appointment for :type on :date has been cancelled. Reason: :reason', [
-        //         'type' => $appointment->consultationType->name,
-        //         'date' => $appointment->appointment_date->format('M d, Y'),
-        //         'reason' => $this->cancelReason,
-        //     ]);
+        $phoneNumber = $appointment->patient_phone;
+        if ($phoneNumber) {
+            $smsMessage = __('Your appointment for :type on :date has been cancelled. Reason: :reason', [
+                'type' => $appointment->consultationType->name,
+                'date' => $appointment->appointment_date->format('M d, Y'),
+                'reason' => $this->cancelReason,
+            ]);
 
-        //     SendSmsJob::dispatch(
-        //         $phoneNumber,
-        //         $smsMessage,
-        //         'appointment.cancelled',
-        //         $appointment->user_id,
-        //         $nurse->id
-        //     );
-        // }
+            SendSmsJob::dispatch(
+                $phoneNumber,
+                $smsMessage,
+                'appointment.cancelled',
+                $appointment->user_id,
+                $nurse->id
+            );
+        }
 
         $this->closeCancelModal();
         $this->closeViewModal();

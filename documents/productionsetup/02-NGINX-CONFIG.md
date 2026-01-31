@@ -1,8 +1,16 @@
 # Nginx Configuration
 
+## Server Details
+
+| Item | Value |
+|------|-------|
+| **Server IP** | `146.190.100.242` |
+| **Application** | CareTime (HQMS) |
+| **Document Root** | `/var/www/hqms/public` |
+
 ## Main Site Configuration
 
-Create Nginx configuration for HQMS:
+Create Nginx configuration for CareTime:
 
 ```bash
 sudo nano /etc/nginx/sites-available/hqms
@@ -14,7 +22,7 @@ Paste the following configuration:
 server {
     listen 80;
     listen [::]:80;
-    server_name your-domain.com www.your-domain.com;
+    server_name 146.190.100.242;  # Replace with domain when ready
     root /var/www/hqms/public;
 
     add_header X-Frame-Options "SAMEORIGIN";
@@ -109,9 +117,13 @@ Add inside the server block:
     }
 ```
 
-## Complete Configuration Example
+## Complete Configuration Example (Copy-Paste Ready)
 
-Here's the complete Nginx configuration with Reverb support:
+Here's the complete Nginx configuration with Reverb support for **CareTime** server `146.190.100.242`:
+
+```bash
+sudo nano /etc/nginx/sites-available/hqms
+```
 
 ```nginx
 # Upstream for Laravel Reverb WebSocket
@@ -122,15 +134,15 @@ upstream reverb {
 server {
     listen 80;
     listen [::]:80;
-    server_name your-domain.com www.your-domain.com;
+    server_name 146.190.100.242;
     root /var/www/hqms/public;
 
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
-    add_header X-XSS-Protection "1; mode=block";
 
     index index.php;
     charset utf-8;
+    client_max_body_size 120M;
 
     # Main location
     location / {
@@ -165,29 +177,12 @@ server {
         include fastcgi_params;
         fastcgi_hide_header X-Powered-By;
         fastcgi_read_timeout 300;
-        fastcgi_send_timeout 300;
     }
 
     # Deny hidden files
     location ~ /\.(?!well-known).* {
         deny all;
     }
-
-    # Static assets
-    location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff|woff2|ttf|svg)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-
-    # Gzip
-    gzip on;
-    gzip_vary on;
-    gzip_proxied any;
-    gzip_comp_level 6;
-    gzip_types text/plain text/css text/xml application/json application/javascript application/rss+xml application/atom+xml image/svg+xml;
-
-    # Upload size
-    client_max_body_size 50M;
 }
 ```
 
