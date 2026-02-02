@@ -29,13 +29,16 @@ class DatabaseSeeder extends Seeder
             ServiceSeeder::class,
             HospitalDrugSeeder::class,
 
-            // 6. System Settings (independent)
+            // 6. Discounts (for billing)
+            DiscountSeeder::class,
+
+            // 7. System Settings (independent)
             SystemSettingSeeder::class,
 
-            // 7. Queue Displays (depends on consultation types)
+            // 8. Queue Displays (depends on consultation types)
             QueueDisplaySeeder::class,
 
-            // 8. Test Data: Appointments and Queues (for nurse/doctor module testing)
+            // 9. Test Data: Appointments and Queues (for nurse/doctor module testing)
             AppointmentSeeder::class,
             QueueSeeder::class,
             CarlosMendozaObPediaScheduleSeeder::class,
