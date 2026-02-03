@@ -9,6 +9,7 @@ use App\Livewire\Cashier\BillingQueue as CashierBillingQueue;
 use App\Livewire\Cashier\Dashboard as CashierDashboard;
 use App\Livewire\Cashier\PaymentHistory as CashierPaymentHistory;
 use App\Livewire\Cashier\ProcessBilling as CashierProcessBilling;
+use App\Livewire\Cashier\TransactionDetails as CashierTransactionDetails;
 use App\Livewire\Display\QueueMonitor;
 use App\Livewire\Doctor\Admissions as DoctorAdmissions;
 use App\Livewire\Doctor\Dashboard as DoctorDashboard;
@@ -126,6 +127,7 @@ Route::prefix('cashier')->name('cashier.')->middleware(['auth', 'role:cashier'])
     Route::get('/queue', CashierBillingQueue::class)->name('queue');
     Route::get('/process/{medicalRecord}', CashierProcessBilling::class)->name('process');
     Route::get('/history', CashierPaymentHistory::class)->name('history');
+    Route::get('/transaction/{transaction}', CashierTransactionDetails::class)->name('transaction');
 });
 
 require __DIR__.'/settings.php';

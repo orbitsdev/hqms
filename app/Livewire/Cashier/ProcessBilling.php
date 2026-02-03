@@ -74,9 +74,7 @@ class ProcessBilling extends Component
 
     public string $paymentNotes = '';
 
-    // Receipt
-    public bool $showReceiptModal = false;
-
+    // Completed transaction (used for redirect after payment)
     public ?BillingTransaction $completedTransaction = null;
 
     public function mount(MedicalRecord $medicalRecord): void
@@ -495,25 +493,15 @@ class ProcessBilling extends Component
                 ]));
             }
 
-            $this->completedTransaction = $transaction->fresh(['billingItems', 'medicalRecord']);
+            $this->completedTransaction = $transaction;
         });
 
         $this->closePaymentModal();
-        $this->showReceiptModal = true;
 
         Toaster::success(__('Payment processed successfully.'));
-    }
 
-    public function closeReceiptModal(): void
-    {
-        $this->showReceiptModal = false;
-        $this->redirect(route('cashier.queue'), navigate: true);
-    }
-
-    public function printReceipt(): void
-    {
-        // This will be handled by JavaScript
-        $this->dispatch('print-receipt');
+        // Redirect to transaction details page
+        $this->redirect(route('cashier.transaction', $this->completedTransaction), navigate: true);
     }
 
     public function render(): View

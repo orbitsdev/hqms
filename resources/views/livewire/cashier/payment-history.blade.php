@@ -103,7 +103,7 @@
                         </td>
                         <td class="px-4 py-3 text-right">
                             <div class="flex justify-end gap-1">
-                                <flux:button wire:click="viewTransaction({{ $transaction->id }})" variant="ghost" size="sm" icon="eye" />
+                                <flux:button href="{{ route('cashier.transaction', $transaction) }}" wire:navigate variant="ghost" size="sm" icon="eye" />
                                 <flux:button wire:click="printReceipt({{ $transaction->id }})" variant="ghost" size="sm" icon="printer" />
                             </div>
                         </td>

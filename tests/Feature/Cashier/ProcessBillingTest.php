@@ -311,7 +311,7 @@ test('can process cash payment', function () {
         ->set('amountTendered', 1000.00)
         ->call('processPayment')
         ->assertSet('showPaymentModal', false)
-        ->assertSet('showReceiptModal', true);
+        ->assertRedirect();
 
     // Verify transaction was created
     $transaction = BillingTransaction::where('medical_record_id', $this->medicalRecord->id)->first();
@@ -331,7 +331,7 @@ test('can process gcash payment', function () {
         ->set('paymentMethod', 'gcash')
         ->set('amountTendered', 500.00)
         ->call('processPayment')
-        ->assertSet('showReceiptModal', true);
+        ->assertRedirect();
 
     $transaction = BillingTransaction::where('medical_record_id', $this->medicalRecord->id)->first();
     expect($transaction->payment_method)->toBe('gcash');
@@ -419,29 +419,20 @@ test('generates unique transaction number', function () {
     expect($transactions[0]->transaction_number)->not->toBe($transactions[1]->transaction_number);
 });
 
-// ==================== RECEIPT TESTS ====================
+// ==================== REDIRECT TESTS ====================
 
-test('receipt modal shows completed transaction', function () {
+test('payment redirects to transaction details', function () {
     $component = Livewire::actingAs($this->cashier)
         ->test(ProcessBilling::class, ['medicalRecord' => $this->medicalRecord])
         ->call('openPaymentModal')
         ->set('paymentMethod', 'cash')
         ->set('amountTendered', 1000.00)
         ->call('processPayment')
-        ->assertSet('showReceiptModal', true);
+        ->assertRedirect();
 
-    expect($component->get('completedTransaction'))->not->toBeNull();
-});
-
-test('closing receipt modal redirects to queue', function () {
-    Livewire::actingAs($this->cashier)
-        ->test(ProcessBilling::class, ['medicalRecord' => $this->medicalRecord])
-        ->call('openPaymentModal')
-        ->set('paymentMethod', 'cash')
-        ->set('amountTendered', 1000.00)
-        ->call('processPayment')
-        ->call('closeReceiptModal')
-        ->assertRedirect(route('cashier.queue'));
+    // Verify transaction was created
+    $transaction = BillingTransaction::where('medical_record_id', $this->medicalRecord->id)->first();
+    expect($transaction)->not->toBeNull();
 });
 
 // ==================== CALCULATION TESTS ====================
