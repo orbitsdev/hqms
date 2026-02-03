@@ -10,6 +10,7 @@ use App\Models\Service;
 use App\Notifications\GenericNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -500,8 +501,12 @@ class ProcessBilling extends Component
 
         Toaster::success(__('Payment processed successfully.'));
 
-        // Redirect to transaction details page
-        $this->redirect(route('cashier.transaction', $this->completedTransaction), navigate: true);
+        // Redirect to transaction details page (fallback to queue if route doesn't exist)
+        if (Route::has('cashier.transaction')) {
+            $this->redirect(route('cashier.transaction', $this->completedTransaction), navigate: true);
+        } else {
+            $this->redirect(route('cashier.queue'), navigate: true);
+        }
     }
 
     public function render(): View
