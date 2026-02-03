@@ -1,6 +1,6 @@
 <section class="space-y-4">
-    {{-- Header --}}
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    {{-- Header (hidden when printing) --}}
+    <div class="flex flex-col gap-3 print:hidden sm:flex-row sm:items-center sm:justify-between">
         <div>
             <div class="flex items-center gap-2">
                 <flux:button href="{{ route('cashier.history') }}" wire:navigate variant="ghost" size="sm" icon="arrow-left" />
@@ -20,8 +20,8 @@
         </div>
     </div>
 
-    <div class="grid gap-4 lg:grid-cols-3">
-        {{-- Left Column: Transaction & Patient Info --}}
+    <div class="grid gap-4 print:hidden lg:grid-cols-3">
+        {{-- Left Column: Transaction & Patient Info (hidden when printing) --}}
         <div class="space-y-4 lg:col-span-2">
             {{-- Transaction Info --}}
             <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
@@ -237,9 +237,9 @@
         </div>
     </div>
 
-    {{-- Printable Receipt (Hidden, used for printing) --}}
-    <div id="receipt-content" class="hidden print:block">
-        <div class="mx-auto max-w-xs p-4 font-mono text-xs">
+    {{-- Printable Receipt (Hidden on screen, shown only when printing) --}}
+    <div id="receipt-content" class="hidden print:block print:absolute print:inset-0 print:bg-white">
+        <div class="mx-auto max-w-xs p-4 font-mono text-xs text-black">
             <div class="mb-4 border-b border-dashed pb-4 text-center">
                 <p class="text-lg font-bold">{{ config('app.name') }}</p>
                 <p class="text-xs">{{ __('Official Receipt') }}</p>
@@ -318,3 +318,38 @@
     });
 </script>
 @endscript
+
+<style>
+    @media print {
+        /* Hide all layout elements */
+        nav, header, aside, footer,
+        [data-flux-sidebar], [data-flux-navbar],
+        .flux-sidebar, .flux-navbar,
+        [x-data*="sidebar"], [x-data*="navbar"] {
+            display: none !important;
+        }
+
+        /* Reset page margins */
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* Ensure receipt is visible and positioned correctly */
+        #receipt-content {
+            display: block !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            background: white !important;
+            z-index: 9999 !important;
+        }
+
+        /* Hide everything else in main content */
+        main > *:not(#receipt-content) {
+            display: none !important;
+        }
+    }
+</style>
