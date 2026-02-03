@@ -35,7 +35,11 @@
       "Bash(ls:*)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(powershell -Command \"\\(Get-Content ''D:\\\\2026\\\\WEB\\\\THESIS\\\\hqms\\\\storage\\\\logs\\\\laravel.log'' | Measure-Object -Line\\).Lines\")",
+      "Bash(composer update:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
