@@ -24,6 +24,7 @@ use App\Livewire\Nurse\Dashboard as NurseDashboard;
 use App\Livewire\Nurse\DoctorSchedules as NurseDoctorSchedules;
 use App\Livewire\Nurse\MedicalRecords as NurseMedicalRecords;
 use App\Livewire\Nurse\PatientHistory as NursePatientHistory;
+use App\Livewire\Nurse\Reports as NurseReports;
 use App\Livewire\Nurse\TodayQueue as NurseTodayQueue;
 use App\Livewire\Nurse\WalkInRegistration as NurseWalkIn;
 use App\Livewire\Patient\Appointments;
@@ -97,6 +98,7 @@ Route::prefix('nurse')->name('nurse.')->middleware(['auth', 'role:nurse'])->grou
     Route::get('/medical-records', NurseMedicalRecords::class)->name('medical-records');
     Route::get('/patient-history', NursePatientHistory::class)->name('patient-history');
     Route::get('/admissions', NurseAdmissions::class)->name('admissions');
+    Route::get('/reports', NurseReports::class)->name('reports');
 });
 
 // doctor portal routes

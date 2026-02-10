@@ -106,6 +106,9 @@
                         <flux:sidebar.item icon="building-office-2" :href="route('nurse.admissions')" :current="request()->routeIs('nurse.admissions')" wire:navigate>
                             {{ __('Admissions') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="document-chart-bar" :href="route('nurse.reports')" :current="request()->routeIs('nurse.reports')" wire:navigate>
+                            {{ __('Reports') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="cog" :href="route('profile.edit')" :current="request()->routeIs('profile.edit')" wire:navigate>
                             {{ __('Settings') }}
                         </flux:sidebar.item>
