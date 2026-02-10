@@ -8,11 +8,16 @@ return new class extends Migration
     public function up(): void
     {
         // MySQL requires raw SQL to modify ENUM columns
-        DB::statement("ALTER TABLE billing_items MODIFY COLUMN item_type ENUM('professional_fee', 'service', 'drug', 'procedure', 'other', 'doctor_override') NOT NULL");
+        // SQLite doesn't support MODIFY COLUMN and treats enums as TEXT
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE billing_items MODIFY COLUMN item_type ENUM('professional_fee', 'service', 'drug', 'procedure', 'other', 'doctor_override') NOT NULL");
+        }
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE billing_items MODIFY COLUMN item_type ENUM('professional_fee', 'service', 'drug', 'procedure', 'other') NOT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE billing_items MODIFY COLUMN item_type ENUM('professional_fee', 'service', 'drug', 'procedure', 'other') NOT NULL");
+        }
     }
 };

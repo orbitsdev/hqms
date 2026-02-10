@@ -57,7 +57,16 @@ class PatientHistory extends Component
                 mkdir(storage_path('app/temp'), 0755, true);
             }
 
+            // Use system Chromium on production servers
             Pdf::view('pdf.medical-record', ['record' => $record])
+                ->withBrowsershot(function (\Spatie\Browsershot\Browsershot $browsershot) {
+                    if (file_exists('/usr/bin/chromium-browser')) {
+                        $browsershot->setChromePath('/usr/bin/chromium-browser');
+                    } elseif (file_exists('/snap/bin/chromium')) {
+                        $browsershot->setChromePath('/snap/bin/chromium');
+                    }
+                    $browsershot->noSandbox();
+                })
                 ->format('a4')
                 ->save($tempPath);
 

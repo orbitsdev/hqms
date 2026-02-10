@@ -19,6 +19,13 @@ class AppointmentResource extends JsonResource
             'chief_complaints' => $this->chief_complaints,
             'status' => $this->status,
             'source' => $this->source,
+            'visit_type' => $this->visit_type,
+            'visit_type_label' => match ($this->visit_type) {
+                'new' => 'New Patient',
+                'old' => 'Old Patient',
+                'revisit' => 'Revisit',
+                default => null,
+            },
 
             // Consultation Type
             'consultation_type' => $this->when(

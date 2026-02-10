@@ -92,6 +92,16 @@ class AppointmentController extends Controller
             ], 422);
         }
 
+        // Get patient info from user's profile (default: booking for self)
+        $personalInfo = $user->personalInformation;
+
+        if (! $personalInfo) {
+            return response()->json([
+                'message' => 'Please complete your profile before booking an appointment.',
+                'error' => 'incomplete_profile',
+            ], 422);
+        }
+
         $appointment = Appointment::create([
             'user_id' => $user->id,
             'consultation_type_id' => $validated['consultation_type_id'],
@@ -99,7 +109,20 @@ class AppointmentController extends Controller
             'appointment_time' => $validated['appointment_time'] ?? null,
             'chief_complaints' => $validated['chief_complaints'] ?? null,
             'source' => 'online',
+            'visit_type' => $validated['visit_type'],
             'status' => 'pending',
+            // Patient info from user's profile
+            'patient_first_name' => $personalInfo->first_name,
+            'patient_middle_name' => $personalInfo->middle_name,
+            'patient_last_name' => $personalInfo->last_name,
+            'patient_date_of_birth' => $personalInfo->date_of_birth,
+            'patient_gender' => $personalInfo->gender,
+            'patient_phone' => $personalInfo->phone,
+            'patient_province' => $personalInfo->province,
+            'patient_municipality' => $personalInfo->municipality,
+            'patient_barangay' => $personalInfo->barangay,
+            'patient_street' => $personalInfo->street,
+            'relationship_to_account' => 'self',
         ]);
 
         $appointment->load(['consultationType', 'doctor.personalInformation']);

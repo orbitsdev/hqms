@@ -20,6 +20,8 @@ beforeEach(function () {
         'first_name' => 'Test',
         'last_name' => 'Patient',
         'phone' => '09171234567',
+        'date_of_birth' => '1990-01-15',
+        'gender' => 'female',
     ]);
     $this->token = $this->patient->createToken('mobile')->plainTextToken;
 
@@ -161,6 +163,7 @@ describe('POST /api/v1/appointments', function () {
                 'consultation_type_id' => $this->obType->id,
                 'appointment_date' => $futureDate,
                 'chief_complaints' => 'Regular prenatal checkup',
+                'visit_type' => 'new',
             ]);
 
         $response->assertCreated()
@@ -172,6 +175,8 @@ describe('POST /api/v1/appointments', function () {
                     'chief_complaints',
                     'status',
                     'source',
+                    'visit_type',
+                    'visit_type_label',
                     'consultation_type' => ['id', 'name', 'code'],
                 ],
             ])
@@ -181,6 +186,8 @@ describe('POST /api/v1/appointments', function () {
                     'status' => 'pending',
                     'source' => 'online',
                     'chief_complaints' => 'Regular prenatal checkup',
+                    'visit_type' => 'new',
+                    'visit_type_label' => 'New Patient',
                 ],
             ]);
 
@@ -193,6 +200,41 @@ describe('POST /api/v1/appointments', function () {
         expect($appointment)->not->toBeNull();
         expect($appointment->appointment_date->toDateString())->toBe($futureDate);
         expect($appointment->source)->toBe('online');
+        expect($appointment->visit_type)->toBe('new');
+    });
+
+    it('creates appointment with old visit type', function () {
+        $response = $this->withHeader('Authorization', "Bearer {$this->token}")
+            ->postJson('/api/v1/appointments', [
+                'consultation_type_id' => $this->obType->id,
+                'appointment_date' => now()->addDays(2)->toDateString(),
+                'visit_type' => 'old',
+            ]);
+
+        $response->assertCreated()
+            ->assertJson([
+                'appointment' => [
+                    'visit_type' => 'old',
+                    'visit_type_label' => 'Old Patient',
+                ],
+            ]);
+    });
+
+    it('creates appointment with revisit visit type', function () {
+        $response = $this->withHeader('Authorization', "Bearer {$this->token}")
+            ->postJson('/api/v1/appointments', [
+                'consultation_type_id' => $this->pediaType->id,
+                'appointment_date' => now()->addDays(2)->toDateString(),
+                'visit_type' => 'revisit',
+            ]);
+
+        $response->assertCreated()
+            ->assertJson([
+                'appointment' => [
+                    'visit_type' => 'revisit',
+                    'visit_type_label' => 'Revisit',
+                ],
+            ]);
     });
 
     it('creates appointment for today', function () {
@@ -200,6 +242,7 @@ describe('POST /api/v1/appointments', function () {
             ->postJson('/api/v1/appointments', [
                 'consultation_type_id' => $this->pediaType->id,
                 'appointment_date' => today()->toDateString(),
+                'visit_type' => 'new',
             ]);
 
         $response->assertCreated();
@@ -210,7 +253,30 @@ describe('POST /api/v1/appointments', function () {
             ->postJson('/api/v1/appointments', []);
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['consultation_type_id', 'appointment_date']);
+            ->assertJsonValidationErrors(['consultation_type_id', 'appointment_date', 'visit_type']);
+    });
+
+    it('fails with missing visit_type', function () {
+        $response = $this->withHeader('Authorization', "Bearer {$this->token}")
+            ->postJson('/api/v1/appointments', [
+                'consultation_type_id' => $this->obType->id,
+                'appointment_date' => now()->addDay()->toDateString(),
+            ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['visit_type']);
+    });
+
+    it('fails with invalid visit_type', function () {
+        $response = $this->withHeader('Authorization', "Bearer {$this->token}")
+            ->postJson('/api/v1/appointments', [
+                'consultation_type_id' => $this->obType->id,
+                'appointment_date' => now()->addDay()->toDateString(),
+                'visit_type' => 'invalid_type',
+            ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['visit_type']);
     });
 
     it('fails with invalid consultation type', function () {
@@ -218,6 +284,7 @@ describe('POST /api/v1/appointments', function () {
             ->postJson('/api/v1/appointments', [
                 'consultation_type_id' => 999,
                 'appointment_date' => now()->addDay()->toDateString(),
+                'visit_type' => 'new',
             ]);
 
         $response->assertUnprocessable()
@@ -229,6 +296,7 @@ describe('POST /api/v1/appointments', function () {
             ->postJson('/api/v1/appointments', [
                 'consultation_type_id' => $this->obType->id,
                 'appointment_date' => now()->subDay()->toDateString(),
+                'visit_type' => 'new',
             ]);
 
         $response->assertUnprocessable()
@@ -243,6 +311,7 @@ describe('POST /api/v1/appointments', function () {
             ->postJson('/api/v1/appointments', [
                 'consultation_type_id' => $this->obType->id,
                 'appointment_date' => $futureDate,
+                'visit_type' => 'new',
             ])
             ->assertCreated();
 
@@ -251,6 +320,7 @@ describe('POST /api/v1/appointments', function () {
             ->postJson('/api/v1/appointments', [
                 'consultation_type_id' => $this->obType->id,
                 'appointment_date' => $futureDate,
+                'visit_type' => 'old',
             ]);
 
         $response->assertStatus(422)
@@ -269,6 +339,7 @@ describe('POST /api/v1/appointments', function () {
             'appointment_date' => $futureDate,
             'status' => 'pending',
             'source' => 'online',
+            'visit_type' => 'new',
         ]);
 
         // Create PEDIA appointment on same date
@@ -276,6 +347,7 @@ describe('POST /api/v1/appointments', function () {
             ->postJson('/api/v1/appointments', [
                 'consultation_type_id' => $this->pediaType->id,
                 'appointment_date' => $futureDate,
+                'visit_type' => 'new',
             ]);
 
         $response->assertCreated();

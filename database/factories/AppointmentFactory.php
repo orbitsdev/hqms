@@ -37,6 +37,7 @@ class AppointmentFactory extends Factory
             'chief_complaints' => fake()->optional()->paragraph(),
             'status' => 'pending',
             'source' => 'online',
+            'visit_type' => fake()->randomElement(['new', 'old', 'revisit']),
         ];
     }
 
@@ -82,6 +83,36 @@ class AppointmentFactory extends Factory
             'source' => 'walk-in',
             'appointment_date' => today()->format('Y-m-d'),
             'status' => 'approved',
+        ]);
+    }
+
+    /**
+     * Indicate that the patient is a new patient.
+     */
+    public function newPatient(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'visit_type' => 'new',
+        ]);
+    }
+
+    /**
+     * Indicate that the patient is an old patient.
+     */
+    public function oldPatient(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'visit_type' => 'old',
+        ]);
+    }
+
+    /**
+     * Indicate that this is a revisit.
+     */
+    public function revisit(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'visit_type' => 'revisit',
         ]);
     }
 }
