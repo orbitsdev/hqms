@@ -103,6 +103,23 @@
                     @endforeach
                 </div>
 
+                {{-- Visit Type --}}
+                <div class="mt-5 border-t border-zinc-200 pt-5 dark:border-zinc-700">
+                    <h3 class="mb-1 text-sm font-semibold text-zinc-900 dark:text-white">{{ __('Visit Type') }}</h3>
+                    <p class="mb-3 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Is this your first visit or a follow-up?') }}</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        @foreach(['new' => __('New'), 'old' => __('Old'), 'revisit' => __('Revisit')] as $value => $label)
+                            <button type="button"
+                                    wire:click="$set('visitType', '{{ $value }}')"
+                                    class="rounded-xl border p-3 text-center text-sm font-medium transition
+                                        {{ $visitType === $value ? 'border-primary bg-primary/5 ring-2 ring-primary text-primary' : 'border-zinc-200 text-zinc-700 hover:border-zinc-300 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-600' }}">
+                                {{ $label }}
+                            </button>
+                        @endforeach
+                    </div>
+                    @error('visitType') <span class="mt-1 text-xs text-destructive">{{ $message }}</span> @enderror
+                </div>
+
                 <div class="mt-6">
                     <button type="button"
                             wire:click="nextStep"
@@ -370,24 +387,6 @@
                             <span class="font-medium text-zinc-900 dark:text-white">{{ ucfirst($visitType) }}</span>
                         </div>
                     </div>
-                </div>
-
-                {{-- Visit Type --}}
-                <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
-                    <label class="mb-2 block font-semibold text-zinc-900 dark:text-white">{{ __('Visit Type') }}</label>
-                    <p class="mb-3 text-sm text-zinc-500 dark:text-zinc-400">{{ __('Is this your first visit or a follow-up?') }}</p>
-
-                    <div class="grid grid-cols-3 gap-2">
-                        @foreach(['new' => __('New'), 'old' => __('Old'), 'revisit' => __('Revisit')] as $value => $label)
-                            <button type="button"
-                                    wire:click="$set('visitType', '{{ $value }}')"
-                                    class="rounded-xl border p-3 text-center text-sm font-medium transition
-                                        {{ $visitType === $value ? 'border-primary bg-primary/5 ring-2 ring-primary text-primary' : 'border-zinc-200 text-zinc-700 hover:border-zinc-300 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-600' }}">
-                                {{ $label }}
-                            </button>
-                        @endforeach
-                    </div>
-                    @error('visitType') <span class="mt-1 text-xs text-destructive">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- Chief Complaints --}}

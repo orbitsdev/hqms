@@ -100,6 +100,28 @@
                 <p class="mt-2 text-sm text-destructive">{{ $message }}</p>
             @enderror
 
+            {{-- Visit Type --}}
+            <div class="mt-5 border-t border-zinc-200 pt-5 dark:border-zinc-700">
+                <flux:heading size="sm" class="mb-2">{{ __('Visit Type') }}</flux:heading>
+                <flux:text class="text-sm text-zinc-500 dark:text-zinc-400 mb-3">
+                    {{ __('Is this a new patient, returning, or a revisit?') }}
+                </flux:text>
+                <div class="grid grid-cols-3 gap-2">
+                    @foreach(['new' => __('New'), 'old' => __('Old'), 'revisit' => __('Revisit')] as $value => $label)
+                        <button type="button"
+                                wire:click="$set('visitType', '{{ $value }}')"
+                                @class([
+                                    'rounded-lg border p-3 text-center text-sm font-medium transition',
+                                    'border-zinc-900 bg-zinc-50 dark:border-zinc-100 dark:bg-zinc-800' => $visitType === $value,
+                                    'border-zinc-200 hover:border-zinc-400 dark:border-zinc-700 dark:hover:border-zinc-500' => $visitType !== $value,
+                                ])>
+                            {{ $label }}
+                        </button>
+                    @endforeach
+                </div>
+                @error('visitType') <p class="mt-1 text-sm text-destructive">{{ $message }}</p> @enderror
+            </div>
+
             <div class="flex justify-end mt-6">
                 <flux:button type="button" wire:click="nextStep" variant="primary" :disabled="!$consultationTypeId">
                     {{ __('Continue') }}
@@ -202,33 +224,12 @@
     {{-- STEP 3: Chief Complaints --}}
     @if ($currentStep === 3)
         <div class="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900">
-            <flux:heading size="sm" class="mb-2">{{ __('Visit Details') }}</flux:heading>
+            <flux:heading size="sm" class="mb-2">{{ __('Chief Complaints') }}</flux:heading>
             <flux:text class="text-sm text-zinc-500 dark:text-zinc-400 mb-4">
-                {{ __('Select the visit type and describe the patient\'s main concerns.') }}
+                {{ __('Describe the patient\'s main concerns or symptoms.') }}
             </flux:text>
 
-            {{-- Visit Type --}}
-            <div class="mb-6">
-                <flux:label class="mb-2">{{ __('Visit Type') }} *</flux:label>
-                <div class="grid grid-cols-3 gap-2">
-                    @foreach(['new' => __('New'), 'old' => __('Old'), 'revisit' => __('Revisit')] as $value => $label)
-                        <button type="button"
-                                wire:click="$set('visitType', '{{ $value }}')"
-                                @class([
-                                    'rounded-lg border p-3 text-center text-sm font-medium transition',
-                                    'border-zinc-900 bg-zinc-50 dark:border-zinc-100 dark:bg-zinc-800' => $visitType === $value,
-                                    'border-zinc-200 hover:border-zinc-400 dark:border-zinc-700 dark:hover:border-zinc-500' => $visitType !== $value,
-                                ])>
-                            {{ $label }}
-                        </button>
-                    @endforeach
-                </div>
-                @error('visitType') <p class="mt-1 text-sm text-destructive">{{ $message }}</p> @enderror
-            </div>
-
-            {{-- Chief Complaints --}}
             <flux:field>
-                <flux:label>{{ __('Chief Complaints') }} *</flux:label>
                 <flux:textarea
                     wire:model="chiefComplaints"
                     rows="5"
