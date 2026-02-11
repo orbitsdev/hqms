@@ -129,6 +129,9 @@
                                     @else
                                         <flux:badge size="sm" color="blue">{{ __('Online') }}</flux:badge>
                                     @endif
+                                    <flux:badge size="sm" color="{{ $appointment->visit_type === 'new' ? 'green' : ($appointment->visit_type === 'revisit' ? 'yellow' : 'zinc') }}">
+                                        {{ ucfirst($appointment->visit_type ?? 'new') }}
+                                    </flux:badge>
                                 </td>
 
                                 <td class="whitespace-nowrap px-4 py-3">
@@ -272,6 +275,10 @@
                         <div>
                             <dt class="text-zinc-500 dark:text-zinc-400">{{ __('Appointment Date') }}</dt>
                             <dd class="text-zinc-900 dark:text-white">{{ $apt->appointment_date?->format('M d, Y') }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-zinc-500 dark:text-zinc-400">{{ __('Visit Type') }}</dt>
+                            <dd class="font-medium text-zinc-900 dark:text-white">{{ ucfirst($apt->visit_type ?? 'new') }}</dd>
                         </div>
                         <div class="col-span-2">
                             <dt class="text-zinc-500 dark:text-zinc-400">{{ __('Chief Complaints') }}</dt>

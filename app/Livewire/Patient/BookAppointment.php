@@ -5,15 +5,15 @@ namespace App\Livewire\Patient;
 use App\Models\Appointment;
 use App\Models\ConsultationType;
 use App\Models\SystemSetting;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
-use Illuminate\View\View;
-use Masmerise\Toaster\Toaster;
-use Livewire\Component;
 use App\Models\User;
 use App\Notifications\GenericNotification;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
+use Livewire\Component;
+use Masmerise\Toaster\Toaster;
 
 class BookAppointment extends Component
 {
@@ -41,6 +41,8 @@ class BookAppointment extends Component
 
     public string $chiefComplaints = '';
 
+    public string $visitType = 'new';
+
     /** @var array<int, array<string, mixed>> */
     public array $availableDates = [];
 
@@ -55,6 +57,7 @@ class BookAppointment extends Component
     {
         $this->showAvailabilityModal = false;
     }
+
     public function mount(): void
     {
         $this->fillSelfPatientDetails();
@@ -91,8 +94,6 @@ class BookAppointment extends Component
     {
         $this->appointmentDate = $date;
     }
-
-
 
     public function goToStep(int $step): void
     {
@@ -157,8 +158,9 @@ class BookAppointment extends Component
                 if (! $this->isDateAvailable((string) $value)) {
                     $fail(__('Selected date is not available.'));
                 }
-            },],
+            }, ],
             'chiefComplaints' => ['required', 'string', 'min:10', 'max:2000'],
+            'visitType' => ['required', Rule::in(['new', 'old', 'revisit'])],
         ], $this->patientRules()));
 
         $user = Auth::user();
@@ -171,7 +173,7 @@ class BookAppointment extends Component
 
         // dd($patient, $user, $this->consultationTypeId, $this->appointmentDate, $this->chiefComplaints);
 
-        $appointment =   Appointment::create([
+        $appointment = Appointment::create([
             'user_id' => $user->id,
             'consultation_type_id' => $this->consultationTypeId,
             'doctor_id' => null,
@@ -191,20 +193,21 @@ class BookAppointment extends Component
             'chief_complaints' => $this->chiefComplaints,
             'status' => 'pending',
             'source' => 'online',
+            'visit_type' => $this->visitType,
         ]);
         $nurses = User::role('nurse')->get();
 
-Notification::send($nurses, new GenericNotification([
-    'type' => 'appointment.requested',
-    'title' => 'New Appointment Request',
-    'message' => "{$patient['first_name']} {$patient['last_name']} requested an appointment.",
-    'appointment_id' => $appointment->id,
-    'consultation_type_id' => $appointment->consultation_type_id,
-    'appointment_date' => $appointment->appointment_date,
-    'sender_id' => $user->id,
-    'sender_role' => 'patient',
-    'url' => '#',
-]));
+        Notification::send($nurses, new GenericNotification([
+            'type' => 'appointment.requested',
+            'title' => 'New Appointment Request',
+            'message' => "{$patient['first_name']} {$patient['last_name']} requested an appointment.",
+            'appointment_id' => $appointment->id,
+            'consultation_type_id' => $appointment->consultation_type_id,
+            'appointment_date' => $appointment->appointment_date,
+            'sender_id' => $user->id,
+            'sender_role' => 'patient',
+            'url' => '#',
+        ]));
 
         Toaster::success(__('Appointment request submitted. We will confirm your schedule soon.'));
 
@@ -272,10 +275,14 @@ Notification::send($nurses, new GenericNotification([
     /** @return array<int, array<string, mixed>> */
     protected function buildAvailableDates(): array
     {
-        if (! $this->consultationTypeId) return [];
+        if (! $this->consultationTypeId) {
+            return [];
+        }
 
         $type = ConsultationType::find($this->consultationTypeId);
-        if (! $type) return [];
+        if (! $type) {
+            return [];
+        }
 
         $maxAdvanceDays = (int) SystemSetting::get('max_advance_booking_days', 30);
         $allowSameDay = (bool) SystemSetting::get('allow_same_day_booking', true);
@@ -311,7 +318,6 @@ Notification::send($nurses, new GenericNotification([
         return $dates;
     }
 
-
     /** @return array<int, array<string, mixed>> */
     protected function buildDoctorAvailability(?ConsultationType $consultationType): array
     {
@@ -344,7 +350,7 @@ Notification::send($nurses, new GenericNotification([
                     ->values();
 
                 $dayLabels = $regularDays
-                    ->map(fn(int $day) => $dayNames[$day] ?? null)
+                    ->map(fn (int $day) => $dayNames[$day] ?? null)
                     ->filter()
                     ->values()
                     ->all();
@@ -359,7 +365,7 @@ Notification::send($nurses, new GenericNotification([
                             return null;
                         }
 
-                        return trim(($start ?? '') . ' - ' . ($end ?? ''));
+                        return trim(($start ?? '').' - '.($end ?? ''));
                     })
                     ->filter()
                     ->unique()
@@ -377,7 +383,7 @@ Notification::send($nurses, new GenericNotification([
                     ->where('is_available', false)
                     ->pluck('date')
                     ->filter()
-                    ->map(fn($date) => Carbon::parse($date)->format('M d'))
+                    ->map(fn ($date) => Carbon::parse($date)->format('M d'))
                     ->values()
                     ->all();
 
@@ -386,7 +392,7 @@ Notification::send($nurses, new GenericNotification([
                     ->where('is_available', true)
                     ->pluck('date')
                     ->filter()
-                    ->map(fn($date) => Carbon::parse($date)->format('M d'))
+                    ->map(fn ($date) => Carbon::parse($date)->format('M d'))
                     ->values()
                     ->all();
 
@@ -423,7 +429,6 @@ Notification::send($nurses, new GenericNotification([
             ->firstWhere('date', $date)['available'] ?? false;
     }
 
-
     public function render(): View
     {
         $consultationTypes = ConsultationType::query()
@@ -435,7 +440,6 @@ Notification::send($nurses, new GenericNotification([
         $selectedConsultation = $consultationTypes->firstWhere('id', $this->consultationTypeId);
         $availableDoctors = $selectedConsultation?->doctors ?? collect();
         $doctorAvailability = $this->buildDoctorAvailability($selectedConsultation);
-
 
         if ($this->consultationTypeId && ! $this->availableDates) {
             $this->availableDates = $this->buildAvailableDates();

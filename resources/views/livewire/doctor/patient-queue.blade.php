@@ -105,6 +105,7 @@
                                     @if($record?->patient_gender)
                                         &bull; {{ ucfirst($record->patient_gender) }}
                                     @endif
+                                    &bull; {{ ucfirst($record?->visit_type ?? 'new') }}
                                 </p>
                                 @if($record?->effective_chief_complaints)
                                     <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
@@ -203,6 +204,7 @@
                                 @if($sr->patient_gender)
                                     &bull; {{ ucfirst($sr->patient_gender) }}
                                 @endif
+                                &bull; {{ ucfirst($sr->visit_type ?? 'new') }}
                             </div>
                         </div>
 

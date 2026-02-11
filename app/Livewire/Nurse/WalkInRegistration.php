@@ -47,8 +47,10 @@ class WalkInRegistration extends Component
 
     public ?string $patientStreet = null;
 
-    // Step 3: Chief Complaints
+    // Step 3: Chief Complaints & Visit Type
     public string $chiefComplaints = '';
+
+    public string $visitType = 'new';
 
     // Step 4: Account creation (optional)
     public bool $createAccount = false;
@@ -145,6 +147,7 @@ class WalkInRegistration extends Component
             'patientBarangay' => ['nullable', 'string', 'max:255'],
             'patientStreet' => ['nullable', 'string', 'max:500'],
             'chiefComplaints' => ['required', 'string', 'min:5', 'max:2000'],
+            'visitType' => ['required', Rule::in(['new', 'old', 'revisit'])],
         ];
 
         if ($this->createAccount) {
@@ -166,7 +169,7 @@ class WalkInRegistration extends Component
         $patientUserId = $nurse->id;
         $generatedPassword = null;
 
-        DB::transaction(function () use ($nurse, &$patientUserId, &$generatedPassword): void {
+        DB::transaction(function () use (&$patientUserId, &$generatedPassword): void {
             // Create patient account if requested
             if ($this->createAccount) {
                 $generatedPassword = $this->generatePassword
@@ -222,6 +225,7 @@ class WalkInRegistration extends Component
             'chief_complaints' => $this->chiefComplaints,
             'status' => 'pending',
             'source' => 'walk-in',
+            'visit_type' => $this->visitType,
         ]);
 
         // Notify other nurses about the new walk-in

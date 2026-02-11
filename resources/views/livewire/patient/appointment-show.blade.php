@@ -114,8 +114,8 @@
                             <p class="mt-1 font-medium text-zinc-900 dark:text-white">{{ $appointment->doctor?->name ?? __('To be assigned') }}</p>
                         </div>
                         <div>
-                            <p class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{{ __('Contact') }}</p>
-                            <p class="mt-1 font-medium text-zinc-900 dark:text-white">{{ $appointment->patient_phone ?? __('Not provided') }}</p>
+                            <p class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{{ __('Visit Type') }}</p>
+                            <p class="mt-1 font-medium text-zinc-900 dark:text-white">{{ ucfirst($appointment->visit_type ?? 'new') }}</p>
                         </div>
                     </div>
                 </div>

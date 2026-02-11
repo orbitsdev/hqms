@@ -6,10 +6,13 @@ use App\Models\ConsultationType;
 use App\Models\PersonalInformation;
 use App\Models\User;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Role;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 beforeEach(function () {
+    Role::findOrCreate('nurse', 'web');
+
     $this->consultationType = ConsultationType::factory()->create();
     $this->user = User::factory()->create();
     $this->personalInfo = PersonalInformation::factory()->create([
@@ -160,6 +163,59 @@ it('validates required fields for dependent', function () {
         ->set('patientGender', null)
         ->call('nextStep')
         ->assertHasErrors(['patientFirstName', 'patientLastName', 'patientDateOfBirth', 'patientGender', 'patientRelationship']);
+});
+
+it('defaults visit type to new', function () {
+    Livewire::actingAs($this->user)
+        ->test(BookAppointment::class)
+        ->assertSet('visitType', 'new');
+});
+
+it('can submit appointment with different visit types', function (string $visitType) {
+    $futureDate = now()->addDays(1)->format('Y-m-d');
+
+    while (now()->parse($futureDate)->isWeekend()) {
+        $futureDate = now()->parse($futureDate)->addDay()->format('Y-m-d');
+    }
+
+    Livewire::actingAs($this->user)
+        ->test(BookAppointment::class)
+        ->call('selectConsultationType', $this->consultationType->id)
+        ->call('nextStep') // step 1 -> 2
+        ->set('patientType', 'self')
+        ->call('nextStep') // step 2 -> 3
+        ->call('selectDate', $futureDate)
+        ->call('nextStep') // step 3 -> 4
+        ->assertSet('currentStep', 4)
+        ->set('visitType', $visitType)
+        ->set('chiefComplaints', 'I have been experiencing severe headaches for the past week.')
+        ->call('submitAppointment')
+        ->assertRedirect(route('patient.appointments'));
+
+    $appointment = Appointment::where('user_id', $this->user->id)->first();
+    expect($appointment)->not->toBeNull();
+    expect($appointment->visit_type)->toBe($visitType);
+})->with(['new', 'old', 'revisit']);
+
+it('rejects invalid visit type', function () {
+    $futureDate = now()->addDays(1)->format('Y-m-d');
+
+    while (now()->parse($futureDate)->isWeekend()) {
+        $futureDate = now()->parse($futureDate)->addDay()->format('Y-m-d');
+    }
+
+    Livewire::actingAs($this->user)
+        ->test(BookAppointment::class)
+        ->call('selectConsultationType', $this->consultationType->id)
+        ->call('nextStep') // step 1 -> 2
+        ->set('patientType', 'self')
+        ->call('nextStep') // step 2 -> 3
+        ->call('selectDate', $futureDate)
+        ->call('nextStep') // step 3 -> 4
+        ->set('visitType', 'invalid')
+        ->set('chiefComplaints', 'I have been experiencing severe headaches for the past week.')
+        ->call('submitAppointment')
+        ->assertHasErrors(['visitType']);
 });
 
 it('validates chief complaints minimum length', function () {

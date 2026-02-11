@@ -511,7 +511,7 @@ class TodayQueue extends Component
                     'visit_date' => today(),
                     'time_in' => now(),
                     'time_in_period' => now()->format('a'),
-                    'visit_type' => 'new',
+                    'visit_type' => $appointment?->visit_type ?? 'new',
                     'service_type' => 'checkup',
                     'chief_complaints_initial' => $appointment?->chief_complaints,
                     'status' => 'in_progress',

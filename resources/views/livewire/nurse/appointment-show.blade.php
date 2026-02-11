@@ -155,6 +155,14 @@
                             </div>
                             <div>
                                 <flux:text class="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                                    {{ __('Visit Type') }}
+                                </flux:text>
+                                <flux:text class="text-sm text-zinc-700 dark:text-zinc-200">
+                                    {{ ucfirst($appointment->visit_type ?? 'new') }}
+                                </flux:text>
+                            </div>
+                            <div>
+                                <flux:text class="text-xs font-semibold uppercase tracking-wide text-zinc-500">
                                     {{ __('Request Submitted') }}
                                 </flux:text>
                                 <flux:text class="text-sm text-zinc-700 dark:text-zinc-200">

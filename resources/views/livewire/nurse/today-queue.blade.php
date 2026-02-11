@@ -263,6 +263,10 @@
                                         <dd class="font-medium text-zinc-900 dark:text-white">{{ ucfirst($selectedQueue->appointment->patient_gender) }}</dd>
                                     </div>
                                 @endif
+                                <div class="flex justify-between">
+                                    <dt class="text-zinc-500 dark:text-zinc-400">{{ __('Visit Type') }}</dt>
+                                    <dd class="font-medium text-zinc-900 dark:text-white">{{ ucfirst($selectedQueue->appointment->visit_type ?? 'new') }}</dd>
+                                </div>
                                 @if($selectedQueue->appointment->chief_complaints)
                                     <div class="mt-2">
                                         <dt class="text-zinc-500 dark:text-zinc-400">{{ __('Chief Complaint') }}</dt>

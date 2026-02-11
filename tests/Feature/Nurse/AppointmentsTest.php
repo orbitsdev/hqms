@@ -173,6 +173,18 @@ describe('Nurse Appointment Show', function () {
             ->assertSee('Test complaints here');
     });
 
+    it('displays visit type on appointment details', function (string $visitType) {
+        $appointment = Appointment::factory()->create([
+            'consultation_type_id' => $this->consultationType->id,
+            'visit_type' => $visitType,
+        ]);
+
+        Livewire::actingAs($this->nurse)
+            ->test(AppointmentShow::class, ['appointment' => $appointment])
+            ->assertSee('Visit Type')
+            ->assertSee(ucfirst($visitType));
+    })->with(['new', 'old', 'revisit']);
+
     it('shows approve button for pending appointments', function () {
         $appointment = Appointment::factory()->create([
             'consultation_type_id' => $this->consultationType->id,
