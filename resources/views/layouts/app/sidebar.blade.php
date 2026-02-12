@@ -145,6 +145,9 @@
                         <flux:sidebar.item icon="receipt-percent" :href="route('admin.discounts')" :current="request()->routeIs('admin.discounts')" wire:navigate>
                             {{ __('Discounts') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="document-chart-bar" :href="route('admin.reports')" :current="request()->routeIs('admin.reports')" wire:navigate>
+                            {{ __('Reports') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="cog" :href="route('profile.edit')" :current="request()->routeIs('profile.edit')" wire:navigate>
                             {{ __('Settings') }}
                         </flux:sidebar.item>

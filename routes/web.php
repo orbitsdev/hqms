@@ -3,6 +3,7 @@
 use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Admin\DiscountManagement as AdminDiscountManagement;
 use App\Livewire\Admin\HospitalDrugManagement as AdminHospitalDrugManagement;
+use App\Livewire\Admin\Reports as AdminReports;
 use App\Livewire\Admin\ServiceManagement as AdminServiceManagement;
 use App\Livewire\Admin\UserManagement as AdminUserManagement;
 use App\Livewire\Cashier\BillingQueue as CashierBillingQueue;
@@ -120,6 +121,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::get('/services', AdminServiceManagement::class)->name('services');
     Route::get('/drugs', AdminHospitalDrugManagement::class)->name('drugs');
     Route::get('/discounts', AdminDiscountManagement::class)->name('discounts');
+    Route::get('/reports', AdminReports::class)->name('reports');
 });
 
 // cashier portal routes

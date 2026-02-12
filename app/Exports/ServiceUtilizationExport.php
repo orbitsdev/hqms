@@ -57,7 +57,7 @@ class ServiceUtilizationExport implements FromArray, ShouldAutoSize, WithStyles,
         $totalSource = $this->data['by_source']['online'] + $this->data['by_source']['walk-in'];
         $rows[] = ['SOURCE DISTRIBUTION'];
         $rows[] = ['Source', 'Count', 'Percentage'];
-        foreach (['online' => 'Online', 'walk-in' => 'Walk-in'] as $key => $label) {
+        foreach (['online' => 'Online Booking', 'walk-in' => 'Walk-in'] as $key => $label) {
             $count = $this->data['by_source'][$key];
             $pct = $totalSource > 0 ? round(($count / $totalSource) * 100, 1) : 0;
             $rows[] = [$label, $count, $pct.'%'];

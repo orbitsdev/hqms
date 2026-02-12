@@ -198,7 +198,7 @@
                 <div class="summary-cell">
                     <div class="stat-box">
                         <div class="stat-number">{{ $data['by_source']['online'] ?? 0 }}</div>
-                        <div class="stat-label">Online</div>
+                        <div class="stat-label">Online Booking</div>
                     </div>
                 </div>
                 <div class="summary-cell">

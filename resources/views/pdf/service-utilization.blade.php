@@ -289,7 +289,7 @@
         </thead>
         <tbody>
             <tr>
-                <td>Online</td>
+                <td>Online Booking</td>
                 <td class="text-center">{{ $data['by_source']['online'] }}</td>
                 <td class="text-center">{{ $totalSource > 0 ? round(($data['by_source']['online'] / $totalSource) * 100, 1) : 0 }}%</td>
                 <td>

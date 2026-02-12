@@ -54,7 +54,7 @@ class AppointmentStatisticsExport implements FromArray, ShouldAutoSize, WithStyl
         // By Source
         $rows[] = ['SOURCE BREAKDOWN'];
         $rows[] = ['Source', 'Count'];
-        $rows[] = ['Online', $this->data['by_source']['online'] ?? 0];
+        $rows[] = ['Online Booking', $this->data['by_source']['online'] ?? 0];
         $rows[] = ['Walk-in', $this->data['by_source']['walk-in'] ?? 0];
         $rows[] = [];
 
