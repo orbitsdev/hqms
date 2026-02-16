@@ -43,7 +43,8 @@
       "Bash(git push:*)",
       "Bash(./vendor/bin/pest:*)",
       "Bash(1 <<'PHPEOF'\nPHPEOF)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(wc:*)"
     ]
   }
 }
