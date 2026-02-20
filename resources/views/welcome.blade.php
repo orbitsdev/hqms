@@ -72,9 +72,17 @@
     </style>
 </head>
 <body class="min-h-screen bg-zinc-50 antialiased dark:bg-zinc-900 overflow-x-hidden">
-    {{-- Custom Cursor (desktop only) --}}
-    <div id="cursor" class="hidden lg:block fixed w-5 h-5 rounded-full border-2 border-primary pointer-events-none z-[9999] mix-blend-difference" style="transform: translate(-50%, -50%);"></div>
-    <div id="cursor-follower" class="hidden lg:block fixed w-10 h-10 rounded-full bg-primary/20 pointer-events-none z-[9998]" style="transform: translate(-50%, -50%);"></div>
+    {{-- Custom Cursor - Hospital Themed (desktop only) --}}
+    <div id="cursor-plus" class="hidden lg:block fixed pointer-events-none z-[9999]" style="transform: translate(-50%, -50%);">
+        {{-- Medical cross/plus cursor --}}
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="8" y="2" width="4" height="16" rx="1.5" fill="white" opacity="0.9"/>
+            <rect x="2" y="8" width="16" height="4" rx="1.5" fill="white" opacity="0.9"/>
+        </svg>
+    </div>
+    <div id="cursor-pulse" class="hidden lg:block fixed w-10 h-10 rounded-full border-2 border-teal-400/60 pointer-events-none z-[9998]" style="transform: translate(-50%, -50%);"></div>
+    <div id="cursor-glow" class="hidden lg:block fixed w-32 h-32 rounded-full pointer-events-none z-[9997] opacity-0" style="transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(20,184,166,0.12) 0%, transparent 70%);"></div>
+    <canvas id="cursor-ekg" class="hidden lg:block fixed inset-0 pointer-events-none z-[9996]"></canvas>
 
     {{-- Hero Section with Background --}}
     <div id="hero-section" class="relative min-h-screen overflow-hidden">
@@ -417,27 +425,308 @@
             gsap.registerPlugin(ScrollTrigger);
 
             // ============================================
-            // Custom Cursor
+            // Hospital-Themed Cursor - EKG Heartbeat Trail
             // ============================================
-            const cursor = document.getElementById('cursor');
-            const follower = document.getElementById('cursor-follower');
+            const cursorPlus = document.getElementById('cursor-plus');
+            const cursorPulse = document.getElementById('cursor-pulse');
+            const cursorGlow = document.getElementById('cursor-glow');
+            const ekgCanvas = document.getElementById('cursor-ekg');
 
-            if (cursor && follower && window.innerWidth > 1024) {
+            if (cursorPlus && ekgCanvas && window.innerWidth > 1024) {
+                document.body.style.cursor = 'none';
+                document.querySelectorAll('a, button, .service-card, .stat-card').forEach(el => el.style.cursor = 'none');
+
+                let mouseX = 0, mouseY = 0;
+                let prevMouseX = 0, prevMouseY = 0;
+                let isHovering = false;
+                let heartbeatPhase = 0;
+
+                // EKG trail state
+                const trailHistory = []; // {x, y, age}
+                const maxTrailLength = 50;
+                const burstParticles = []; // click burst particles
+
+                // Canvas setup
+                const ctx = ekgCanvas.getContext('2d');
+                function resizeCanvas() {
+                    ekgCanvas.width = window.innerWidth;
+                    ekgCanvas.height = window.innerHeight;
+                }
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+
                 document.addEventListener('mousemove', (e) => {
-                    gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
-                    gsap.to(follower, { x: e.clientX, y: e.clientY, duration: 0.3 });
+                    mouseX = e.clientX;
+                    mouseY = e.clientY;
                 });
 
-                // Cursor hover effects
+                // Heartbeat pulse on the ring (72 BPM = ~833ms)
+                function heartbeatPulse() {
+                    if (!isHovering) {
+                        // Double-beat like a real heartbeat: lub-dub
+                        gsap.timeline()
+                            .to(cursorPulse, { scale: 1.4, borderColor: 'rgba(239,68,68,0.8)', duration: 0.1, ease: 'power2.out' })
+                            .to(cursorPulse, { scale: 1, borderColor: 'rgba(45,212,191,0.6)', duration: 0.15, ease: 'power2.in' })
+                            .to(cursorPulse, { scale: 1.2, borderColor: 'rgba(239,68,68,0.5)', duration: 0.08, ease: 'power2.out' }, '+=0.05')
+                            .to(cursorPulse, { scale: 1, borderColor: 'rgba(45,212,191,0.6)', duration: 0.2, ease: 'power2.in' });
+                    }
+                    setTimeout(heartbeatPulse, 850 + Math.random() * 100);
+                }
+                setTimeout(heartbeatPulse, 1500);
+
+                // EKG waveform shape generator (QRS complex)
+                // Returns a Y offset for the given phase (0-1)
+                function ekgWaveform(phase) {
+                    // P wave (small bump)
+                    if (phase < 0.1) return Math.sin(phase / 0.1 * Math.PI) * 4;
+                    // Flat
+                    if (phase < 0.2) return 0;
+                    // Q dip
+                    if (phase < 0.25) return -((phase - 0.2) / 0.05) * 6;
+                    // R spike (sharp up)
+                    if (phase < 0.35) return -6 + ((phase - 0.25) / 0.1) * 30;
+                    // S dip (sharp down)
+                    if (phase < 0.45) return 24 - ((phase - 0.35) / 0.1) * 32;
+                    // Return to baseline
+                    if (phase < 0.55) return -8 + ((phase - 0.45) / 0.1) * 8;
+                    // Flat
+                    if (phase < 0.7) return 0;
+                    // T wave (gentle bump)
+                    if (phase < 0.85) return Math.sin((phase - 0.7) / 0.15 * Math.PI) * 5;
+                    // Flat
+                    return 0;
+                }
+
+                // Main animation loop
+                function animate() {
+                    const speed = Math.sqrt(
+                        (mouseX - prevMouseX) ** 2 + (mouseY - prevMouseY) ** 2
+                    );
+                    const angle = Math.atan2(mouseY - prevMouseY, mouseX - prevMouseX);
+
+                    // Move cursor elements
+                    gsap.to(cursorPlus, { x: mouseX, y: mouseY, duration: 0.08, overwrite: true });
+                    gsap.to(cursorPulse, { x: mouseX, y: mouseY, duration: 0.2, ease: 'power2.out', overwrite: true });
+                    gsap.to(cursorGlow, { x: mouseX, y: mouseY, duration: 0.4, ease: 'power1.out', overwrite: true });
+
+                    // Glow intensity
+                    gsap.to(cursorGlow, { opacity: isHovering ? 0.5 : Math.min(speed / 40, 0.35), duration: 0.3, overwrite: 'auto' });
+
+                    // Plus rotation based on velocity
+                    if (speed > 3 && !isHovering) {
+                        gsap.to(cursorPlus.querySelector('svg'), {
+                            rotation: '+=' + (speed * 0.8),
+                            duration: 0.2, overwrite: true
+                        });
+                    }
+
+                    // Add trail point
+                    if (speed > 1) {
+                        // Advance heartbeat phase based on distance traveled
+                        heartbeatPhase += speed * 0.008;
+                        if (heartbeatPhase > 1) heartbeatPhase -= 1;
+
+                        const ekgOffset = ekgWaveform(heartbeatPhase);
+                        // Perpendicular offset to movement direction
+                        const perpX = -Math.sin(angle) * ekgOffset;
+                        const perpY = Math.cos(angle) * ekgOffset;
+
+                        trailHistory.push({
+                            x: mouseX + perpX,
+                            y: mouseY + perpY,
+                            rawX: mouseX,
+                            rawY: mouseY,
+                            age: 0,
+                            ekgOffset: ekgOffset
+                        });
+                        if (trailHistory.length > maxTrailLength) {
+                            trailHistory.shift();
+                        }
+                    }
+
+                    // Draw EKG trail
+                    ctx.clearRect(0, 0, ekgCanvas.width, ekgCanvas.height);
+
+                    if (trailHistory.length > 2) {
+                        // Main EKG line
+                        ctx.beginPath();
+                        ctx.moveTo(trailHistory[0].x, trailHistory[0].y);
+                        for (let i = 1; i < trailHistory.length; i++) {
+                            const p = trailHistory[i];
+                            const prev = trailHistory[i - 1];
+                            // Smooth curve between points
+                            const cpx = (prev.x + p.x) / 2;
+                            const cpy = (prev.y + p.y) / 2;
+                            ctx.quadraticCurveTo(prev.x, prev.y, cpx, cpy);
+                        }
+                        // Gradient stroke from teal to transparent
+                        const gradient = ctx.createLinearGradient(
+                            trailHistory[0].x, trailHistory[0].y,
+                            trailHistory[trailHistory.length - 1].x, trailHistory[trailHistory.length - 1].y
+                        );
+                        gradient.addColorStop(0, 'rgba(45, 212, 191, 0)');
+                        gradient.addColorStop(0.3, 'rgba(45, 212, 191, 0.3)');
+                        gradient.addColorStop(0.7, 'rgba(45, 212, 191, 0.6)');
+                        gradient.addColorStop(1, 'rgba(45, 212, 191, 0.9)');
+                        ctx.strokeStyle = gradient;
+                        ctx.lineWidth = 2;
+                        ctx.lineCap = 'round';
+                        ctx.lineJoin = 'round';
+                        ctx.stroke();
+
+                        // Glow line (thicker, more transparent)
+                        ctx.beginPath();
+                        ctx.moveTo(trailHistory[0].x, trailHistory[0].y);
+                        for (let i = 1; i < trailHistory.length; i++) {
+                            const p = trailHistory[i];
+                            const prev = trailHistory[i - 1];
+                            const cpx = (prev.x + p.x) / 2;
+                            const cpy = (prev.y + p.y) / 2;
+                            ctx.quadraticCurveTo(prev.x, prev.y, cpx, cpy);
+                        }
+                        const glowGradient = ctx.createLinearGradient(
+                            trailHistory[0].x, trailHistory[0].y,
+                            trailHistory[trailHistory.length - 1].x, trailHistory[trailHistory.length - 1].y
+                        );
+                        glowGradient.addColorStop(0, 'rgba(45, 212, 191, 0)');
+                        glowGradient.addColorStop(0.5, 'rgba(45, 212, 191, 0.08)');
+                        glowGradient.addColorStop(1, 'rgba(45, 212, 191, 0.2)');
+                        ctx.strokeStyle = glowGradient;
+                        ctx.lineWidth = 6;
+                        ctx.stroke();
+
+                        // Draw small dots at EKG peaks (R-wave peaks)
+                        trailHistory.forEach((p, i) => {
+                            if (Math.abs(p.ekgOffset) > 15) {
+                                const alpha = (i / trailHistory.length) * 0.8;
+                                ctx.beginPath();
+                                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                                ctx.fillStyle = `rgba(239, 68, 68, ${alpha})`;
+                                ctx.fill();
+                            }
+                        });
+                    }
+
+                    // Draw click burst particles (medical cross shaped)
+                    for (let i = burstParticles.length - 1; i >= 0; i--) {
+                        const bp = burstParticles[i];
+                        bp.x += bp.vx;
+                        bp.y += bp.vy;
+                        bp.vx *= 0.95;
+                        bp.vy *= 0.95;
+                        bp.life -= 0.025;
+                        if (bp.life <= 0) { burstParticles.splice(i, 1); continue; }
+
+                        ctx.save();
+                        ctx.translate(bp.x, bp.y);
+                        ctx.rotate(bp.rotation);
+                        ctx.globalAlpha = bp.life;
+                        // Draw tiny plus/cross
+                        const s = bp.size * bp.life;
+                        ctx.fillStyle = bp.color;
+                        ctx.fillRect(-s/2, -s*1.5, s, s*3); // vertical
+                        ctx.fillRect(-s*1.5, -s/2, s*3, s); // horizontal
+                        ctx.restore();
+                    }
+
+                    // Age out old trail points slowly
+                    if (trailHistory.length > 0 && speed < 0.5) {
+                        trailHistory[0].age++;
+                        if (trailHistory[0].age > 8) {
+                            trailHistory.shift();
+                        }
+                    }
+
+                    prevMouseX = mouseX;
+                    prevMouseY = mouseY;
+                    requestAnimationFrame(animate);
+                }
+                animate();
+
+                // Hover effects for interactive elements
                 document.querySelectorAll('a, button, .magnetic-btn').forEach(el => {
                     el.addEventListener('mouseenter', () => {
-                        gsap.to(cursor, { scale: 2, borderColor: '#14b8a6' });
-                        gsap.to(follower, { scale: 1.5, opacity: 0.5 });
+                        isHovering = true;
+                        gsap.to(cursorPulse, {
+                            width: 50, height: 50, borderWidth: 2,
+                            borderColor: 'rgba(239,68,68,0.7)',
+                            duration: 0.4, ease: 'back.out(2)'
+                        });
+                        gsap.to(cursorPlus.querySelector('svg'), { scale: 0.7, duration: 0.3 });
+                        // Continuous rotation
+                        gsap.to(cursorPlus.querySelector('svg'), { rotation: '+=360', duration: 3, repeat: -1, ease: 'none' });
                     });
                     el.addEventListener('mouseleave', () => {
-                        gsap.to(cursor, { scale: 1, borderColor: '#14b8a6' });
-                        gsap.to(follower, { scale: 1, opacity: 1 });
+                        isHovering = false;
+                        gsap.killTweensOf(cursorPlus.querySelector('svg'), 'rotation');
+                        gsap.to(cursorPulse, {
+                            width: 40, height: 40, borderWidth: 2,
+                            borderColor: 'rgba(45,212,191,0.6)',
+                            duration: 0.4, ease: 'back.out(1.5)'
+                        });
+                        gsap.to(cursorPlus.querySelector('svg'), { scale: 1, rotation: 0, duration: 0.3 });
                     });
+                });
+
+                // Service cards - heartbeat intensifies
+                document.querySelectorAll('.service-card').forEach(card => {
+                    card.addEventListener('mouseenter', () => {
+                        isHovering = true;
+                        gsap.to(cursorPulse, {
+                            width: 60, height: 60, borderColor: 'rgba(45,212,191,0.9)',
+                            borderWidth: 2, duration: 0.4, ease: 'back.out(2)'
+                        });
+                        gsap.to(cursorPlus.querySelector('svg rect'), {
+                            fill: '#14b8a6', duration: 0.3
+                        });
+                    });
+                    card.addEventListener('mouseleave', () => {
+                        isHovering = false;
+                        gsap.to(cursorPulse, {
+                            width: 40, height: 40, borderColor: 'rgba(45,212,191,0.6)',
+                            duration: 0.3
+                        });
+                        gsap.to(cursorPlus.querySelector('svg rect'), {
+                            fill: 'white', duration: 0.3
+                        });
+                    });
+                });
+
+                // Click burst - medical cross particles explode outward
+                document.addEventListener('mousedown', () => {
+                    gsap.fromTo(cursorPulse,
+                        { scale: 0.7 },
+                        { scale: 1.6, opacity: 0, duration: 0.4, ease: 'power2.out',
+                          onComplete: () => gsap.to(cursorPulse, { scale: 1, opacity: 1, duration: 0.2 })
+                        }
+                    );
+                    gsap.fromTo(cursorPlus.querySelector('svg'),
+                        { scale: 0.5 },
+                        { scale: 1, duration: 0.3, ease: 'back.out(3)' }
+                    );
+                    // Spawn cross-shaped burst particles
+                    const colors = ['rgba(45,212,191,1)', 'rgba(239,68,68,1)', 'rgba(255,255,255,0.8)'];
+                    for (let i = 0; i < 10; i++) {
+                        const a = (Math.PI * 2 / 10) * i + Math.random() * 0.3;
+                        const spd = 2 + Math.random() * 4;
+                        burstParticles.push({
+                            x: mouseX, y: mouseY,
+                            vx: Math.cos(a) * spd,
+                            vy: Math.sin(a) * spd,
+                            life: 0.7 + Math.random() * 0.3,
+                            size: 1.5 + Math.random() * 2,
+                            rotation: Math.random() * Math.PI,
+                            color: colors[Math.floor(Math.random() * colors.length)]
+                        });
+                    }
+                });
+
+                // Hide cursor when leaving window
+                document.addEventListener('mouseleave', () => {
+                    gsap.to([cursorPlus, cursorPulse, cursorGlow], { opacity: 0, duration: 0.2 });
+                });
+                document.addEventListener('mouseenter', () => {
+                    gsap.to([cursorPlus, cursorPulse], { opacity: 1, duration: 0.2 });
                 });
             }
 

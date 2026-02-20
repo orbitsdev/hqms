@@ -44,7 +44,8 @@
       "Bash(./vendor/bin/pest:*)",
       "Bash(1 <<'PHPEOF'\nPHPEOF)",
       "Bash(git log:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "WebFetch(domain:tholman.com)"
     ]
   }
 }

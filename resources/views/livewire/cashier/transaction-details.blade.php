@@ -49,7 +49,7 @@
                     <div>
                         <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Processed By') }}</p>
                         <p class="font-medium text-zinc-900 dark:text-white">
-                            {{ $this->transaction->processedBy?->first_name }} {{ $this->transaction->processedBy?->last_name }}
+                            {{ $this->transaction->processedBy?->first_name }} {{ $this->transaction->processedBy?->middle_name }} {{ $this->transaction->processedBy?->last_name }}
                         </p>
                     </div>
                     <div>
@@ -305,51 +305,50 @@
 
             <div class="mt-4 border-t border-dashed pt-3 text-center">
                 <p>{{ __('Thank you for your visit!') }}</p>
-                <p class="text-xs">{{ __('Processed by') }}: {{ $this->transaction->processedBy?->first_name }}</p>
+                <p class="text-xs">{{ __('Processed by') }}: {{ $this->transaction->processedBy?->first_name }} {{ $this->transaction->processedBy?->middle_name }} {{ $this->transaction->processedBy?->last_name }}</p>
             </div>
         </div>
     </div>
+    @script
+    <script>
+        $wire.on('print-receipt', () => {
+            window.print();
+        });
+    </script>
+    @endscript
+
+    <style>
+        @media print {
+            /* Hide all layout elements */
+            nav, header, aside, footer,
+            [data-flux-sidebar], [data-flux-navbar],
+            .flux-sidebar, .flux-navbar,
+            [x-data*="sidebar"], [x-data*="navbar"] {
+                display: none !important;
+            }
+
+            /* Reset page margins */
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* Ensure receipt is visible and positioned correctly */
+            #receipt-content {
+                display: block !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                background: white !important;
+                z-index: 9999 !important;
+            }
+
+            /* Hide everything else in main content */
+            main > *:not(#receipt-content) {
+                display: none !important;
+            }
+        }
+    </style>
 </section>
-
-@script
-<script>
-    $wire.on('print-receipt', () => {
-        window.print();
-    });
-</script>
-@endscript
-
-<style>
-    @media print {
-        /* Hide all layout elements */
-        nav, header, aside, footer,
-        [data-flux-sidebar], [data-flux-navbar],
-        .flux-sidebar, .flux-navbar,
-        [x-data*="sidebar"], [x-data*="navbar"] {
-            display: none !important;
-        }
-
-        /* Reset page margins */
-        body {
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-
-        /* Ensure receipt is visible and positioned correctly */
-        #receipt-content {
-            display: block !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: auto !important;
-            background: white !important;
-            z-index: 9999 !important;
-        }
-
-        /* Hide everything else in main content */
-        main > *:not(#receipt-content) {
-            display: none !important;
-        }
-    }
-</style>
