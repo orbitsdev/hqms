@@ -256,7 +256,7 @@
                 </div>
                 <div class="flex justify-between">
                     <span>{{ __('Patient') }}</span>
-                    <span>{{ $this->transaction->medicalRecord?->patient_first_name }} {{ $this->transaction->medicalRecord?->patient_last_name }}</span>
+                    <span>{{ $this->transaction->medicalRecord?->patient_full_name }}</span>
                 </div>
             </div>
 

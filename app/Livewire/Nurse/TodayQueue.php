@@ -1141,12 +1141,6 @@ class TodayQueue extends Component
             return;
         }
 
-        if (! $queue->medicalRecord?->vital_signs_recorded_at) {
-            Toaster::error(__('Please record vital signs before forwarding to doctor.'));
-
-            return;
-        }
-
         $consultationTypeId = $queue->consultation_type_id;
 
         DB::transaction(function () use ($queue): void {

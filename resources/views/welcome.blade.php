@@ -39,6 +39,36 @@
             40% { transform: translateY(-10px); }
             60% { transform: translateY(-5px); }
         }
+
+        /* Animated wave layers */
+        @keyframes waveShift1 {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(-15px); }
+        }
+        @keyframes waveShift2 {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(20px); }
+        }
+        .wave-layer-1 { animation: waveShift1 6s ease-in-out infinite; }
+        .wave-layer-2 { animation: waveShift2 8s ease-in-out infinite; }
+
+        /* Pulse for divider dots */
+        @keyframes dotPulse {
+            0%, 100% { opacity: 0.2; r: 2; }
+            50% { opacity: 0.6; r: 4; }
+        }
+        .divider-dot { animation: dotPulse 3s ease-in-out infinite; }
+        .divider-dot:nth-child(2) { animation-delay: 1s; }
+        .divider-dot:nth-child(3) { animation-delay: 2s; }
+
+        /* Animated dash for divider lines */
+        .divider-line {
+            stroke-dasharray: 8 12;
+            animation: dashMove 20s linear infinite;
+        }
+        @keyframes dashMove {
+            to { stroke-dashoffset: -200; }
+        }
     </style>
 </head>
 <body class="min-h-screen bg-zinc-50 antialiased dark:bg-zinc-900 overflow-x-hidden">
@@ -50,7 +80,7 @@
     <div id="hero-section" class="relative min-h-screen overflow-hidden">
         {{-- Background Image with Parallax --}}
         <div class="absolute inset-0 z-0">
-            <div id="hero-bg" class="parallax-slow absolute inset-0 scale-110 bg-cover bg-center bg-no-repeat will-change-transform" style="background-image: url('/images/bg.png');"></div>
+            <div id="hero-bg" class="parallax-slow absolute inset-0 scale-110 bg-cover bg-center bg-no-repeat will-change-transform" style="background-image: url('/images/hospital.webp');"></div>
             <div id="hero-overlay" class="absolute inset-0 bg-black/50"></div>
         </div>
 
@@ -62,23 +92,27 @@
         </div>
 
         {{-- Navigation --}}
-        <nav id="navbar" class="relative z-20 flex items-center justify-between px-6 py-4 lg:px-12 bg-black/20 backdrop-blur-sm">
+        <nav id="navbar" class="relative z-20 flex items-center justify-between px-6 py-4 lg:px-12">
             <a href="{{ url('/') }}" class="logo-link flex items-center gap-3 group">
-                <img src="{{ asset('images/caretime_logo.png') }}" alt="CareTime" class="h-10 w-10 object-contain transition-transform group-hover:scale-110" />
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/15 transition-transform group-hover:scale-110">
+                    <svg class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 2v4" /><path d="M16 2v4" /><rect x="3" y="4" width="18" height="18" rx="3" /><path d="M12 10v6" /><path d="M9 13h6" />
+                    </svg>
+                </div>
                 <span class="text-xl font-bold tracking-tight text-white drop-shadow-lg">{{ config('app.name') }}</span>
             </a>
 
             <div class="flex items-center gap-2 sm:gap-4">
                 @auth
-                    <a href="{{ url('/dashboard') }}" class="magnetic-btn whitespace-nowrap rounded-lg bg-white/20 px-3 sm:px-5 py-2 sm:py-2.5 text-sm font-medium text-white shadow-lg backdrop-blur-sm transition hover:bg-white/30">
+                    <a href="{{ url('/dashboard') }}" class="magnetic-btn whitespace-nowrap rounded-lg bg-white/15 px-3 sm:px-5 py-2 sm:py-2.5 text-sm font-medium text-white transition hover:bg-white/25">
                         {{ __('Dashboard') }}
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="nav-link magnetic-btn whitespace-nowrap rounded-lg bg-white/10 px-3 sm:px-5 py-2 sm:py-2.5 text-sm font-medium text-white shadow-lg backdrop-blur-sm transition hover:bg-white/20">
+                    <a href="{{ route('login') }}" class="nav-link magnetic-btn whitespace-nowrap rounded-lg bg-white/10 px-3 sm:px-5 py-2 sm:py-2.5 text-sm font-medium text-white transition hover:bg-white/20">
                         {{ __('Log in') }}
                     </a>
                     @if (Route::has('register'))
-                        <a href="{{ route('register') }}" class="nav-link magnetic-btn glow-hover whitespace-nowrap rounded-lg bg-white px-3 sm:px-5 py-2 sm:py-2.5 text-sm font-medium text-primary shadow-lg transition hover:bg-zinc-100 hover:shadow-xl">
+                        <a href="{{ route('register') }}" class="nav-link magnetic-btn glow-hover whitespace-nowrap rounded-lg bg-white px-3 sm:px-5 py-2 sm:py-2.5 text-sm font-medium text-primary transition hover:bg-zinc-100">
                             {{ __('Sign up') }}
                         </a>
                     @endif
@@ -142,7 +176,7 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <p class="stat-number text-3xl font-bold text-white drop-shadow-md" data-value="10000">0</p>
+                                        <p class="stat-number text-3xl font-bold text-white drop-shadow-md" data-value="5000">0</p>
                                         <p class="text-white/80">{{ __('Patients Served') }}</p>
                                     </div>
                                 </div>
@@ -168,7 +202,7 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <p class="stat-number text-3xl font-bold text-white drop-shadow-md" data-value="15">0</p>
+                                        <p class="stat-number text-3xl font-bold text-white drop-shadow-md" data-value="10">0</p>
                                         <p class="text-white/80">{{ __('Expert Doctors') }}</p>
                                     </div>
                                 </div>
@@ -187,10 +221,12 @@
             </div>
         </div>
 
-        {{-- Wave Decoration --}}
+        {{-- Animated Layered Wave Divider --}}
         <div class="absolute bottom-0 left-0 right-0 z-10 pointer-events-none">
-            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" class="block w-full h-auto">
-                <path d="M0,120 L60,110 C120,100 240,80 360,70 C480,60 600,60 720,65 C840,70 960,80 1080,85 C1200,90 1320,90 1380,90 L1440,90 L1440,120 L0,120 Z" fill="white" class="dark:fill-zinc-900"></path>
+            <svg viewBox="0 0 1440 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" class="block w-full h-[100px] lg:h-[140px]">
+                <path class="wave-layer-1 fill-white/10 dark:fill-zinc-800/10" d="M0,180 L48,165 C96,150 192,120 288,110 C384,100 480,110 576,125 C672,140 768,160 864,155 C960,150 1056,120 1152,105 C1248,90 1344,90 1392,90 L1440,90 L1440,180 L0,180 Z" />
+                <path class="wave-layer-2 fill-white/30 dark:fill-zinc-900/30" d="M0,180 L48,170 C96,160 192,140 288,125 C384,110 480,100 576,110 C672,120 768,150 864,155 C960,160 1056,140 1152,120 C1248,100 1344,100 1392,100 L1440,100 L1440,180 L0,180 Z" />
+                <path class="wave-layer-3" d="M0,180 L48,175 C96,170 192,160 288,148 C384,136 480,122 576,128 C672,134 768,160 864,165 C960,170 1056,154 1152,138 C1248,122 1344,126 1392,128 L1440,130 L1440,180 L0,180 Z" fill="white" class="dark:fill-zinc-900" />
             </svg>
         </div>
     </div>
@@ -237,13 +273,26 @@
         </div>
     </section>
 
+    {{-- Diagonal Tech Divider: Services → CTA --}}
+    <div class="relative h-24 lg:h-32 overflow-hidden">
+        <div class="absolute inset-0 bg-white dark:bg-zinc-900"></div>
+        <svg viewBox="0 0 1440 100" preserveAspectRatio="none" class="absolute bottom-0 w-full h-full">
+            <defs>
+                <linearGradient id="divider-grad-1" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color: var(--color-primary); stop-opacity: 1;" />
+                    <stop offset="100%" style="stop-color: var(--color-primary); stop-opacity: 0.8;" />
+                </linearGradient>
+            </defs>
+            {{-- Zigzag shape - subtle modern sawtooth --}}
+            <path d="M0,100 L0,50 L90,28 L180,50 L270,28 L360,50 L450,28 L540,50 L630,28 L720,50 L810,28 L900,50 L990,28 L1080,50 L1170,28 L1260,50 L1350,28 L1440,50 L1440,100 Z" fill="url(#divider-grad-1)" />
+        </svg>
+    </div>
+
     {{-- CTA Section --}}
-    <section id="cta-section" class="relative overflow-hidden bg-gradient-to-r from-primary to-primary/80 py-20">
-        {{-- Animated background shapes --}}
+    <section id="cta-section" class="relative overflow-hidden bg-gradient-to-r from-primary to-primary/80 py-20 lg:py-28">
+        {{-- Grid pattern overlay --}}
         <div class="absolute inset-0 overflow-hidden">
-            <div class="cta-shape absolute -top-20 -left-20 w-64 h-64 bg-white/10 rounded-full"></div>
-            <div class="cta-shape absolute -bottom-20 -right-20 w-96 h-96 bg-white/5 rounded-full"></div>
-            <div class="cta-shape absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-white/10 rounded-full"></div>
+            <div class="absolute inset-0 opacity-[0.04]" style="background-image: linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px); background-size: 40px 40px;"></div>
         </div>
 
         <div class="mx-auto max-w-4xl px-6 text-center lg:px-12 relative">
@@ -270,15 +319,92 @@
     </section>
 
     {{-- Footer --}}
-    <footer id="footer" class="bg-zinc-900 py-12 text-white">
-        <div class="mx-auto max-w-6xl px-6 lg:px-12">
-            <div class="flex flex-col items-center justify-between gap-6 md:flex-row">
-                <div class="footer-logo flex items-center gap-3">
-                    <x-app-logo class="h-8 w-8 text-white" />
-                    <span class="font-bold">{{ config('app.name') }}</span>
+    <footer id="footer" class="relative bg-zinc-900 pt-16 pb-8 text-white overflow-hidden">
+        {{-- Square grid pattern background --}}
+        <svg aria-hidden="true" class="absolute inset-0 z-0 size-full pointer-events-none mask-[radial-gradient(100%_100%_at_top_right,white,transparent)] stroke-white/25">
+            <defs>
+                <pattern id="footer-grid-pattern" width="40" height="40" x="50%" y="-1" patternUnits="userSpaceOnUse">
+                    <path d="M.5 40V.5H40" fill="none" />
+                </pattern>
+            </defs>
+            <svg x="50%" y="-1" class="overflow-visible fill-zinc-800/20">
+                <path d="M-200 0h201v201h-201Z M600 0h201v201h-201Z M-400 600h201v201h-201Z M200 800h201v201h-201Z" stroke-width="0" />
+            </svg>
+            <rect width="100%" height="100%" fill="url(#footer-grid-pattern)" stroke-width="0" />
+        </svg>
+
+        <div class="mx-auto max-w-6xl px-6 lg:px-12 relative z-10">
+            {{-- Top section --}}
+            <div class="grid gap-10 md:grid-cols-3 mb-12">
+                {{-- Brand --}}
+                <div class="footer-item">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
+                            <svg class="h-6 w-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M8 2v4" /><path d="M16 2v4" /><rect x="3" y="4" width="18" height="18" rx="3" /><path d="M12 10v6" /><path d="M9 13h6" />
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold tracking-tight">{{ config('app.name') }}</span>
+                    </div>
+                    <p class="text-sm text-zinc-400 leading-relaxed max-w-xs">
+                        {{ __('Guardiano Maternity and Children Clinic and Hospital - Providing compassionate care for mothers and children since 2010.') }}
+                    </p>
                 </div>
-                <p class="footer-text text-sm text-zinc-400">
+
+                {{-- Quick Links --}}
+                <div class="footer-item">
+                    <h4 class="text-sm font-semibold uppercase tracking-wider text-zinc-300 mb-4">{{ __('Quick Links') }}</h4>
+                    <ul class="space-y-2.5">
+                        <li>
+                            <a href="#services" class="text-sm text-zinc-400 transition-colors hover:text-white inline-flex items-center gap-2 group">
+                                <span class="h-px w-0 bg-primary transition-all group-hover:w-4"></span>
+                                {{ __('Our Services') }}
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('login') }}" class="text-sm text-zinc-400 transition-colors hover:text-white inline-flex items-center gap-2 group">
+                                <span class="h-px w-0 bg-primary transition-all group-hover:w-4"></span>
+                                {{ __('Log in') }}
+                            </a>
+                        </li>
+                        @if (Route::has('register'))
+                        <li>
+                            <a href="{{ route('register') }}" class="text-sm text-zinc-400 transition-colors hover:text-white inline-flex items-center gap-2 group">
+                                <span class="h-px w-0 bg-primary transition-all group-hover:w-4"></span>
+                                {{ __('Create Account') }}
+                            </a>
+                        </li>
+                        @endif
+                    </ul>
+                </div>
+
+                {{-- Contact / Hours --}}
+                <div class="footer-item">
+                    <h4 class="text-sm font-semibold uppercase tracking-wider text-zinc-300 mb-4">{{ __('Clinic Hours') }}</h4>
+                    <ul class="space-y-2.5 text-sm text-zinc-400">
+                        <li class="flex items-center gap-2">
+                            <svg class="h-4 w-4 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            {{ __('Mon - Sat: 8:00 AM - 5:00 PM') }}
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="h-4 w-4 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                            {{ __('Emergency: 24/7') }}
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="h-4 w-4 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            {{ __('Tacloban City, Leyte') }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            {{-- Bottom bar --}}
+            <div class="border-t border-zinc-800 pt-6 flex flex-col items-center justify-between gap-4 md:flex-row">
+                <p class="footer-text text-xs text-zinc-500">
                     &copy; {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved.') }}
+                </p>
+                <p class="footer-text text-xs text-zinc-600">
+                    {{ __('Hospital Queue Management System') }}
                 </p>
             </div>
         </div>
@@ -581,16 +707,30 @@
             // ============================================
             // Footer Animation
             // ============================================
-            gsap.from('.footer-logo, .footer-text', {
+            gsap.from('.footer-item', {
                 scrollTrigger: {
                     trigger: '#footer',
-                    start: 'top 98%',
+                    start: 'top 90%',
+                    toggleActions: 'play none none none'
+                },
+                y: 40,
+                opacity: 0,
+                stagger: 0.15,
+                duration: 0.8,
+                ease: 'power3.out'
+            });
+
+            gsap.from('.footer-text', {
+                scrollTrigger: {
+                    trigger: '#footer',
+                    start: 'top 80%',
                     toggleActions: 'play none none none'
                 },
                 y: 20,
                 opacity: 0,
-                stagger: 0.15,
+                stagger: 0.1,
                 duration: 0.6,
+                delay: 0.3,
                 ease: 'power3.out'
             });
 

@@ -317,11 +317,9 @@
                             <flux:button wire:click="openInterviewModal({{ $selectedQueue->id }})" class="w-full" variant="{{ $hasVitals ? 'filled' : 'primary' }}" icon="clipboard-document-list">
                                 {{ __('Patient Interview') }}
                             </flux:button>
-                            @if($hasVitals)
-                                <flux:button wire:click="forwardToDoctor({{ $selectedQueue->id }})" class="w-full" variant="primary" icon="arrow-right">
-                                    {{ __('Forward to Doctor') }}
-                                </flux:button>
-                            @endif
+                            <flux:button wire:click="forwardToDoctor({{ $selectedQueue->id }})" class="w-full" variant="primary" icon="arrow-right">
+                                {{ __('Forward to Doctor') }}
+                            </flux:button>
                             <flux:button wire:click="openStopServingModal({{ $selectedQueue->id }})" class="w-full" variant="ghost" icon="x-mark">
                                 {{ __('Stop Serving') }}
                             </flux:button>

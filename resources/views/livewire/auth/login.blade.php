@@ -1,11 +1,17 @@
-<x-layouts.auth.split background="/images/login_bg.png">
+<x-layouts.auth.card background="/images/hospital.webp">
     <div class="flex flex-col gap-6">
-        <x-auth-header :title="__('Welcome Back')" :description="__('Enter your credentials to access your account')" />
+        <div class="text-center animate-fade-in-up-delay-1">
+            <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
+                <flux:icon.lock-closed class="size-7 text-primary" />
+            </div>
+            <flux:heading size="xl">{{ __('Welcome Back') }}</flux:heading>
+            <flux:subheading class="mt-1">{{ __('Enter your credentials to access your account') }}</flux:subheading>
+        </div>
 
         <!-- Session Status -->
         <x-auth-session-status class="text-center" :status="session('status')" />
 
-        <form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-6">
+        <form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-5 animate-fade-in-up-delay-2">
             @csrf
 
             <!-- Email Address -->
@@ -50,10 +56,10 @@
         </form>
 
         @if (Route::has('register'))
-            <div class="space-x-1 text-sm text-center rtl:space-x-reverse text-zinc-600 dark:text-zinc-400">
+            <div class="space-x-1 text-sm text-center rtl:space-x-reverse text-zinc-600 dark:text-zinc-400 animate-fade-in-up-delay-3">
                 <span>{{ __('Don\'t have an account?') }}</span>
                 <flux:link :href="route('register')" wire:navigate>{{ __('Sign up') }}</flux:link>
             </div>
         @endif
     </div>
-</x-layouts.auth.split>
+</x-layouts.auth.card>
