@@ -74,14 +74,14 @@
 <body class="min-h-screen bg-zinc-50 antialiased dark:bg-zinc-900 overflow-x-hidden">
     {{-- Custom Cursor - Hospital Themed (desktop only) --}}
     <div id="cursor-plus" class="hidden lg:block fixed pointer-events-none z-[9999]" style="transform: translate(-50%, -50%);">
-        {{-- Medical cross/plus cursor --}}
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <rect x="8" y="2" width="4" height="16" rx="1.5" fill="white" opacity="0.9"/>
-            <rect x="2" y="8" width="16" height="4" rx="1.5" fill="white" opacity="0.9"/>
+        {{-- Medical cross/plus cursor - bigger --}}
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect x="11" y="2" width="6" height="24" rx="2" fill="white" opacity="0.95"/>
+            <rect x="2" y="11" width="24" height="6" rx="2" fill="white" opacity="0.95"/>
         </svg>
     </div>
-    <div id="cursor-pulse" class="hidden lg:block fixed w-10 h-10 rounded-full border-2 border-teal-400/60 pointer-events-none z-[9998]" style="transform: translate(-50%, -50%);"></div>
-    <div id="cursor-glow" class="hidden lg:block fixed w-32 h-32 rounded-full pointer-events-none z-[9997] opacity-0" style="transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(20,184,166,0.12) 0%, transparent 70%);"></div>
+    <div id="cursor-pulse" class="hidden lg:block fixed w-14 h-14 rounded-full border-2 pointer-events-none z-[9998]" style="transform: translate(-50%, -50%); border-color: rgba(94,234,212,0.7);"></div>
+    <div id="cursor-glow" class="hidden lg:block fixed w-48 h-48 rounded-full pointer-events-none z-[9997] opacity-0" style="transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.05) 40%, transparent 70%);"></div>
     <canvas id="cursor-ekg" class="hidden lg:block fixed inset-0 pointer-events-none z-[9996]"></canvas>
 
     {{-- Hero Section with Background --}}
@@ -465,37 +465,40 @@
                     if (!isHovering) {
                         // Double-beat like a real heartbeat: lub-dub
                         gsap.timeline()
-                            .to(cursorPulse, { scale: 1.4, borderColor: 'rgba(239,68,68,0.8)', duration: 0.1, ease: 'power2.out' })
-                            .to(cursorPulse, { scale: 1, borderColor: 'rgba(45,212,191,0.6)', duration: 0.15, ease: 'power2.in' })
-                            .to(cursorPulse, { scale: 1.2, borderColor: 'rgba(239,68,68,0.5)', duration: 0.08, ease: 'power2.out' }, '+=0.05')
-                            .to(cursorPulse, { scale: 1, borderColor: 'rgba(45,212,191,0.6)', duration: 0.2, ease: 'power2.in' });
+                            .to(cursorPulse, { scale: 1.5, borderColor: 'rgba(167,243,208,0.9)', duration: 0.1, ease: 'power2.out' })
+                            .to(cursorPulse, { scale: 1, borderColor: 'rgba(94,234,212,0.7)', duration: 0.15, ease: 'power2.in' })
+                            .to(cursorPulse, { scale: 1.25, borderColor: 'rgba(167,243,208,0.6)', duration: 0.08, ease: 'power2.out' }, '+=0.05')
+                            .to(cursorPulse, { scale: 1, borderColor: 'rgba(94,234,212,0.7)', duration: 0.2, ease: 'power2.in' });
                     }
                     setTimeout(heartbeatPulse, 850 + Math.random() * 100);
                 }
                 setTimeout(heartbeatPulse, 1500);
 
-                // EKG waveform shape generator (QRS complex)
+                // EKG waveform shape generator (QRS complex) - BIGGER amplitude
                 // Returns a Y offset for the given phase (0-1)
                 function ekgWaveform(phase) {
                     // P wave (small bump)
-                    if (phase < 0.1) return Math.sin(phase / 0.1 * Math.PI) * 4;
+                    if (phase < 0.1) return Math.sin(phase / 0.1 * Math.PI) * 8;
                     // Flat
                     if (phase < 0.2) return 0;
                     // Q dip
-                    if (phase < 0.25) return -((phase - 0.2) / 0.05) * 6;
+                    if (phase < 0.25) return -((phase - 0.2) / 0.05) * 12;
                     // R spike (sharp up)
-                    if (phase < 0.35) return -6 + ((phase - 0.25) / 0.1) * 30;
+                    if (phase < 0.35) return -12 + ((phase - 0.25) / 0.1) * 55;
                     // S dip (sharp down)
-                    if (phase < 0.45) return 24 - ((phase - 0.35) / 0.1) * 32;
+                    if (phase < 0.45) return 43 - ((phase - 0.35) / 0.1) * 58;
                     // Return to baseline
-                    if (phase < 0.55) return -8 + ((phase - 0.45) / 0.1) * 8;
+                    if (phase < 0.55) return -15 + ((phase - 0.45) / 0.1) * 15;
                     // Flat
                     if (phase < 0.7) return 0;
                     // T wave (gentle bump)
-                    if (phase < 0.85) return Math.sin((phase - 0.7) / 0.15 * Math.PI) * 5;
+                    if (phase < 0.85) return Math.sin((phase - 0.7) / 0.15 * Math.PI) * 10;
                     // Flat
                     return 0;
                 }
+
+                // Pulse ring state (expanding circles like heart monitor blips)
+                const pulseRings = []; // {x, y, radius, maxRadius, life, lineWidth}
 
                 // Main animation loop
                 function animate() {
@@ -569,7 +572,7 @@
                         gradient.addColorStop(0.7, 'rgba(45, 212, 191, 0.6)');
                         gradient.addColorStop(1, 'rgba(45, 212, 191, 0.9)');
                         ctx.strokeStyle = gradient;
-                        ctx.lineWidth = 2;
+                        ctx.lineWidth = 3;
                         ctx.lineCap = 'round';
                         ctx.lineJoin = 'round';
                         ctx.stroke();
@@ -592,19 +595,66 @@
                         glowGradient.addColorStop(0.5, 'rgba(45, 212, 191, 0.08)');
                         glowGradient.addColorStop(1, 'rgba(45, 212, 191, 0.2)');
                         ctx.strokeStyle = glowGradient;
-                        ctx.lineWidth = 6;
+                        ctx.lineWidth = 10;
                         ctx.stroke();
 
-                        // Draw small dots at EKG peaks (R-wave peaks)
+                        // Draw small dots at EKG peaks (R-wave peaks) - bigger
                         trailHistory.forEach((p, i) => {
-                            if (Math.abs(p.ekgOffset) > 15) {
-                                const alpha = (i / trailHistory.length) * 0.8;
+                            if (Math.abs(p.ekgOffset) > 20) {
+                                const alpha = (i / trailHistory.length) * 0.9;
+                                // Outer glow
                                 ctx.beginPath();
-                                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-                                ctx.fillStyle = `rgba(239, 68, 68, ${alpha})`;
+                                ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+                                ctx.fillStyle = `rgba(94, 234, 212, ${alpha * 0.2})`;
+                                ctx.fill();
+                                // Inner dot
+                                ctx.beginPath();
+                                ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+                                ctx.fillStyle = `rgba(94, 234, 212, ${alpha})`;
                                 ctx.fill();
                             }
                         });
+                    }
+
+                    // Draw pulse rings (expanding circles like heart monitor)
+                    for (let i = pulseRings.length - 1; i >= 0; i--) {
+                        const ring = pulseRings[i];
+                        ring.radius += 1.5;
+                        ring.life -= 0.025;
+                        if (ring.life <= 0 || ring.radius > ring.maxRadius) {
+                            pulseRings.splice(i, 1); continue;
+                        }
+                        // Outer glow ring
+                        ctx.beginPath();
+                        ctx.arc(ring.x, ring.y, ring.radius, 0, Math.PI * 2);
+                        ctx.strokeStyle = `rgba(94, 234, 212, ${ring.life * 0.15})`;
+                        ctx.lineWidth = ring.lineWidth * 3;
+                        ctx.stroke();
+                        // Main ring
+                        ctx.beginPath();
+                        ctx.arc(ring.x, ring.y, ring.radius, 0, Math.PI * 2);
+                        ctx.strokeStyle = `rgba(94, 234, 212, ${ring.life * 0.5})`;
+                        ctx.lineWidth = ring.lineWidth * ring.life;
+                        ctx.stroke();
+                        // Bright inner ring
+                        ctx.beginPath();
+                        ctx.arc(ring.x, ring.y, ring.radius, 0, Math.PI * 2);
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${ring.life * 0.3})`;
+                        ctx.lineWidth = ring.lineWidth * 0.5 * ring.life;
+                        ctx.stroke();
+                    }
+
+                    // Spawn pulse rings from EKG peaks
+                    if (trailHistory.length > 5 && Math.random() < 0.06) {
+                        const peakPoints = trailHistory.filter(p => Math.abs(p.ekgOffset) > 20);
+                        if (peakPoints.length > 0) {
+                            const pk = peakPoints[peakPoints.length - 1];
+                            pulseRings.push({
+                                x: pk.x, y: pk.y,
+                                radius: 3, maxRadius: 35 + Math.random() * 20,
+                                life: 1.0, lineWidth: 2
+                            });
+                        }
                     }
 
                     // Draw click burst particles (medical cross shaped)
@@ -648,8 +698,8 @@
                     el.addEventListener('mouseenter', () => {
                         isHovering = true;
                         gsap.to(cursorPulse, {
-                            width: 50, height: 50, borderWidth: 2,
-                            borderColor: 'rgba(239,68,68,0.7)',
+                            width: 56, height: 56, borderWidth: 2,
+                            borderColor: 'rgba(167,243,208,0.8)',
                             duration: 0.4, ease: 'back.out(2)'
                         });
                         gsap.to(cursorPlus.querySelector('svg'), { scale: 0.7, duration: 0.3 });
@@ -660,8 +710,8 @@
                         isHovering = false;
                         gsap.killTweensOf(cursorPlus.querySelector('svg'), 'rotation');
                         gsap.to(cursorPulse, {
-                            width: 40, height: 40, borderWidth: 2,
-                            borderColor: 'rgba(45,212,191,0.6)',
+                            width: 56, height: 56, borderWidth: 2,
+                            borderColor: 'rgba(94,234,212,0.7)',
                             duration: 0.4, ease: 'back.out(1.5)'
                         });
                         gsap.to(cursorPlus.querySelector('svg'), { scale: 1, rotation: 0, duration: 0.3 });
@@ -673,7 +723,7 @@
                     card.addEventListener('mouseenter', () => {
                         isHovering = true;
                         gsap.to(cursorPulse, {
-                            width: 60, height: 60, borderColor: 'rgba(45,212,191,0.9)',
+                            width: 64, height: 64, borderColor: 'rgba(167,243,208,0.9)',
                             borderWidth: 2, duration: 0.4, ease: 'back.out(2)'
                         });
                         gsap.to(cursorPlus.querySelector('svg rect'), {
@@ -683,7 +733,7 @@
                     card.addEventListener('mouseleave', () => {
                         isHovering = false;
                         gsap.to(cursorPulse, {
-                            width: 40, height: 40, borderColor: 'rgba(45,212,191,0.6)',
+                            width: 56, height: 56, borderColor: 'rgba(94,234,212,0.7)',
                             duration: 0.3
                         });
                         gsap.to(cursorPlus.querySelector('svg rect'), {
@@ -692,29 +742,37 @@
                     });
                 });
 
-                // Click burst - medical cross particles explode outward
+                // Click burst - lightning explosion + medical cross particles
                 document.addEventListener('mousedown', () => {
                     gsap.fromTo(cursorPulse,
                         { scale: 0.7 },
-                        { scale: 1.6, opacity: 0, duration: 0.4, ease: 'power2.out',
+                        { scale: 2, opacity: 0, duration: 0.5, ease: 'power2.out',
                           onComplete: () => gsap.to(cursorPulse, { scale: 1, opacity: 1, duration: 0.2 })
                         }
                     );
                     gsap.fromTo(cursorPlus.querySelector('svg'),
                         { scale: 0.5 },
-                        { scale: 1, duration: 0.3, ease: 'back.out(3)' }
+                        { scale: 1.2, duration: 0.3, ease: 'back.out(3)' }
                     );
+                    // Spawn defibrillator shockwave pulse rings from click
+                    for (let i = 0; i < 3; i++) {
+                        pulseRings.push({
+                            x: mouseX, y: mouseY,
+                            radius: 5 + i * 4, maxRadius: 60 + i * 20,
+                            life: 1.0, lineWidth: 3 - i * 0.5
+                        });
+                    }
                     // Spawn cross-shaped burst particles
-                    const colors = ['rgba(45,212,191,1)', 'rgba(239,68,68,1)', 'rgba(255,255,255,0.8)'];
-                    for (let i = 0; i < 10; i++) {
-                        const a = (Math.PI * 2 / 10) * i + Math.random() * 0.3;
-                        const spd = 2 + Math.random() * 4;
+                    const colors = ['rgba(45,212,191,1)', 'rgba(94,234,212,1)', 'rgba(255,255,255,0.8)'];
+                    for (let i = 0; i < 12; i++) {
+                        const a = (Math.PI * 2 / 12) * i + Math.random() * 0.3;
+                        const spd = 3 + Math.random() * 5;
                         burstParticles.push({
                             x: mouseX, y: mouseY,
                             vx: Math.cos(a) * spd,
                             vy: Math.sin(a) * spd,
-                            life: 0.7 + Math.random() * 0.3,
-                            size: 1.5 + Math.random() * 2,
+                            life: 0.8 + Math.random() * 0.2,
+                            size: 2 + Math.random() * 2.5,
                             rotation: Math.random() * Math.PI,
                             color: colors[Math.floor(Math.random() * colors.length)]
                         });
