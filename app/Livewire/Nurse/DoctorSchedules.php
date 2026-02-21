@@ -406,7 +406,7 @@ class DoctorSchedules extends Component
                         ->where('user_id', $userId)
                         ->where('consultation_type_id', $consultationTypeId)
                         ->where('schedule_type', 'exception')
-                        ->where('date', $date->format('Y-m-d'))
+                        ->whereDate('date', $date->format('Y-m-d'))
                         ->exists();
 
                     if ($exists) {
@@ -446,7 +446,7 @@ class DoctorSchedules extends Component
                     ->where('user_id', $userId)
                     ->where('consultation_type_id', $consultationTypeId)
                     ->where('schedule_type', 'exception')
-                    ->where('date', $this->exceptionDate)
+                    ->whereDate('date', $this->exceptionDate)
                     ->exists();
 
                 if ($exists) {
@@ -615,6 +615,10 @@ class DoctorSchedules extends Component
 
         $grouped = [];
         foreach ($schedules as $schedule) {
+            if (! $schedule->doctor || ! $schedule->consultationType) {
+                continue;
+            }
+
             $doctorId = $schedule->user_id;
             $typeId = $schedule->consultation_type_id;
 
@@ -636,11 +640,11 @@ class DoctorSchedules extends Component
         }
 
         // Sort by doctor name for consistent display order
-        uasort($grouped, fn ($a, $b) => strcasecmp($a['doctor']->name, $b['doctor']->name));
+        uasort($grouped, fn ($a, $b) => strcasecmp($a['doctor']->name ?? '', $b['doctor']->name ?? ''));
 
         // Sort each doctor's consultation types by name
         foreach ($grouped as $doctorId => $data) {
-            uasort($grouped[$doctorId]['schedules'], fn ($a, $b) => strcasecmp($a['consultation_type']->name, $b['consultation_type']->name));
+            uasort($grouped[$doctorId]['schedules'], fn ($a, $b) => strcasecmp($a['consultation_type']->name ?? '', $b['consultation_type']->name ?? ''));
         }
 
         return $grouped;
@@ -760,9 +764,18 @@ class DoctorSchedules extends Component
             $doctors = [];
             foreach ($schedules as $doctorId => $doctorSchedules) {
                 $doctor = $doctorSchedules->first()->doctor;
+
+                if (! $doctor) {
+                    continue;
+                }
+
                 $types = [];
 
                 foreach ($doctorSchedules as $schedule) {
+                    if (! $schedule->consultationType) {
+                        continue;
+                    }
+
                     $exceptionKey = $doctorId.'_'.$schedule->consultation_type_id;
                     $exception = $exceptions->get($exceptionKey);
 
@@ -776,15 +789,17 @@ class DoctorSchedules extends Component
                     ];
                 }
 
-                $doctors[] = [
-                    'doctor' => $doctor,
-                    'types' => $types,
-                ];
+                if (! empty($types)) {
+                    $doctors[] = [
+                        'doctor' => $doctor,
+                        'types' => $types,
+                    ];
+                }
             }
 
             // Add doctors who only have exceptions (extra clinic days)
             foreach ($exceptions as $exception) {
-                if ($exception->is_available && ! $schedules->has($exception->user_id)) {
+                if ($exception->is_available && ! $schedules->has($exception->user_id) && $exception->doctor && $exception->consultationType) {
                     $doctors[] = [
                         'doctor' => $exception->doctor,
                         'types' => [

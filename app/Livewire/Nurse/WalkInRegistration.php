@@ -98,7 +98,7 @@ class WalkInRegistration extends Component
                 'patientFirstName' => ['required', 'string', 'max:255'],
                 'patientMiddleName' => ['nullable', 'string', 'max:255'],
                 'patientLastName' => ['required', 'string', 'max:255'],
-                'patientDateOfBirth' => ['required', 'date', 'before_or_equal:today'],
+                'patientDateOfBirth' => ['required', 'bail', 'date', 'before_or_equal:today'],
                 'patientGender' => ['required', Rule::in(['male', 'female'])],
                 'patientPhone' => ['nullable', 'string', 'max:20'],
                 'patientProvince' => ['nullable', 'string', 'max:255'],
@@ -115,7 +115,7 @@ class WalkInRegistration extends Component
 
         if ($this->currentStep === 3) {
             $this->validate([
-                'chiefComplaints' => ['required', 'string', 'min:5', 'max:2000'],
+                'chiefComplaints' => ['required', 'string', 'max:2000'],
             ]);
 
             $this->currentStep = 4;
@@ -139,14 +139,14 @@ class WalkInRegistration extends Component
             'patientFirstName' => ['required', 'string', 'max:255'],
             'patientMiddleName' => ['nullable', 'string', 'max:255'],
             'patientLastName' => ['required', 'string', 'max:255'],
-            'patientDateOfBirth' => ['required', 'date', 'before_or_equal:today'],
+            'patientDateOfBirth' => ['required', 'bail', 'date', 'before_or_equal:today'],
             'patientGender' => ['required', Rule::in(['male', 'female'])],
             'patientPhone' => ['nullable', 'string', 'max:20'],
             'patientProvince' => ['nullable', 'string', 'max:255'],
             'patientMunicipality' => ['nullable', 'string', 'max:255'],
             'patientBarangay' => ['nullable', 'string', 'max:255'],
             'patientStreet' => ['nullable', 'string', 'max:500'],
-            'chiefComplaints' => ['required', 'string', 'min:5', 'max:2000'],
+            'chiefComplaints' => ['required', 'string', 'max:2000'],
             'visitType' => ['required', Rule::in(['new', 'old', 'revisit'])],
         ];
 

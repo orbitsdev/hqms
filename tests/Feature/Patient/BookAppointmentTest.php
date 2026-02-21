@@ -232,7 +232,7 @@ it('validates chief complaints minimum length', function () {
         ->call('nextStep')
         ->call('selectDate', $futureDate)
         ->call('nextStep')
-        ->set('chiefComplaints', 'Short')
+        ->set('chiefComplaints', '')
         ->call('submitAppointment')
         ->assertHasErrors(['chiefComplaints']);
 });

@@ -45,7 +45,8 @@
       "Bash(1 <<'PHPEOF'\nPHPEOF)",
       "Bash(git log:*)",
       "Bash(wc:*)",
-      "WebFetch(domain:tholman.com)"
+      "WebFetch(domain:tholman.com)",
+      "Bash(tail:*)"
     ]
   }
 }

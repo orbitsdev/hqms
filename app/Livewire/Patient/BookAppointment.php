@@ -159,7 +159,7 @@ class BookAppointment extends Component
                     $fail(__('Selected date is not available.'));
                 }
             }, ],
-            'chiefComplaints' => ['required', 'string', 'min:10', 'max:2000'],
+            'chiefComplaints' => ['required', 'string', 'max:2000'],
             'visitType' => ['required', Rule::in(['new', 'old', 'revisit'])],
         ], $this->patientRules()));
 
@@ -226,7 +226,7 @@ class BookAppointment extends Component
                 'patientFirstName' => ['required', 'string', 'max:255'],
                 'patientMiddleName' => ['nullable', 'string', 'max:255'],
                 'patientLastName' => ['required', 'string', 'max:255'],
-                'patientDateOfBirth' => ['required', 'date', 'before_or_equal:today'],
+                'patientDateOfBirth' => ['required', 'bail', 'date', 'before_or_equal:today'],
                 'patientGender' => ['required', Rule::in(['male', 'female'])],
                 'patientRelationship' => ['required', Rule::in(['child', 'spouse', 'parent', 'sibling', 'other'])],
             ]);

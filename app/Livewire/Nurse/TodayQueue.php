@@ -898,7 +898,7 @@ class TodayQueue extends Component
             'patientFirstName' => ['required', 'string', 'max:100'],
             'patientLastName' => ['required', 'string', 'max:100'],
             'patientMiddleName' => ['nullable', 'string', 'max:100'],
-            'patientDateOfBirth' => ['required', 'date', 'before_or_equal:today'],
+            'patientDateOfBirth' => ['required', 'bail', 'date', 'before_or_equal:today'],
             'patientGender' => ['nullable', 'in:male,female'],
             'patientContactNumber' => ['nullable', 'string', 'max:20'],
             'patientEmail' => ['nullable', 'email', 'max:255'],

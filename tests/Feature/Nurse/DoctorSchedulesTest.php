@@ -3,6 +3,7 @@
 use App\Livewire\Nurse\DoctorSchedules;
 use App\Models\ConsultationType;
 use App\Models\DoctorSchedule;
+use App\Models\PersonalInformation;
 use App\Models\User;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
@@ -43,6 +44,12 @@ it('displays doctors in the dropdown', function () {
 
     $doctor = User::factory()->create(['first_name' => 'John', 'last_name' => 'Smith']);
     $doctor->assignRole('doctor');
+    PersonalInformation::factory()->create([
+        'user_id' => $doctor->id,
+        'first_name' => 'John',
+        'middle_name' => null,
+        'last_name' => 'Smith',
+    ]);
 
     Livewire::actingAs($nurse)
         ->test(DoctorSchedules::class)
@@ -66,6 +73,12 @@ it('displays weekly schedules when in weekly view mode', function () {
 
     $doctor = User::factory()->create(['first_name' => 'Jane', 'last_name' => 'Doe']);
     $doctor->assignRole('doctor');
+    PersonalInformation::factory()->create([
+        'user_id' => $doctor->id,
+        'first_name' => 'Jane',
+        'middle_name' => null,
+        'last_name' => 'Doe',
+    ]);
 
     $type = ConsultationType::factory()->create(['name' => 'General']);
 
@@ -78,6 +91,7 @@ it('displays weekly schedules when in weekly view mode', function () {
 
     Livewire::actingAs($nurse)
         ->test(DoctorSchedules::class)
+        ->call('setViewMode', 'weekly')
         ->assertSet('viewMode', 'weekly')
         ->assertSee('Jane Doe')
         ->assertSee('General');
@@ -117,6 +131,8 @@ it('can switch between weekly and exceptions view', function () {
 
     Livewire::actingAs($nurse)
         ->test(DoctorSchedules::class)
+        ->assertSet('viewMode', 'overview')
+        ->call('setViewMode', 'weekly')
         ->assertSet('viewMode', 'weekly')
         ->call('setViewMode', 'exceptions')
         ->assertSet('viewMode', 'exceptions')
@@ -152,11 +168,15 @@ it('can filter by doctor', function () {
         'day_of_week' => 2,
     ]);
 
-    Livewire::actingAs($nurse)
+    $component = Livewire::actingAs($nurse)
         ->test(DoctorSchedules::class)
-        ->set('doctorFilter', $doctor1->id)
-        ->assertSee('First Doctor')
-        ->assertDontSee('Second Doctor');
+        ->call('setViewMode', 'weekly')
+        ->set('doctorFilter', (string) $doctor1->id);
+
+    $weeklySchedules = $component->get('weeklySchedules');
+
+    expect($weeklySchedules)->toHaveKey($doctor1->id);
+    expect($weeklySchedules)->not->toHaveKey($doctor2->id);
 });
 
 it('can filter by consultation type', function () {
@@ -183,11 +203,16 @@ it('can filter by consultation type', function () {
         'day_of_week' => 2,
     ]);
 
-    Livewire::actingAs($nurse)
+    $component = Livewire::actingAs($nurse)
         ->test(DoctorSchedules::class)
-        ->set('consultationTypeFilter', $type1->id)
-        ->assertSee('Obstetrics')
-        ->assertDontSee('Pediatrics');
+        ->call('setViewMode', 'weekly')
+        ->set('consultationTypeFilter', (string) $type1->id);
+
+    $weeklySchedules = $component->get('weeklySchedules');
+    $allTypeIds = collect($weeklySchedules)->flatMap(fn ($d) => array_keys($d['schedules']))->values()->all();
+
+    expect($allTypeIds)->toContain($type1->id);
+    expect($allTypeIds)->not->toContain($type2->id);
 });
 
 // ==================== ADD SCHEDULE MODAL TESTS ====================
@@ -431,15 +456,24 @@ it('prevents duplicate exception for same date', function () {
         'consultation_type_id' => $type->id,
         'schedule_type' => 'exception',
         'date' => $futureDate,
+        'day_of_week' => null,
     ]);
+
+    // Verify the record exists
+    expect(DoctorSchedule::where('user_id', $doctor->id)
+        ->where('consultation_type_id', $type->id)
+        ->where('schedule_type', 'exception')
+        ->whereDate('date', $futureDate)
+        ->exists())->toBeTrue();
 
     Livewire::actingAs($nurse)
         ->test(DoctorSchedules::class)
         ->call('openAddExceptionModal')
-        ->set('exceptionDoctor', $doctor->id)
-        ->set('exceptionConsultationType', $type->id)
+        ->set('exceptionDoctor', (string) $doctor->id)
+        ->set('exceptionConsultationType', (string) $type->id)
         ->set('exceptionDate', $futureDate)
         ->set('exceptionIsAvailable', false)
+        ->set('exceptionReason', 'Duplicate test')
         ->call('saveException')
         ->assertHasErrors(['exceptionDate']);
 });
