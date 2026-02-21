@@ -374,7 +374,7 @@
     </flux:modal>
 
     <!-- Patient Interview Modal -->
-    <flux:modal wire:model="showInterviewModal" class="max-w-5xl">
+    <flux:modal wire:model="showInterviewModal" :closable="false" class="max-w-5xl">
         <div class="flex gap-6">
             {{-- Main Interview Form --}}
             <div class="flex-1 space-y-6">
