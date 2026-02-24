@@ -154,7 +154,7 @@ class WalkInRegistration extends Component
             $rules['accountEmail'] = ['required', 'email', 'max:255', 'unique:users,email'];
 
             if (! $this->generatePassword) {
-                $rules['accountPassword'] = ['required', 'string', 'min:8'];
+                $rules['accountPassword'] = ['required', 'string', 'min:6'];
             }
         }
 

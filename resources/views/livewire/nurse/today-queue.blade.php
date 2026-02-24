@@ -695,6 +695,18 @@
                 @endif
             </div>
 
+            <!-- Validation Errors Summary -->
+                @if ($errors->any())
+                    <div class="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
+                        <p class="text-sm font-medium text-red-800 dark:text-red-200">{{ __('Please fix the following errors:') }}</p>
+                        <ul class="mt-1 list-inside list-disc text-sm text-red-700 dark:text-red-300">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
             <!-- Footer -->
                 <div class="flex items-center justify-between border-t border-zinc-200 pt-4 dark:border-zinc-700">
                     <div>

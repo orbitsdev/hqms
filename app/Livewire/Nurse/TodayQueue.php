@@ -491,6 +491,7 @@ class TodayQueue extends Component
             // Create medical record if not exists
             if (! $queue->medicalRecord) {
                 $appointment = $queue->appointment;
+                $userDob = $queue->user?->personalInformation?->date_of_birth;
 
                 MedicalRecord::create([
                     'user_id' => $queue->user_id,
@@ -501,7 +502,7 @@ class TodayQueue extends Component
                     'patient_first_name' => $appointment?->patient_first_name ?? 'Walk-in',
                     'patient_middle_name' => $appointment?->patient_middle_name,
                     'patient_last_name' => $appointment?->patient_last_name ?? 'Patient',
-                    'patient_date_of_birth' => $appointment?->patient_date_of_birth,
+                    'patient_date_of_birth' => $appointment?->patient_date_of_birth ?? $userDob,
                     'patient_gender' => $appointment?->patient_gender,
                     'patient_contact_number' => $appointment?->patient_phone,
                     'patient_province' => $appointment?->patient_province,
@@ -898,7 +899,7 @@ class TodayQueue extends Component
             'patientFirstName' => ['required', 'string', 'max:100'],
             'patientLastName' => ['required', 'string', 'max:100'],
             'patientMiddleName' => ['nullable', 'string', 'max:100'],
-            'patientDateOfBirth' => ['required', 'bail', 'date', 'before_or_equal:today'],
+            'patientDateOfBirth' => ['nullable', 'date', 'before_or_equal:today'],
             'patientGender' => ['nullable', 'in:male,female'],
             'patientContactNumber' => ['nullable', 'string', 'max:20'],
             'patientEmail' => ['nullable', 'email', 'max:255'],

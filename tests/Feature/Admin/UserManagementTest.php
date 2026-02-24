@@ -77,6 +77,38 @@ test('can create new user', function () {
     ]);
 });
 
+test('can create user with 6 character password', function () {
+    Livewire::actingAs($this->admin)
+        ->test(UserManagement::class)
+        ->call('openCreateModal')
+        ->set('email', 'shortpw@test.com')
+        ->set('password', 'abc123')
+        ->set('passwordConfirmation', 'abc123')
+        ->set('role', 'nurse')
+        ->set('firstName', 'Short')
+        ->set('lastName', 'Password')
+        ->call('saveUser')
+        ->assertHasNoErrors('password');
+
+    $this->assertDatabaseHas('users', [
+        'email' => 'shortpw@test.com',
+    ]);
+});
+
+test('rejects password shorter than 6 characters', function () {
+    Livewire::actingAs($this->admin)
+        ->test(UserManagement::class)
+        ->call('openCreateModal')
+        ->set('email', 'tooshort@test.com')
+        ->set('password', 'ab123')
+        ->set('passwordConfirmation', 'ab123')
+        ->set('role', 'nurse')
+        ->set('firstName', 'Too')
+        ->set('lastName', 'Short')
+        ->call('saveUser')
+        ->assertHasErrors('password');
+});
+
 test('can deactivate user with soft delete', function () {
     $user = User::factory()->create();
     $user->assignRole('patient');

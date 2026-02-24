@@ -46,7 +46,8 @@
       "Bash(git log:*)",
       "Bash(wc:*)",
       "WebFetch(domain:tholman.com)",
-      "Bash(tail:*)"
+      "Bash(tail:*)",
+      "Bash(cd:*)"
     ]
   }
 }

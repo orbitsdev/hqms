@@ -559,3 +559,123 @@ describe('Forward to Doctor', function () {
         expect($queue->status)->toBe('completed');
     });
 });
+
+describe('DOB Fallback in Start Serving', function () {
+    it('uses appointment DOB when available', function () {
+        $patient = User::factory()->create();
+        PersonalInformation::factory()->create([
+            'user_id' => $patient->id,
+            'date_of_birth' => '1990-01-01',
+        ]);
+
+        $appointment = Appointment::factory()->create([
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'patient_first_name' => 'Test',
+            'patient_last_name' => 'Patient',
+            'patient_date_of_birth' => '1995-06-15',
+            'status' => 'checked_in',
+        ]);
+
+        $queue = Queue::factory()->today()->waiting()->create([
+            'appointment_id' => $appointment->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('startServing', $queue->id);
+
+        $record = MedicalRecord::where('queue_id', $queue->id)->first();
+
+        expect($record)->not->toBeNull()
+            ->and($record->patient_date_of_birth->format('Y-m-d'))->toBe('1995-06-15');
+    });
+
+    it('falls back to user personal information DOB when no appointment exists', function () {
+        $patient = User::factory()->create();
+        PersonalInformation::factory()->create([
+            'user_id' => $patient->id,
+            'date_of_birth' => '1990-01-01',
+        ]);
+
+        $queue = Queue::factory()->today()->waiting()->create([
+            'appointment_id' => null,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('startServing', $queue->id);
+
+        $record = MedicalRecord::where('queue_id', $queue->id)->first();
+
+        expect($record)->not->toBeNull()
+            ->and($record->patient_date_of_birth->format('Y-m-d'))->toBe('1990-01-01');
+    });
+});
+
+describe('Save Interview Validation', function () {
+    it('allows saving interview with nullable date of birth', function () {
+        $patient = User::factory()->create();
+        $appointment = Appointment::factory()->create([
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'status' => 'in_progress',
+        ]);
+
+        $queue = Queue::factory()->today()->serving()->create([
+            'appointment_id' => $appointment->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'served_by' => $this->nurse->id,
+        ]);
+
+        MedicalRecord::factory()->create([
+            'queue_id' => $queue->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('openInterviewModal', $queue->id)
+            ->set('patientDateOfBirth', null)
+            ->call('saveInterview')
+            ->assertHasNoErrors('patientDateOfBirth');
+    });
+
+    it('allows saving interview without vital signs', function () {
+        $patient = User::factory()->create();
+        $appointment = Appointment::factory()->create([
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'status' => 'in_progress',
+        ]);
+
+        $queue = Queue::factory()->today()->serving()->create([
+            'appointment_id' => $appointment->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'served_by' => $this->nurse->id,
+        ]);
+
+        MedicalRecord::factory()->create([
+            'queue_id' => $queue->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('openInterviewModal', $queue->id)
+            ->set('temperature', null)
+            ->set('bloodPressure', null)
+            ->set('cardiacRate', null)
+            ->set('respiratoryRate', null)
+            ->call('saveInterview')
+            ->assertHasNoErrors();
+    });
+});

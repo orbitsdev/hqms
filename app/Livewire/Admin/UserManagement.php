@@ -155,10 +155,10 @@ class UserManagement extends Component
 
         // Password required for new users
         if (! $this->editingUserId) {
-            $rules['password'] = ['required', 'string', Password::min(8)];
+            $rules['password'] = ['required', 'string', Password::min(6)];
             $rules['passwordConfirmation'] = 'required|same:password';
         } elseif ($this->password) {
-            $rules['password'] = ['string', Password::min(8)];
+            $rules['password'] = ['string', Password::min(6)];
             $rules['passwordConfirmation'] = 'required|same:password';
         }
 
