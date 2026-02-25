@@ -413,6 +413,10 @@ class MedicalRecords extends Component
 
     public function saveRecord(): void
     {
+        // Convert empty date strings to null (HTML date inputs send '' not null)
+        $this->patientDateOfBirth = $this->patientDateOfBirth ?: null;
+        $this->lastMenstrualPeriod = $this->lastMenstrualPeriod ?: null;
+
         $this->validate([
             // Patient Info
             'patientFirstName' => ['required', 'string', 'max:255'],
