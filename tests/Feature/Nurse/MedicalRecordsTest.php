@@ -391,6 +391,19 @@ describe('Edit Record', function () {
             ->call('saveRecord')
             ->assertHasErrors(['temperature']);
     });
+
+    it('allows saving with empty date of birth', function () {
+        Livewire::actingAs($this->nurse)
+            ->test(MedicalRecords::class)
+            ->call('editRecord', $this->medicalRecord->id)
+            ->set('patientDateOfBirth', '')
+            ->call('saveRecord')
+            ->assertHasNoErrors(['patientDateOfBirth']);
+
+        $this->medicalRecord->refresh();
+
+        expect($this->medicalRecord->patient_date_of_birth)->toBeNull();
+    });
 });
 
 describe('Sorting', function () {

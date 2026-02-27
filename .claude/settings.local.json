@@ -47,7 +47,9 @@
       "Bash(wc:*)",
       "WebFetch(domain:tholman.com)",
       "Bash(tail:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "WebSearch",
+      "WebFetch(domain:healthspace.ph)"
     ]
   }
 }
