@@ -355,7 +355,7 @@
                         <span class="text-xl font-bold tracking-tight">{{ config('app.name') }}</span>
                     </div>
                     <p class="text-sm text-zinc-400 leading-relaxed max-w-xs">
-                        {{ __('Guardiano Maternity and Children Clinic and Hospital - Providing compassionate care for mothers and children since 2010.') }}
+                        {{ __('Guardiano Maternity and Children Clinic and Hospital - Providing compassionate care for mothers and children since 2015.') }}
                     </p>
                 </div>
 
@@ -409,7 +409,7 @@
             {{-- Bottom bar --}}
             <div class="border-t border-zinc-800 pt-6 flex flex-col items-center justify-between gap-4 md:flex-row">
                 <p class="footer-text text-xs text-zinc-500">
-                    &copy; {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved.') }}
+                    &copy; 2015 - {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved.') }}
                 </p>
                 <p class="footer-text text-xs text-zinc-600">
                     {{ __('Hospital Queue Management System') }}
