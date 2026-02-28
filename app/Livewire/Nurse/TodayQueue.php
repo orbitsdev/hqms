@@ -909,7 +909,7 @@ class TodayQueue extends Component
             'patientFirstName' => ['required', 'string', 'max:100'],
             'patientLastName' => ['required', 'string', 'max:100'],
             'patientMiddleName' => ['nullable', 'string', 'max:100'],
-            'patientDateOfBirth' => ['nullable', 'date', 'before_or_equal:today'],
+            'patientDateOfBirth' => ['nullable'],
             'patientGender' => ['nullable', 'in:male,female'],
             'patientContactNumber' => ['nullable', 'string', 'max:20'],
             'patientEmail' => ['nullable', 'email', 'max:255'],
@@ -940,7 +940,7 @@ class TodayQueue extends Component
             'chestCircumference' => ['nullable', 'numeric', 'min:20', 'max:200'],
             'fetalHeartTone' => ['nullable', 'integer', 'min:60', 'max:200'],
             'fundalHeight' => ['nullable', 'numeric', 'min:5', 'max:50'],
-            'lastMenstrualPeriod' => ['nullable', 'date', 'before_or_equal:today'],
+            'lastMenstrualPeriod' => ['nullable'],
             'chiefComplaintsUpdated' => ['nullable', 'string', 'max:2000'],
         ], [
             'bloodPressure.regex' => __('Blood pressure format: 120/80'),
@@ -967,7 +967,7 @@ class TodayQueue extends Component
                 'patient_first_name' => $this->patientFirstName,
                 'patient_middle_name' => $this->patientMiddleName,
                 'patient_last_name' => $this->patientLastName,
-                'patient_date_of_birth' => $this->patientDateOfBirth,
+                'patient_date_of_birth' => $this->normalizeDate($this->patientDateOfBirth),
                 'patient_gender' => $this->patientGender ?: null,
                 'patient_contact_number' => $this->patientContactNumber,
                 'patient_email' => $this->patientEmail,
@@ -1008,10 +1008,14 @@ class TodayQueue extends Component
                 'chest_circumference' => $this->chestCircumference ?: null,
                 'fetal_heart_tone' => $this->fetalHeartTone ?: null,
                 'fundal_height' => $this->fundalHeight ?: null,
-                'last_menstrual_period' => $this->lastMenstrualPeriod ?: null,
+                'last_menstrual_period' => $this->normalizeDate($this->lastMenstrualPeriod) ?: null,
                 'chief_complaints_updated' => $this->chiefComplaintsUpdated,
                 'vital_signs_recorded_at' => $vitalSignsRecordedAt,
             ]);
+
+            // Refresh so reopening the modal shows saved data
+            $queue->refresh();
+            $queue->load('medicalRecord');
 
             Toaster::success(__('Patient record updated successfully.'));
 

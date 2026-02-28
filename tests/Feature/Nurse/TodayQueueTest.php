@@ -709,7 +709,7 @@ describe('Save Interview Validation', function () {
             ->assertHasNoErrors('lastMenstrualPeriod');
     });
 
-    it('rejects future date of birth', function () {
+    it('saves interview even with unparseable date of birth by nullifying it', function () {
         $patient = User::factory()->create();
         $appointment = Appointment::factory()->create([
             'user_id' => $patient->id,
@@ -733,9 +733,53 @@ describe('Save Interview Validation', function () {
         Livewire::actingAs($this->nurse)
             ->test(TodayQueue::class)
             ->call('openInterviewModal', $queue->id)
-            ->set('patientDateOfBirth', now()->addDay()->format('Y-m-d'))
+            ->set('patientDateOfBirth', 'not-a-date')
+            ->set('patientZipCode', '4000')
             ->call('saveInterview')
-            ->assertHasErrors('patientDateOfBirth');
+            ->assertHasNoErrors();
+
+        $record = MedicalRecord::where('queue_id', $queue->id)->first();
+        expect($record->patient_date_of_birth)->toBeNull()
+            ->and($record->patient_zip_code)->toBe('4000');
+    });
+
+    it('persists non-date fields even when DOB is empty', function () {
+        $patient = User::factory()->create();
+        $appointment = Appointment::factory()->create([
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'status' => 'in_progress',
+        ]);
+
+        $queue = Queue::factory()->today()->serving()->create([
+            'appointment_id' => $appointment->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'served_by' => $this->nurse->id,
+        ]);
+
+        MedicalRecord::factory()->create([
+            'queue_id' => $queue->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('openInterviewModal', $queue->id)
+            ->set('patientDateOfBirth', '')
+            ->set('patientZipCode', '1234')
+            ->set('emergencyContactName', 'Jane Doe')
+            ->set('emergencyContactNumber', '09171234567')
+            ->set('emergencyContactRelationship', 'Mother')
+            ->call('saveInterview')
+            ->assertHasNoErrors();
+
+        $record = MedicalRecord::where('queue_id', $queue->id)->first();
+        expect($record->patient_zip_code)->toBe('1234')
+            ->and($record->emergency_contact_name)->toBe('Jane Doe')
+            ->and($record->emergency_contact_number)->toBe('09171234567')
+            ->and($record->emergency_contact_relationship)->toBe('Mother');
     });
 
     it('allows saving interview with nullable date of birth', function () {
