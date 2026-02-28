@@ -763,7 +763,10 @@ class TodayQueue extends Component
             $this->patientFirstName = $record->patient_first_name;
             $this->patientMiddleName = $record->patient_middle_name;
             $this->patientLastName = $record->patient_last_name;
-            $this->patientDateOfBirth = $record->patient_date_of_birth?->format('Y-m-d');
+            $dob = $record->patient_date_of_birth;
+            $this->patientDateOfBirth = ($dob && $dob->year >= 1900 && $dob->year <= (int) date('Y'))
+                ? $dob->format('Y-m-d')
+                : null;
             $this->patientGender = $record->patient_gender;
             $this->patientContactNumber = $record->patient_contact_number;
             $this->patientEmail = $record->patient_email;
