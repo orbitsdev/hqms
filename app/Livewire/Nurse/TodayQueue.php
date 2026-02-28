@@ -901,22 +901,6 @@ class TodayQueue extends Component
 
     public function saveInterview(): void
     {
-        // DEBUG: dd to see what values reach the server
-        dd([
-            'patientFirstName' => $this->patientFirstName,
-            'patientLastName' => $this->patientLastName,
-            'patientDateOfBirth' => $this->patientDateOfBirth,
-            'patientZipCode' => $this->patientZipCode,
-            'patientProvince' => $this->patientProvince,
-            'emergencyContactName' => $this->emergencyContactName,
-            'emergencyContactNumber' => $this->emergencyContactNumber,
-            'emergencyContactRelationship' => $this->emergencyContactRelationship,
-            'companionName' => $this->companionName,
-            'temperature' => $this->temperature,
-            'bloodPressure' => $this->bloodPressure,
-            'chiefComplaintsUpdated' => $this->chiefComplaintsUpdated,
-        ]);
-
         // Normalize date inputs: empty strings to null, locale formats (DD/MM/YYYY) to Y-m-d
         $this->patientDateOfBirth = $this->normalizeDate($this->patientDateOfBirth);
         $this->lastMenstrualPeriod = $this->normalizeDate($this->lastMenstrualPeriod);
