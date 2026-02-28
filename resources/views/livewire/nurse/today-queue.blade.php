@@ -440,8 +440,14 @@
             </div>
 
             <!-- Step Content -->
+            @php
+                $consultationType = $this->interviewQueue?->consultationType;
+                $isOb = $consultationType?->short_name === 'O';
+                $isPedia = $consultationType?->short_name === 'P';
+                $vitalAlerts = $this->vitalAlerts;
+            @endphp
             <div class="min-h-[280px]">
-                @if($interviewStep === 'patient')
+                <div x-show="$wire.interviewStep === 'patient'" x-cloak>
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('First Name') }} *</flux:label>
@@ -476,7 +482,8 @@
                         </flux:field>
                     </div>
 
-                @elseif($interviewStep === 'address')
+                </div>
+                <div x-show="$wire.interviewStep === 'address'" x-cloak>
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('Province') }}</flux:label>
@@ -500,7 +507,8 @@
                         </flux:field>
                     </div>
 
-                @elseif($interviewStep === 'companion')
+                </div>
+                <div x-show="$wire.interviewStep === 'companion'" x-cloak>
                     <div class="space-y-6">
                         {{-- Companion Section --}}
                         <div class="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
@@ -549,7 +557,8 @@
                         </div>
                     </div>
 
-                @elseif($interviewStep === 'medical')
+                </div>
+                <div x-show="$wire.interviewStep === 'medical'" x-cloak>
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('Blood Type') }}</flux:label>
@@ -578,13 +587,8 @@
                         </flux:field>
                     </div>
 
-                @elseif($interviewStep === 'vitals')
-                    @php
-                        $consultationType = $this->interviewQueue?->consultationType;
-                        $isOb = $consultationType?->short_name === 'O';
-                        $isPedia = $consultationType?->short_name === 'P';
-                        $vitalAlerts = $this->vitalAlerts;
-                    @endphp
+                </div>
+                <div x-show="$wire.interviewStep === 'vitals'" x-cloak>
 
                     {{-- Vital Signs Alerts Banner --}}
                     @if(count($vitalAlerts) > 0)
@@ -692,7 +696,7 @@
                             <flux:textarea wire:model="chiefComplaintsUpdated" rows="2" placeholder="{{ __('Additional symptoms or updates to initial complaint...') }}" />
                         </flux:field>
                     </div>
-                @endif
+                </div>
             </div>
 
             <!-- Validation Errors Summary -->
