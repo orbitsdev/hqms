@@ -618,6 +618,39 @@ describe('DOB Fallback in Start Serving', function () {
 });
 
 describe('Save Interview Validation', function () {
+    it('normalizes locale-formatted date of birth before validation', function () {
+        $patient = User::factory()->create();
+        $appointment = Appointment::factory()->create([
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'status' => 'in_progress',
+        ]);
+
+        $queue = Queue::factory()->today()->serving()->create([
+            'appointment_id' => $appointment->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'served_by' => $this->nurse->id,
+        ]);
+
+        MedicalRecord::factory()->create([
+            'queue_id' => $queue->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        // DD/MM/YYYY format from browser locale should be normalized to Y-m-d
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('openInterviewModal', $queue->id)
+            ->set('patientDateOfBirth', '13/01/2001')
+            ->call('saveInterview')
+            ->assertHasNoErrors('patientDateOfBirth');
+
+        $record = MedicalRecord::where('queue_id', $queue->id)->first();
+        expect($record->patient_date_of_birth->format('Y-m-d'))->toBe('2001-01-13');
+    });
+
     it('converts empty date of birth string to null before validation', function () {
         $patient = User::factory()->create();
         $appointment = Appointment::factory()->create([

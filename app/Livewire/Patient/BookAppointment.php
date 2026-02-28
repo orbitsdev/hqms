@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Patient;
 
+use App\Concerns\NormalizesDateInput;
 use App\Models\Appointment;
 use App\Models\ConsultationType;
 use App\Models\SystemSetting;
@@ -17,6 +18,8 @@ use Masmerise\Toaster\Toaster;
 
 class BookAppointment extends Component
 {
+    use NormalizesDateInput;
+
     public int $currentStep = 1;
 
     public int $maxStep = 1;
@@ -111,6 +114,8 @@ class BookAppointment extends Component
 
     public function nextStep(): void
     {
+        $this->patientDateOfBirth = $this->normalizeDate($this->patientDateOfBirth);
+
         if ($this->currentStep === 1) {
             $this->validate([
                 'consultationTypeId' => ['required', 'exists:consultation_types,id'],
@@ -152,6 +157,8 @@ class BookAppointment extends Component
 
     public function submitAppointment(): void
     {
+        $this->patientDateOfBirth = $this->normalizeDate($this->patientDateOfBirth);
+
         $this->validate(array_merge([
             'consultationTypeId' => ['required', 'exists:consultation_types,id'],
             'appointmentDate' => ['required', 'date', 'after_or_equal:today', function ($attribute, $value, $fail) {

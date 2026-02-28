@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Nurse;
 
+use App\Concerns\NormalizesDateInput;
 use App\Models\Appointment;
 use App\Models\ConsultationType;
 use App\Models\PersonalInformation;
@@ -19,6 +20,8 @@ use Masmerise\Toaster\Toaster;
 
 class WalkInRegistration extends Component
 {
+    use NormalizesDateInput;
+
     public int $currentStep = 1;
 
     public int $maxStep = 1;
@@ -82,6 +85,9 @@ class WalkInRegistration extends Component
 
     public function nextStep(): void
     {
+        // Normalize date input before validation
+        $this->patientDateOfBirth = $this->normalizeDate($this->patientDateOfBirth);
+
         if ($this->currentStep === 1) {
             $this->validate([
                 'consultationTypeId' => ['required', 'exists:consultation_types,id'],
@@ -134,6 +140,8 @@ class WalkInRegistration extends Component
 
     public function register(): void
     {
+        $this->patientDateOfBirth = $this->normalizeDate($this->patientDateOfBirth);
+
         $rules = [
             'consultationTypeId' => ['required', 'exists:consultation_types,id'],
             'patientFirstName' => ['required', 'string', 'max:255'],

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Nurse;
 
+use App\Concerns\NormalizesDateInput;
 use App\Events\QueueUpdated;
 use App\Models\Appointment;
 use App\Models\ConsultationType;
@@ -22,6 +23,8 @@ use Masmerise\Toaster\Toaster;
 
 class TodayQueue extends Component
 {
+    use NormalizesDateInput;
+
     /**
      * Refresh queue when updates come in via Echo.
      */
@@ -895,9 +898,9 @@ class TodayQueue extends Component
 
     public function saveInterview(): void
     {
-        // Convert empty date strings to null (HTML date inputs send '' not null)
-        $this->patientDateOfBirth = $this->patientDateOfBirth ?: null;
-        $this->lastMenstrualPeriod = $this->lastMenstrualPeriod ?: null;
+        // Normalize date inputs: empty strings to null, locale formats (DD/MM/YYYY) to Y-m-d
+        $this->patientDateOfBirth = $this->normalizeDate($this->patientDateOfBirth);
+        $this->lastMenstrualPeriod = $this->normalizeDate($this->lastMenstrualPeriod);
 
         $this->validate([
             'patientFirstName' => ['required', 'string', 'max:100'],

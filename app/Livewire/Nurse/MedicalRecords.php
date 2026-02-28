@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Nurse;
 
+use App\Concerns\NormalizesDateInput;
 use App\Models\ConsultationType;
 use App\Models\MedicalRecord;
 use App\Models\User;
@@ -18,6 +19,7 @@ use Spatie\LaravelPdf\Facades\Pdf;
 
 class MedicalRecords extends Component
 {
+    use NormalizesDateInput;
     use WithPagination;
 
     // ==================== SEARCH & FILTERS ====================
@@ -413,9 +415,9 @@ class MedicalRecords extends Component
 
     public function saveRecord(): void
     {
-        // Convert empty date strings to null (HTML date inputs send '' not null)
-        $this->patientDateOfBirth = $this->patientDateOfBirth ?: null;
-        $this->lastMenstrualPeriod = $this->lastMenstrualPeriod ?: null;
+        // Normalize date inputs: empty strings to null, locale formats (DD/MM/YYYY) to Y-m-d
+        $this->patientDateOfBirth = $this->normalizeDate($this->patientDateOfBirth);
+        $this->lastMenstrualPeriod = $this->normalizeDate($this->lastMenstrualPeriod);
 
         $this->validate([
             // Patient Info
