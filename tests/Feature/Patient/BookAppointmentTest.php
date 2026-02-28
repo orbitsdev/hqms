@@ -218,6 +218,37 @@ it('rejects invalid visit type', function () {
         ->assertHasErrors(['visitType']);
 });
 
+it('validates date of birth is required for self patient', function () {
+    $userWithoutDob = User::factory()->create();
+    PersonalInformation::factory()->create([
+        'user_id' => $userWithoutDob->id,
+        'date_of_birth' => null,
+    ]);
+
+    Livewire::actingAs($userWithoutDob)
+        ->test(BookAppointment::class)
+        ->call('selectConsultationType', $this->consultationType->id)
+        ->call('nextStep') // step 1 -> 2
+        ->set('patientType', 'self')
+        ->call('nextStep') // step 2 -> validates patientRules
+        ->assertHasErrors(['patientDateOfBirth']);
+});
+
+it('rejects future date of birth for dependent', function () {
+    Livewire::actingAs($this->user)
+        ->test(BookAppointment::class)
+        ->call('selectConsultationType', $this->consultationType->id)
+        ->call('nextStep') // step 1 -> 2
+        ->set('patientType', 'dependent')
+        ->set('patientFirstName', 'Maria')
+        ->set('patientLastName', 'Santos')
+        ->set('patientDateOfBirth', now()->addDay()->format('Y-m-d'))
+        ->set('patientGender', 'female')
+        ->set('patientRelationship', 'child')
+        ->call('nextStep') // step 2 -> validates patientRules
+        ->assertHasErrors(['patientDateOfBirth']);
+});
+
 it('validates chief complaints minimum length', function () {
     $futureDate = now()->addDays(1)->format('Y-m-d');
 

@@ -895,6 +895,10 @@ class TodayQueue extends Component
 
     public function saveInterview(): void
     {
+        // Convert empty date strings to null (HTML date inputs send '' not null)
+        $this->patientDateOfBirth = $this->patientDateOfBirth ?: null;
+        $this->lastMenstrualPeriod = $this->lastMenstrualPeriod ?: null;
+
         $this->validate([
             'patientFirstName' => ['required', 'string', 'max:100'],
             'patientLastName' => ['required', 'string', 'max:100'],

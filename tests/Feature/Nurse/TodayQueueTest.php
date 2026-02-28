@@ -618,6 +618,93 @@ describe('DOB Fallback in Start Serving', function () {
 });
 
 describe('Save Interview Validation', function () {
+    it('converts empty date of birth string to null before validation', function () {
+        $patient = User::factory()->create();
+        $appointment = Appointment::factory()->create([
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'status' => 'in_progress',
+        ]);
+
+        $queue = Queue::factory()->today()->serving()->create([
+            'appointment_id' => $appointment->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'served_by' => $this->nurse->id,
+        ]);
+
+        MedicalRecord::factory()->create([
+            'queue_id' => $queue->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('openInterviewModal', $queue->id)
+            ->set('patientDateOfBirth', '')
+            ->call('saveInterview')
+            ->assertHasNoErrors('patientDateOfBirth');
+    });
+
+    it('converts empty last menstrual period string to null before validation', function () {
+        $patient = User::factory()->create();
+        $appointment = Appointment::factory()->create([
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'status' => 'in_progress',
+        ]);
+
+        $queue = Queue::factory()->today()->serving()->create([
+            'appointment_id' => $appointment->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'served_by' => $this->nurse->id,
+        ]);
+
+        MedicalRecord::factory()->create([
+            'queue_id' => $queue->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('openInterviewModal', $queue->id)
+            ->set('lastMenstrualPeriod', '')
+            ->call('saveInterview')
+            ->assertHasNoErrors('lastMenstrualPeriod');
+    });
+
+    it('rejects future date of birth', function () {
+        $patient = User::factory()->create();
+        $appointment = Appointment::factory()->create([
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'status' => 'in_progress',
+        ]);
+
+        $queue = Queue::factory()->today()->serving()->create([
+            'appointment_id' => $appointment->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'served_by' => $this->nurse->id,
+        ]);
+
+        MedicalRecord::factory()->create([
+            'queue_id' => $queue->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('openInterviewModal', $queue->id)
+            ->set('patientDateOfBirth', now()->addDay()->format('Y-m-d'))
+            ->call('saveInterview')
+            ->assertHasErrors('patientDateOfBirth');
+    });
+
     it('allows saving interview with nullable date of birth', function () {
         $patient = User::factory()->create();
         $appointment = Appointment::factory()->create([

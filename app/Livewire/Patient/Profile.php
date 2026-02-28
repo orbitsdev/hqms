@@ -5,8 +5,8 @@ namespace App\Livewire\Patient;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use Masmerise\Toaster\Toaster;
 use Livewire\Component;
+use Masmerise\Toaster\Toaster;
 
 class Profile extends Component
 {
@@ -92,7 +92,7 @@ class Profile extends Component
             'middle_name' => ['nullable', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:20', Rule::unique('personal_information', 'phone')->ignore($infoId)],
-            'date_of_birth' => ['required', 'date'],
+            'date_of_birth' => ['required', 'date', 'before_or_equal:today'],
             'gender' => ['required', Rule::in(['male', 'female'])],
             'marital_status' => ['nullable', Rule::in(['child', 'single', 'married', 'widow'])],
             'province' => ['required', 'string', 'max:255'],

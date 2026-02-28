@@ -219,6 +219,7 @@ class BookAppointment extends Component
     {
         $rules = [
             'patientType' => ['required', Rule::in(['self', 'dependent'])],
+            'patientDateOfBirth' => ['required', 'bail', 'date', 'before_or_equal:today'],
         ];
 
         if ($this->patientType === 'dependent') {
@@ -226,7 +227,6 @@ class BookAppointment extends Component
                 'patientFirstName' => ['required', 'string', 'max:255'],
                 'patientMiddleName' => ['nullable', 'string', 'max:255'],
                 'patientLastName' => ['required', 'string', 'max:255'],
-                'patientDateOfBirth' => ['required', 'bail', 'date', 'before_or_equal:today'],
                 'patientGender' => ['required', Rule::in(['male', 'female'])],
                 'patientRelationship' => ['required', Rule::in(['child', 'spouse', 'parent', 'sibling', 'other'])],
             ]);
