@@ -811,6 +811,113 @@ describe('Save Interview Validation', function () {
             ->assertHasNoErrors('patientDateOfBirth');
     });
 
+    it('round-trip: saved interview data loads back when modal is reopened', function () {
+        $patient = User::factory()->create();
+        $appointment = Appointment::factory()->create([
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'status' => 'in_progress',
+        ]);
+
+        $queue = Queue::factory()->today()->serving()->create([
+            'appointment_id' => $appointment->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'served_by' => $this->nurse->id,
+        ]);
+
+        MedicalRecord::factory()->create([
+            'queue_id' => $queue->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        // Save interview with specific values
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('openInterviewModal', $queue->id)
+            ->set('patientDateOfBirth', '2000-06-25')
+            ->set('patientZipCode', '9805')
+            ->set('emergencyContactName', 'Alyssa Butler')
+            ->set('emergencyContactNumber', '09171234567')
+            ->set('emergencyContactRelationship', 'Sibling')
+            ->call('saveInterview')
+            ->assertHasNoErrors()
+            // After save, modal is closed — now reopen and verify data loaded back
+            ->call('openInterviewModal', $queue->id)
+            ->assertSet('patientDateOfBirth', '2000-06-25')
+            ->assertSet('patientZipCode', '9805')
+            ->assertSet('emergencyContactName', 'Alyssa Butler')
+            ->assertSet('emergencyContactNumber', '09171234567')
+            ->assertSet('emergencyContactRelationship', 'Sibling');
+    });
+
+    it('round-trip with step navigation: data persists through Next steps and reopen', function () {
+        $patient = User::factory()->create();
+        PersonalInformation::factory()->create([
+            'user_id' => $patient->id,
+            'date_of_birth' => '2000-01-01',
+        ]);
+        $appointment = Appointment::factory()->create([
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+            'patient_first_name' => 'Cyrus Jake',
+            'patient_last_name' => 'Samuray',
+            'patient_date_of_birth' => '2000-01-01',
+            'status' => 'checked_in',
+        ]);
+
+        $queue = Queue::factory()->today()->waiting()->create([
+            'appointment_id' => $appointment->id,
+            'user_id' => $patient->id,
+            'consultation_type_id' => $this->consultationType->id,
+        ]);
+
+        // Start serving creates the medical record
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('startServing', $queue->id);
+
+        // Open interview, navigate through steps (simulating real user flow)
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('openInterviewModal', $queue->id)
+            // Step 1: Patient — edit DOB
+            ->set('patientDateOfBirth', '2022-06-25')
+            ->call('nextInterviewStep')
+            // Step 2: Address — add zip code
+            ->set('patientZipCode', '9805')
+            ->call('nextInterviewStep')
+            // Step 3: Companion — add emergency contact
+            ->set('emergencyContactName', 'Alyssa Butler')
+            ->set('emergencyContactNumber', '09171234567')
+            ->set('emergencyContactRelationship', 'Sibling')
+            ->call('nextInterviewStep')
+            // Step 4: Medical — skip
+            ->call('nextInterviewStep')
+            // Step 5: Vitals — save
+            ->call('saveInterview')
+            ->assertHasNoErrors();
+
+        // Verify DB has the data
+        $record = MedicalRecord::where('queue_id', $queue->id)->first();
+        expect($record->patient_date_of_birth->format('Y-m-d'))->toBe('2022-06-25')
+            ->and($record->patient_zip_code)->toBe('9805')
+            ->and($record->emergency_contact_name)->toBe('Alyssa Butler')
+            ->and($record->emergency_contact_number)->toBe('09171234567')
+            ->and($record->emergency_contact_relationship)->toBe('Sibling');
+
+        // Reopen and verify loaded back
+        Livewire::actingAs($this->nurse)
+            ->test(TodayQueue::class)
+            ->call('openInterviewModal', $queue->id)
+            ->assertSet('patientDateOfBirth', '2022-06-25')
+            ->assertSet('patientZipCode', '9805')
+            ->assertSet('emergencyContactName', 'Alyssa Butler')
+            ->assertSet('emergencyContactNumber', '09171234567')
+            ->assertSet('emergencyContactRelationship', 'Sibling');
+    });
+
     it('allows saving interview without vital signs', function () {
         $patient = User::factory()->create();
         $appointment = Appointment::factory()->create([

@@ -901,6 +901,16 @@ class TodayQueue extends Component
 
     public function saveInterview(): void
     {
+        // DEBUG: Log values received from client to diagnose persistence issue
+        \Illuminate\Support\Facades\Log::info('saveInterview values', [
+            'patientDateOfBirth' => $this->patientDateOfBirth,
+            'patientZipCode' => $this->patientZipCode,
+            'emergencyContactName' => $this->emergencyContactName,
+            'emergencyContactNumber' => $this->emergencyContactNumber,
+            'emergencyContactRelationship' => $this->emergencyContactRelationship,
+            'patientFirstName' => $this->patientFirstName,
+        ]);
+
         // Normalize date inputs: empty strings to null, locale formats (DD/MM/YYYY) to Y-m-d
         $this->patientDateOfBirth = $this->normalizeDate($this->patientDateOfBirth);
         $this->lastMenstrualPeriod = $this->normalizeDate($this->lastMenstrualPeriod);
