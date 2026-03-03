@@ -35,10 +35,20 @@ class AppointmentFactory extends Factory
             'appointment_date' => fake()->dateTimeBetween('now', '+30 days')->format('Y-m-d'),
             'appointment_time' => fake()->optional()->time('H:i'),
             'chief_complaints' => fake()->optional()->paragraph(),
-            'status' => 'pending',
+            'status' => 'confirmed',
             'source' => 'online',
             'visit_type' => fake()->randomElement(['new', 'old', 'revisit']),
         ];
+    }
+
+    /**
+     * Indicate that the appointment is confirmed (awaiting queue assignment).
+     */
+    public function confirmed(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'confirmed',
+        ]);
     }
 
     /**

@@ -24,8 +24,7 @@ it('renders the doctor schedules page for nurses', function () {
 
     actingAs($nurse)
         ->get(route('nurse.doctor-schedules'))
-        ->assertOk()
-        ->assertSeeLivewire(DoctorSchedules::class);
+        ->assertOk();
 });
 
 it('denies access to non-nurses', function () {

@@ -226,12 +226,13 @@ class TodayQueue extends Component
     }
 
     /** @return array<string, int> */
-    public function getPendingCheckInsProperty(): array
+    public function getUnqueuedAppointmentsProperty(): array
     {
         return [
             'count' => Appointment::query()
-                ->where('status', 'approved')
+                ->where('status', 'confirmed')
                 ->whereDate('appointment_date', today())
+                ->doesntHave('queue')
                 ->count(),
         ];
     }
@@ -382,19 +383,22 @@ class TodayQueue extends Component
 
         $appointment = Appointment::with('queue')->find($this->checkInAppointmentId);
 
-        if (! $appointment || $appointment->status !== 'approved') {
-            Toaster::error(__('This appointment cannot be checked in.'));
+        if (! $appointment || ! in_array($appointment->status, ['confirmed', 'approved'])) {
+            Toaster::error(__('This appointment cannot be queued.'));
             $this->closeCheckInModal();
 
             return;
         }
 
-        $appointment->update([
-            'status' => 'checked_in',
-            'checked_in_at' => now(),
-        ]);
+        // If confirmed but not yet queued (missed by scheduler), create queue now
+        if ($appointment->status === 'confirmed') {
+            $queueService = app(\App\Services\QueueNumberService::class);
+            $queueService->createQueueForAppointment($appointment);
 
-        Toaster::success(__('Patient checked in successfully.'));
+            Toaster::success(__('Patient queued successfully.'));
+        } else {
+            Toaster::success(__('Patient is already in the queue.'));
+        }
 
         $this->closeCheckInModal();
     }
@@ -724,7 +728,7 @@ class TodayQueue extends Component
             // Reset appointment status if it was changed
             if ($queue->appointment && $queue->appointment->status === 'in_progress') {
                 $queue->appointment->update([
-                    'status' => 'checked_in',
+                    'status' => 'approved',
                 ]);
             }
 
@@ -1288,10 +1292,11 @@ class TodayQueue extends Component
             ->orderBy('queue_number')
             ->get();
 
-        $pendingCheckIns = Appointment::query()
+        $unqueuedAppointments = Appointment::query()
             ->with(['user.personalInformation', 'consultationType', 'queue'])
-            ->where('status', 'approved')
+            ->where('status', 'confirmed')
             ->whereDate('appointment_date', today())
+            ->doesntHave('queue')
             ->orderBy('appointment_time')
             ->get();
 
@@ -1314,7 +1319,7 @@ class TodayQueue extends Component
 
         return view('livewire.nurse.today-queue', [
             'queues' => $queues,
-            'pendingCheckIns' => $pendingCheckIns,
+            'unqueuedAppointments' => $unqueuedAppointments,
             'consultationTypes' => $consultationTypes,
             'statusCounts' => $this->statusCounts,
             'typeCounts' => $this->typeCounts,

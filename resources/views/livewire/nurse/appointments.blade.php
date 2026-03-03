@@ -14,16 +14,10 @@
 
     {{-- Status Tabs --}}
     <div class="flex flex-wrap items-center gap-2 border-b border-zinc-200 pb-4 dark:border-zinc-700">
-        <flux:button wire:click="setStatus('pending')" :variant="$status === 'pending' ? 'filled' : 'ghost'" size="sm">
-            {{ __('Pending') }}
-            @if($statusCounts['pending'] > 0)
-                <flux:badge size="sm" color="zinc" class="ml-1">{{ $statusCounts['pending'] }}</flux:badge>
-            @endif
-        </flux:button>
-        <flux:button wire:click="setStatus('approved')" :variant="$status === 'approved' ? 'filled' : 'ghost'" size="sm">
-            {{ __('Approved') }}
-            @if($statusCounts['approved'] > 0)
-                <flux:badge size="sm" color="zinc" class="ml-1">{{ $statusCounts['approved'] }}</flux:badge>
+        <flux:button wire:click="setStatus('confirmed')" :variant="$status === 'confirmed' ? 'filled' : 'ghost'" size="sm">
+            {{ __('Confirmed') }}
+            @if($statusCounts['confirmed'] > 0)
+                <flux:badge size="sm" color="zinc" class="ml-1">{{ $statusCounts['confirmed'] }}</flux:badge>
             @endif
         </flux:button>
         <flux:button wire:click="setStatus('today')" :variant="$status === 'today' ? 'filled' : 'ghost'" size="sm">
@@ -96,8 +90,7 @@
                         @foreach($appointments as $appointment)
                             @php
                                 $statusColor = match($appointment->status) {
-                                    'pending' => 'yellow',
-                                    'approved', 'checked_in' => 'green',
+                                    'confirmed', 'checked_in' => 'teal',
                                     'in_progress' => 'blue',
                                     'cancelled', 'no_show' => 'red',
                                     'completed' => 'zinc',
@@ -154,14 +147,7 @@
                                             {{ __('View') }}
                                         </flux:button>
 
-                                        @if($appointment->status === 'pending')
-                                            <flux:button wire:click="openApproveModal({{ $appointment->id }})" size="xs" variant="primary" icon="check">
-                                                {{ __('Approve') }}
-                                            </flux:button>
-                                            <flux:button wire:click="openCancelModal({{ $appointment->id }})" size="xs" variant="danger" icon="x-mark">
-                                                {{ __('Cancel') }}
-                                            </flux:button>
-                                        @elseif($appointment->status === 'approved')
+                                        @if(in_array($appointment->status, ['confirmed', 'checked_in']))
                                             <flux:button wire:click="openCancelModal({{ $appointment->id }})" size="xs" variant="danger" icon="x-mark">
                                                 {{ __('Cancel') }}
                                             </flux:button>
@@ -186,8 +172,8 @@
             <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
                 @if($search || $consultationTypeFilter || $dateFilter || $sourceFilter)
                     {{ __('Try adjusting your filters.') }}
-                @elseif($status === 'pending')
-                    {{ __('No pending requests at this time.') }}
+                @elseif($status === 'confirmed')
+                    {{ __('No confirmed appointments at this time.') }}
                 @else
                     {{ __('No appointments match the criteria.') }}
                 @endif
@@ -209,8 +195,7 @@
             @php
                 $apt = $selectedAppointment;
                 $statusColor = match($apt->status) {
-                    'pending' => 'yellow',
-                    'approved', 'checked_in' => 'green',
+                    'confirmed', 'checked_in' => 'teal',
                     'in_progress' => 'blue',
                     'cancelled', 'no_show' => 'red',
                     'completed' => 'zinc',
@@ -315,14 +300,7 @@
                     <flux:button wire:click="closeViewModal" variant="ghost">{{ __('Close') }}</flux:button>
 
                     <div class="flex gap-2">
-                        @if($apt->status === 'pending')
-                            <flux:button wire:click="openApproveModal({{ $apt->id }})" variant="primary" icon="check-circle">
-                                {{ __('Approve') }}
-                            </flux:button>
-                            <flux:button wire:click="openCancelModal({{ $apt->id }})" variant="danger" icon="x-circle">
-                                {{ __('Cancel') }}
-                            </flux:button>
-                        @elseif($apt->status === 'approved')
+                        @if(in_array($apt->status, ['confirmed', 'checked_in']))
                             @if($apt->queue)
                                 <flux:button wire:click="openPrintTicketModal({{ $apt->queue->id }})" variant="filled" icon="printer">
                                     {{ __('Print Ticket') }}
@@ -336,31 +314,6 @@
                 </div>
             </div>
         @endif
-    </flux:modal>
-
-    {{-- Approve Modal --}}
-    <flux:modal wire:model="showApproveModal" class="max-w-md">
-        <div class="space-y-6">
-            <div>
-                <flux:heading size="lg">{{ __('Approve Appointment') }}</flux:heading>
-                <flux:text variant="subtle" class="mt-1">
-                    {{ __('A queue number will be assigned automatically.') }}
-                </flux:text>
-            </div>
-
-            <flux:field>
-                <flux:label>{{ __('Notes (Optional)') }}</flux:label>
-                <flux:textarea wire:model="notes" rows="2" placeholder="{{ __('Add any notes...') }}" />
-                <flux:error name="notes" />
-            </flux:field>
-
-            <div class="flex justify-end gap-3">
-                <flux:button wire:click="closeApproveModal" variant="ghost">{{ __('Cancel') }}</flux:button>
-                <flux:button wire:click="approveAppointment" variant="primary" icon="check-circle">
-                    {{ __('Approve') }}
-                </flux:button>
-            </div>
-        </div>
     </flux:modal>
 
     {{-- Cancel Modal --}}

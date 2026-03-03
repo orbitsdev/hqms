@@ -96,16 +96,16 @@
         </div>
 
         {{-- Stats Summary --}}
-        @if($this->stats['pending_appointments'] > 0)
-            <div class="mb-6 flex items-center gap-3 rounded-xl border border-warning/30 bg-warning/5 p-3 dark:border-warning/20 dark:bg-warning/10">
-                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-warning/20">
-                    <flux:icon name="clock" class="h-5 w-5 text-warning" />
+        @if($this->stats['confirmed_appointments'] > 0)
+            <div class="mb-6 flex items-center gap-3 rounded-xl border border-teal-500/30 bg-teal-500/5 p-3 dark:border-teal-500/20 dark:bg-teal-500/10">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-teal-500/20">
+                    <flux:icon name="check-circle" class="h-5 w-5 text-teal-600 dark:text-teal-400" />
                 </div>
                 <div class="flex-1">
                     <p class="text-sm font-medium text-zinc-900 dark:text-white">
-                        {{ trans_choice(':count appointment pending approval|:count appointments pending approval', $this->stats['pending_appointments'], ['count' => $this->stats['pending_appointments']]) }}
+                        {{ trans_choice(':count confirmed appointment|:count confirmed appointments', $this->stats['confirmed_appointments'], ['count' => $this->stats['confirmed_appointments']]) }}
                     </p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('We\'ll notify you once confirmed') }}</p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('You\'ll receive your queue number on the appointment day') }}</p>
                 </div>
             </div>
         @endif
@@ -139,7 +139,7 @@
                                 @php
                                     $statusVariant = match ($appointment->status) {
                                         'approved' => 'success',
-                                        'pending' => 'warning',
+                                        'confirmed' => 'default',
                                         default => 'default'
                                     };
                                 @endphp

@@ -14,8 +14,8 @@
     <div class="flex flex-wrap gap-2">
         <div class="flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2">
             <flux:icon name="clock" class="h-4 w-4 text-warning" />
-            <span class="text-sm font-semibold text-warning-foreground dark:text-warning">{{ $pendingCheckIns->count() }}</span>
-            <span class="text-xs text-warning-foreground/80 dark:text-warning/80">{{ __('Check-ins') }}</span>
+            <span class="text-sm font-semibold text-warning-foreground dark:text-warning">{{ $unqueuedAppointments->count() }}</span>
+            <span class="text-xs text-warning-foreground/80 dark:text-warning/80">{{ __('Unqueued') }}</span>
         </div>
         <button wire:click="setStatus('waiting')" class="flex items-center gap-2 rounded-lg border px-3 py-2 transition {{ $status === 'waiting' ? 'border-primary bg-primary/10' : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700' }}">
             <span class="h-2 w-2 rounded-full bg-primary"></span>
@@ -47,12 +47,12 @@
         @endif
     </div>
 
-    <!-- Pending Check-ins -->
-    @if($pendingCheckIns->isNotEmpty())
+    <!-- Unqueued Appointments -->
+    @if($unqueuedAppointments->isNotEmpty())
         <div class="rounded-lg border border-warning/30 bg-warning/10 p-3">
-            <p class="mb-2 text-xs font-medium text-warning-foreground dark:text-warning">{{ __('Click to check in:') }}</p>
+            <p class="mb-2 text-xs font-medium text-warning-foreground dark:text-warning">{{ __('Click to add to queue:') }}</p>
             <div class="flex flex-wrap gap-2">
-                @foreach($pendingCheckIns as $appointment)
+                @foreach($unqueuedAppointments as $appointment)
                     <button
                         wire:click="openCheckInModal({{ $appointment->id }})"
                         class="inline-flex items-center gap-1.5 rounded-md border border-warning/50 bg-white px-2 py-1 text-xs font-medium text-warning-foreground transition hover:bg-warning/20 dark:border-warning/40 dark:bg-warning/10 dark:text-warning"
@@ -354,7 +354,7 @@
             <flux:heading size="lg">{{ __('Confirm Check-in') }}</flux:heading>
 
             @if($checkInAppointmentId)
-                @php $checkInAppt = $pendingCheckIns->firstWhere('id', $checkInAppointmentId); @endphp
+                @php $checkInAppt = $unqueuedAppointments->firstWhere('id', $checkInAppointmentId); @endphp
                 @if($checkInAppt)
                     <div class="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800">
                         <p class="font-medium text-zinc-900 dark:text-white">{{ $checkInAppt->patient_first_name }} {{ $checkInAppt->patient_last_name }}</p>

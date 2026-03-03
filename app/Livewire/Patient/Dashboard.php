@@ -34,7 +34,7 @@ class Dashboard extends Component
     {
         return Appointment::query()
             ->where('user_id', $this->user->id)
-            ->whereIn('status', ['pending', 'approved'])
+            ->whereIn('status', ['confirmed', 'approved'])
             ->where('appointment_date', '>=', today())
             ->with(['consultationType', 'doctor'])
             ->orderBy('appointment_date')
@@ -62,11 +62,11 @@ class Dashboard extends Component
             'total_visits' => MedicalRecord::where('user_id', $this->user->id)
                 ->whereIn('status', ['completed', 'for_billing'])
                 ->count(),
-            'pending_appointments' => Appointment::where('user_id', $this->user->id)
-                ->where('status', 'pending')
+            'confirmed_appointments' => Appointment::where('user_id', $this->user->id)
+                ->where('status', 'confirmed')
                 ->count(),
             'upcoming_appointments' => Appointment::where('user_id', $this->user->id)
-                ->whereIn('status', ['pending', 'approved'])
+                ->whereIn('status', ['confirmed', 'approved'])
                 ->where('appointment_date', '>=', today())
                 ->count(),
         ];

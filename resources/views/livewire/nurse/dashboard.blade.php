@@ -53,9 +53,9 @@
 
     <!-- Stats Grid -->
     <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        <a href="{{ route('nurse.appointments', ['status' => 'pending']) }}" wire:navigate class="rounded-lg border border-zinc-200 bg-white p-4 transition hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600">
-            <div class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $stats['pending_appointments'] }}</div>
-            <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Pending') }}</div>
+        <a href="{{ route('nurse.appointments', ['status' => 'confirmed']) }}" wire:navigate class="rounded-lg border border-zinc-200 bg-white p-4 transition hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600">
+            <div class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $stats['confirmed_appointments'] }}</div>
+            <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Confirmed') }}</div>
         </a>
 
         <a href="{{ route('nurse.appointments', ['status' => 'today']) }}" wire:navigate class="rounded-lg border border-zinc-200 bg-white p-4 transition hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600">
@@ -64,8 +64,8 @@
         </a>
 
         <a href="{{ route('nurse.queue') }}" wire:navigate class="rounded-lg border border-zinc-200 bg-white p-4 transition hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600">
-            <div class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $stats['waiting_checkin'] }}</div>
-            <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Check-in') }}</div>
+            <div class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $stats['unqueued_today'] }}</div>
+            <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Unqueued') }}</div>
         </a>
 
         <a href="{{ route('nurse.queue', ['status' => 'waiting']) }}" wire:navigate class="rounded-lg border border-zinc-200 bg-white p-4 transition hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600">
@@ -304,8 +304,8 @@
             <flux:button href="{{ route('nurse.appointments') }}" wire:navigate variant="ghost" class="h-auto flex-col gap-2 py-4" icon="calendar-days">
                 <span>{{ __('Appointments') }}</span>
             </flux:button>
-            <flux:button href="{{ route('nurse.appointments', ['status' => 'pending']) }}" wire:navigate variant="ghost" class="h-auto flex-col gap-2 py-4" icon="clipboard-document-check">
-                <span>{{ __('Pending') }}</span>
+            <flux:button href="{{ route('nurse.appointments', ['status' => 'confirmed']) }}" wire:navigate variant="ghost" class="h-auto flex-col gap-2 py-4" icon="clipboard-document-check">
+                <span>{{ __('Confirmed') }}</span>
             </flux:button>
             <flux:button href="{{ route('nurse.medical-records') }}" wire:navigate variant="ghost" class="h-auto flex-col gap-2 py-4" icon="document-text">
                 <span>{{ __('Records') }}</span>

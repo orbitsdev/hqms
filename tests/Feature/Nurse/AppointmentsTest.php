@@ -37,13 +37,13 @@ describe('Nurse Appointments List', function () {
         actingAs($this->nurse)
             ->get(route('nurse.appointments'))
             ->assertSuccessful()
-            ->assertSee('Appointment Requests');
+            ->assertSee('Appointments');
     });
 
-    it('shows pending appointments', function () {
+    it('shows confirmed appointments', function () {
         $appointment = Appointment::factory()->create([
             'consultation_type_id' => $this->consultationType->id,
-            'status' => 'pending',
+            'status' => 'confirmed',
             'patient_first_name' => 'John',
             'patient_last_name' => 'Doe',
         ]);
@@ -52,14 +52,14 @@ describe('Nurse Appointments List', function () {
             ->test(Appointments::class)
             ->assertSee('John')
             ->assertSee('Doe')
-            ->assertSee('Pending');
+            ->assertSee('Confirmed');
     });
 
     it('filters appointments by status', function () {
-        $pendingAppointment = Appointment::factory()->create([
+        $confirmedAppointment = Appointment::factory()->create([
             'consultation_type_id' => $this->consultationType->id,
-            'status' => 'pending',
-            'patient_first_name' => 'Pending',
+            'status' => 'confirmed',
+            'patient_first_name' => 'Confirmed',
             'patient_last_name' => 'Patient',
         ]);
 
@@ -72,10 +72,10 @@ describe('Nurse Appointments List', function () {
 
         Livewire::actingAs($this->nurse)
             ->test(Appointments::class)
-            ->assertSee('Pending Patient')
+            ->assertSee('Confirmed Patient')
             ->assertDontSee('Approved Patient')
             ->call('setStatus', 'approved')
-            ->assertDontSee('Pending Patient')
+            ->assertDontSee('Confirmed Patient')
             ->assertSee('Approved Patient');
     });
 
@@ -184,138 +184,13 @@ describe('Nurse Appointment Show', function () {
             ->assertSee('Visit Type')
             ->assertSee(ucfirst($visitType));
     })->with(['new', 'old', 'revisit']);
-
-    it('shows approve button for pending appointments', function () {
-        $appointment = Appointment::factory()->create([
-            'consultation_type_id' => $this->consultationType->id,
-            'status' => 'pending',
-        ]);
-
-        Livewire::actingAs($this->nurse)
-            ->test(AppointmentShow::class, ['appointment' => $appointment])
-            ->assertSee('Approve Appointment');
-    });
-
-    it('does not show approve button for approved appointments', function () {
-        $appointment = Appointment::factory()->approved()->create([
-            'consultation_type_id' => $this->consultationType->id,
-        ]);
-
-        Livewire::actingAs($this->nurse)
-            ->test(AppointmentShow::class, ['appointment' => $appointment])
-            ->assertDontSeeHtml('wire:click="openApproveModal"');
-    });
-});
-
-describe('Approve Appointment', function () {
-    it('can open the approve modal', function () {
-        $appointment = Appointment::factory()->create([
-            'consultation_type_id' => $this->consultationType->id,
-            'status' => 'pending',
-        ]);
-
-        Livewire::actingAs($this->nurse)
-            ->test(AppointmentShow::class, ['appointment' => $appointment])
-            ->call('openApproveModal')
-            ->assertSet('showApproveModal', true);
-    });
-
-    it('can approve a pending appointment and create queue', function () {
-        Notification::fake();
-
-        $patient = User::factory()->create();
-        PersonalInformation::factory()->create([
-            'user_id' => $patient->id,
-            'first_name' => 'Patient',
-            'last_name' => 'User',
-        ]);
-
-        $appointment = Appointment::factory()->create([
-            'user_id' => $patient->id,
-            'consultation_type_id' => $this->consultationType->id,
-            'status' => 'pending',
-            'patient_first_name' => 'Test',
-            'patient_last_name' => 'Patient',
-        ]);
-
-        Livewire::actingAs($this->nurse)
-            ->test(AppointmentShow::class, ['appointment' => $appointment])
-            ->call('openApproveModal')
-            ->set('appointmentTime', '09:00')
-            ->set('notes', 'Please bring ID')
-            ->call('approveAppointment');
-
-        $appointment->refresh();
-
-        expect($appointment->status)->toBe('approved')
-            ->and($appointment->approved_by)->toBe($this->nurse->id)
-            ->and($appointment->approved_at)->not->toBeNull()
-            ->and($appointment->notes)->toBe('Please bring ID');
-
-        $queue = Queue::where('appointment_id', $appointment->id)->first();
-        expect($queue)->not->toBeNull()
-            ->and($queue->queue_number)->toBe(1)
-            ->and($queue->consultation_type_id)->toBe($this->consultationType->id)
-            ->and($queue->status)->toBe('waiting');
-    });
-
-    it('assigns sequential queue numbers per consultation type', function () {
-        Notification::fake();
-
-        $patient1 = User::factory()->create();
-        PersonalInformation::factory()->create(['user_id' => $patient1->id]);
-
-        $patient2 = User::factory()->create();
-        PersonalInformation::factory()->create(['user_id' => $patient2->id]);
-
-        $appointment1 = Appointment::factory()->create([
-            'user_id' => $patient1->id,
-            'consultation_type_id' => $this->consultationType->id,
-            'status' => 'pending',
-            'appointment_date' => today(),
-        ]);
-
-        $appointment2 = Appointment::factory()->create([
-            'user_id' => $patient2->id,
-            'consultation_type_id' => $this->consultationType->id,
-            'status' => 'pending',
-            'appointment_date' => today(),
-        ]);
-
-        Livewire::actingAs($this->nurse)
-            ->test(AppointmentShow::class, ['appointment' => $appointment1])
-            ->call('openApproveModal')
-            ->call('approveAppointment');
-
-        Livewire::actingAs($this->nurse)
-            ->test(AppointmentShow::class, ['appointment' => $appointment2])
-            ->call('openApproveModal')
-            ->call('approveAppointment');
-
-        $queue1 = Queue::where('appointment_id', $appointment1->id)->first();
-        $queue2 = Queue::where('appointment_id', $appointment2->id)->first();
-
-        expect($queue1->queue_number)->toBe(1)
-            ->and($queue2->queue_number)->toBe(2);
-    });
-
-    it('cannot approve an already approved appointment', function () {
-        $appointment = Appointment::factory()->approved()->create([
-            'consultation_type_id' => $this->consultationType->id,
-        ]);
-
-        Livewire::actingAs($this->nurse)
-            ->test(AppointmentShow::class, ['appointment' => $appointment])
-            ->call('openApproveModal')
-            ->assertSet('showApproveModal', false);
-    });
 });
 
 describe('Cancel Appointment', function () {
     it('can open the cancel modal', function () {
         $appointment = Appointment::factory()->create([
             'consultation_type_id' => $this->consultationType->id,
-            'status' => 'pending',
+            'status' => 'confirmed',
         ]);
 
         Livewire::actingAs($this->nurse)
@@ -324,7 +199,7 @@ describe('Cancel Appointment', function () {
             ->assertSet('showCancelModal', true);
     });
 
-    it('can cancel a pending appointment with reason', function () {
+    it('can cancel a confirmed appointment with reason', function () {
         Notification::fake();
 
         $patient = User::factory()->create();
@@ -333,7 +208,7 @@ describe('Cancel Appointment', function () {
         $appointment = Appointment::factory()->create([
             'user_id' => $patient->id,
             'consultation_type_id' => $this->consultationType->id,
-            'status' => 'pending',
+            'status' => 'confirmed',
         ]);
 
         Livewire::actingAs($this->nurse)
@@ -351,7 +226,7 @@ describe('Cancel Appointment', function () {
     it('requires a reason to cancel', function () {
         $appointment = Appointment::factory()->create([
             'consultation_type_id' => $this->consultationType->id,
-            'status' => 'pending',
+            'status' => 'confirmed',
         ]);
 
         Livewire::actingAs($this->nurse)
@@ -365,7 +240,7 @@ describe('Cancel Appointment', function () {
     it('requires minimum characters for cancellation reason', function () {
         $appointment = Appointment::factory()->create([
             'consultation_type_id' => $this->consultationType->id,
-            'status' => 'pending',
+            'status' => 'confirmed',
         ]);
 
         Livewire::actingAs($this->nurse)

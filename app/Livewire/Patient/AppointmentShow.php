@@ -29,8 +29,8 @@ class AppointmentShow extends Component
 
     public function cancelAppointment(): void
     {
-        if ($this->appointment->status !== 'pending') {
-            Toaster::error(__('Only pending appointments can be cancelled.'));
+        if (! in_array($this->appointment->status, ['confirmed', 'approved'])) {
+            Toaster::error(__('Only confirmed or upcoming appointments can be cancelled.'));
 
             return;
         }

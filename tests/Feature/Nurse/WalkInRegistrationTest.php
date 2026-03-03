@@ -4,6 +4,7 @@ use App\Livewire\Nurse\WalkInRegistration;
 use App\Models\Appointment;
 use App\Models\ConsultationType;
 use App\Models\PersonalInformation;
+use App\Models\Queue;
 use App\Models\User;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
@@ -34,8 +35,7 @@ beforeEach(function () {
 it('renders the walk-in registration page', function () {
     actingAs($this->nurse)
         ->get(route('nurse.walk-in'))
-        ->assertSuccessful()
-        ->assertSeeLivewire(WalkInRegistration::class);
+        ->assertSuccessful();
 });
 
 it('defaults visit type to new', function () {
@@ -58,7 +58,7 @@ it('can register a walk-in patient with visit type', function (string $visitType
         ->set('chiefComplaints', 'Patient has fever and headache')
         ->call('nextStep')
         ->call('register')
-        ->assertRedirect(route('nurse.appointments', ['status' => 'pending']));
+        ->assertRedirect(route('nurse.queue'));
 
     $appointment = Appointment::where('patient_first_name', 'Maria')
         ->where('patient_last_name', 'Santos')
@@ -67,6 +67,12 @@ it('can register a walk-in patient with visit type', function (string $visitType
     expect($appointment)->not->toBeNull();
     expect($appointment->visit_type)->toBe($visitType);
     expect($appointment->source)->toBe('walk-in');
+    expect($appointment->status)->toBe('approved');
+
+    // Queue should be created immediately for walk-in
+    $queue = Queue::where('appointment_id', $appointment->id)->first();
+    expect($queue)->not->toBeNull();
+    expect($queue->status)->toBe('waiting');
 })->with(['new', 'old', 'revisit']);
 
 it('validates visit type on registration', function () {

@@ -6,9 +6,9 @@ use App\Models\Appointment;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use Masmerise\Toaster\Toaster;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Masmerise\Toaster\Toaster;
 
 class Appointments extends Component
 {
@@ -45,8 +45,8 @@ class Appointments extends Component
             ->where('user_id', $userId)
             ->findOrFail($appointmentId);
 
-        if ($appointment->status !== 'pending') {
-            Toaster::error(__('Only pending appointments can be cancelled.'));
+        if (! in_array($appointment->status, ['confirmed', 'approved'])) {
+            Toaster::error(__('Only confirmed or upcoming appointments can be cancelled.'));
 
             return;
         }
@@ -81,7 +81,7 @@ class Appointments extends Component
                 $query->whereDate('appointment_date', '<', today());
             })
             ->when($search !== '', function (Builder $query) use ($search): void {
-                $likeSearch = '%' . $search . '%';
+                $likeSearch = '%'.$search.'%';
 
                 $query->where(function (Builder $query) use ($likeSearch): void {
                     $query->whereHas('consultationType', function (Builder $query) use ($likeSearch): void {

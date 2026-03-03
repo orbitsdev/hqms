@@ -13,10 +13,10 @@
 
     @php
         $statusColor = match ($appointment->status) {
-            'approved', 'completed' => 'green',
+            'confirmed' => 'teal',
+            'completed' => 'green',
             'checked_in', 'in_progress' => 'blue',
             'cancelled', 'no_show' => 'red',
-            'pending' => 'yellow',
             default => 'gray',
         };
         $statusLabel = str_replace('_', ' ', ucfirst($appointment->status));
@@ -200,7 +200,7 @@
                 </div>
             </div>
 
-            @if($appointment->status !== 'pending' && ($appointment->approvedBy || $appointment->approved_at))
+            @if($appointment->approvedBy || $appointment->approved_at)
                 <div class="rounded-xl border border-zinc-200/70 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                     <flux:heading size="sm" level="3" class="mb-3 flex items-center gap-2">
                         <flux:icon name="clipboard-document-check" class="h-4 w-4 text-zinc-400" />
@@ -342,24 +342,7 @@
             <div class="rounded-xl border border-zinc-200/70 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                 <flux:heading size="sm" level="3" class="mb-4">{{ __('Actions') }}</flux:heading>
                 <div class="space-y-3">
-                    @if($appointment->status === 'pending')
-                        <flux:button
-                            wire:click="openApproveModal"
-                            variant="primary"
-                            class="w-full justify-center"
-                            icon="check-circle"
-                        >
-                            {{ __('Approve Appointment') }}
-                        </flux:button>
-                        <flux:button
-                            wire:click="openCancelModal"
-                            variant="danger"
-                            class="w-full justify-center"
-                            icon="x-circle"
-                        >
-                            {{ __('Cancel Appointment') }}
-                        </flux:button>
-                    @elseif($appointment->status === 'approved')
+                    @if(in_array($appointment->status, ['confirmed', 'checked_in']))
                         <flux:button
                             wire:click="openCancelModal"
                             variant="danger"
@@ -395,58 +378,6 @@
             </div>
         </div>
     </div>
-
-    <flux:modal wire:model="showApproveModal" class="max-w-lg">
-        <div class="space-y-6">
-            <div>
-                <flux:heading size="lg">{{ __('Approve Appointment') }}</flux:heading>
-                <flux:text variant="subtle" class="mt-1 text-sm">
-                    {{ __('Confirm approval for :patient on :date. A queue number will be assigned automatically.', [
-                        'patient' => $appointment->patient_first_name . ' ' . $appointment->patient_last_name,
-                        'date' => $appointment->appointment_date?->format('M d, Y'),
-                    ]) }}
-                </flux:text>
-            </div>
-
-            <div class="space-y-4">
-                <div class="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50">
-                    <div class="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                            <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Consultation Type') }}</p>
-                            <p class="font-medium text-zinc-900 dark:text-white">{{ $consultationType?->name }}</p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Date') }}</p>
-                            <p class="font-medium text-zinc-900 dark:text-white">{{ $dateLabel }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <flux:field>
-                    <flux:label>{{ __('Notes (Optional)') }}</flux:label>
-                    <flux:textarea
-                        wire:model="notes"
-                        rows="2"
-                        placeholder="{{ __('Add any notes for the patient or staff...') }}"
-                    />
-                    <flux:error name="notes" />
-                </flux:field>
-            </div>
-
-            <div class="flex items-center justify-end gap-3">
-                <flux:button wire:click="closeApproveModal" variant="ghost">
-                    {{ __('Cancel') }}
-                </flux:button>
-                <flux:button
-                    wire:click="approveAppointment"
-                    variant="primary"
-                    icon="check-circle"
-                >
-                    {{ __('Confirm Approval') }}
-                </flux:button>
-            </div>
-        </div>
-    </flux:modal>
 
     <flux:modal wire:model="showCancelModal" class="max-w-lg">
         <div class="space-y-6">

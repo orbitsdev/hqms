@@ -6,11 +6,10 @@ use App\Concerns\NormalizesDateInput;
 use App\Models\Appointment;
 use App\Models\ConsultationType;
 use App\Models\SystemSetting;
-use App\Models\User;
 use App\Notifications\GenericNotification;
+use App\Services\QueueNumberService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Livewire\Component;
@@ -180,6 +179,8 @@ class BookAppointment extends Component
 
         // dd($patient, $user, $this->consultationTypeId, $this->appointmentDate, $this->chiefComplaints);
 
+        $isSameDay = Carbon::parse($this->appointmentDate)->isToday();
+
         $appointment = Appointment::create([
             'user_id' => $user->id,
             'consultation_type_id' => $this->consultationTypeId,
@@ -198,25 +199,61 @@ class BookAppointment extends Component
             'appointment_date' => $this->appointmentDate,
             'appointment_time' => null,
             'chief_complaints' => $this->chiefComplaints,
-            'status' => 'pending',
+            'status' => $isSameDay ? 'approved' : 'confirmed',
             'source' => 'online',
             'visit_type' => $this->visitType,
         ]);
-        $nurses = User::role('nurse')->get();
 
-        Notification::send($nurses, new GenericNotification([
-            'type' => 'appointment.requested',
-            'title' => 'New Appointment Request',
-            'message' => "{$patient['first_name']} {$patient['last_name']} requested an appointment.",
-            'appointment_id' => $appointment->id,
-            'consultation_type_id' => $appointment->consultation_type_id,
-            'appointment_date' => $appointment->appointment_date,
-            'sender_id' => $user->id,
-            'sender_role' => 'patient',
-            'url' => '#',
-        ]));
+        if ($isSameDay) {
+            // Same-day booking: create queue immediately
+            $queueService = app(QueueNumberService::class);
+            $queue = $queueService->createQueueForAppointment($appointment);
 
-        Toaster::success(__('Appointment request submitted. We will confirm your schedule soon.'));
+            $user->notify(new GenericNotification([
+                'type' => 'queue.assigned',
+                'title' => __('Queue Number Assigned'),
+                'message' => __('Your queue number for :type today is :queue.', [
+                    'type' => $appointment->consultationType->name,
+                    'queue' => $queue->formatted_number,
+                ]),
+                'appointment_id' => $appointment->id,
+                'queue_id' => $queue->id,
+                'queue_number' => $queue->formatted_number,
+                'sender_id' => $user->id,
+                'sender_role' => 'patient',
+                'url' => route('patient.appointments.show', $appointment),
+            ]));
+
+            Toaster::success(__('Appointment booked! Your queue number is :queue.', [
+                'queue' => $queue->formatted_number,
+            ]));
+        } else {
+            // Advance booking: predict queue position
+            $queueService = app(QueueNumberService::class);
+            $predictedPosition = $queueService->predictQueuePosition(
+                $appointment->consultation_type_id,
+                $this->appointmentDate,
+            );
+
+            $user->notify(new GenericNotification([
+                'type' => 'appointment.confirmed',
+                'title' => __('Appointment Confirmed'),
+                'message' => __('Your appointment for :type on :date is confirmed. Estimated queue position: ~#:position.', [
+                    'type' => $appointment->consultationType->name,
+                    'date' => $appointment->appointment_date->format('M d, Y'),
+                    'position' => $predictedPosition,
+                ]),
+                'appointment_id' => $appointment->id,
+                'sender_id' => $user->id,
+                'sender_role' => 'patient',
+                'url' => route('patient.appointments.show', $appointment),
+            ]));
+
+            Toaster::success(__('Appointment confirmed for :date. Estimated queue position: ~#:position. You\'ll receive your queue number on the appointment day.', [
+                'date' => $appointment->appointment_date->format('M d, Y'),
+                'position' => $predictedPosition,
+            ]));
+        }
 
         $this->redirect(route('patient.appointments'), navigate: true);
     }

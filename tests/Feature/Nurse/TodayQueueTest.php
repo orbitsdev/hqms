@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\QueueUpdated;
 use App\Livewire\Nurse\TodayQueue;
 use App\Models\Appointment;
 use App\Models\ConsultationType;
@@ -7,6 +8,7 @@ use App\Models\MedicalRecord;
 use App\Models\PersonalInformation;
 use App\Models\Queue;
 use App\Models\User;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
@@ -14,6 +16,8 @@ use Spatie\Permission\Models\Role;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
+    Event::fake(QueueUpdated::class);
+
     Role::findOrCreate('nurse', 'web');
     Role::findOrCreate('doctor', 'web');
 
@@ -243,7 +247,7 @@ describe('Stop Serving', function () {
         expect($queue->status)->toBe('waiting')
             ->and($queue->served_by)->toBeNull()
             ->and($queue->serving_started_at)->toBeNull()
-            ->and($appointment->status)->toBe('checked_in');
+            ->and($appointment->status)->toBe('approved');
     });
 
     it('deletes medical record without vitals when stopping', function () {

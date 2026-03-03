@@ -8,6 +8,7 @@ use App\Models\ConsultationType;
 use App\Models\PersonalInformation;
 use App\Models\User;
 use App\Notifications\GenericNotification;
+use App\Services\QueueNumberService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -231,10 +232,14 @@ class WalkInRegistration extends Component
             'relationship_to_account' => 'self',
             'appointment_date' => today(),
             'chief_complaints' => $this->chiefComplaints,
-            'status' => 'pending',
+            'status' => 'approved',
             'source' => 'walk-in',
             'visit_type' => $this->visitType,
         ]);
+
+        // Create queue immediately for walk-in
+        $queueService = app(QueueNumberService::class);
+        $queue = $queueService->createQueueForAppointment($appointment, $nurse->id);
 
         // Notify other nurses about the new walk-in
         $otherNurses = User::role('nurse')->where('id', '!=', $nurse->id)->get();
@@ -243,27 +248,30 @@ class WalkInRegistration extends Component
             Notification::send($otherNurses, new GenericNotification([
                 'type' => 'appointment.requested',
                 'title' => __('New Walk-in Patient'),
-                'message' => __(':name registered as walk-in for :type.', [
+                'message' => __(':name registered as walk-in for :type. Queue: :queue', [
                     'name' => "{$this->patientFirstName} {$this->patientLastName}",
                     'type' => $appointment->consultationType->name,
+                    'queue' => $queue->formatted_number,
                 ]),
                 'appointment_id' => $appointment->id,
                 'consultation_type_id' => $appointment->consultation_type_id,
                 'appointment_date' => $appointment->appointment_date,
                 'sender_id' => $nurse->id,
                 'sender_role' => 'nurse',
-                'url' => route('nurse.appointments', ['status' => 'pending']),
+                'url' => route('nurse.queue'),
             ]));
         }
 
-        Toaster::success(__('Walk-in patient registered successfully.'));
+        Toaster::success(__('Walk-in patient registered. Queue number: :queue', [
+            'queue' => $queue->formatted_number,
+        ]));
 
         if ($this->createAccount && $generatedPassword) {
             Toaster::info(__('Account: :email', ['email' => $this->accountEmail]));
             Toaster::warning(__('Password: :password (copy now!)', ['password' => $generatedPassword]));
         }
 
-        $this->redirect(route('nurse.appointments', ['status' => 'pending']), navigate: true);
+        $this->redirect(route('nurse.queue'), navigate: true);
     }
 
     public function render(): View

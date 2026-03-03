@@ -52,7 +52,7 @@
                             'completed' => ['bg' => 'bg-success/10', 'text' => 'text-success', 'dot' => 'bg-success'],
                             'checked_in', 'in_progress' => ['bg' => 'bg-primary/10', 'text' => 'text-primary', 'dot' => 'bg-primary'],
                             'cancelled', 'no_show' => ['bg' => 'bg-destructive/10', 'text' => 'text-destructive', 'dot' => 'bg-destructive'],
-                            'pending' => ['bg' => 'bg-warning/10', 'text' => 'text-warning', 'dot' => 'bg-warning'],
+                            'confirmed' => ['bg' => 'bg-teal-500/10', 'text' => 'text-teal-600 dark:text-teal-400', 'dot' => 'bg-teal-500'],
                             default => ['bg' => 'bg-zinc-100 dark:bg-zinc-800', 'text' => 'text-zinc-600 dark:text-zinc-400', 'dot' => 'bg-zinc-400'],
                         };
                         $statusLabel = str_replace('_', ' ', ucfirst($appointment->status));
@@ -113,8 +113,8 @@
                         </div>
                     </a>
 
-                    {{-- Cancel Modal for Pending --}}
-                    @if($appointment->status === 'pending')
+                    {{-- Cancel Modal for Confirmed --}}
+                    @if($appointment->status === 'confirmed')
                         <flux:modal name="cancel-appointment-{{ $appointment->id }}" focusable class="max-w-sm">
                             <div class="p-4 space-y-4">
                                 <div class="text-center">

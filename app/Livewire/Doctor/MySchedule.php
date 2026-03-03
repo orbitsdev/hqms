@@ -3,7 +3,6 @@
 namespace App\Livewire\Doctor;
 
 use App\Models\Appointment;
-use App\Models\ConsultationType;
 use App\Models\DoctorSchedule;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
@@ -214,7 +213,7 @@ class MySchedule extends Component
         return Appointment::query()
             ->with(['consultationType', 'queue'])
             ->where('doctor_id', $doctor->id)
-            ->where('status', 'approved')
+            ->whereIn('status', ['confirmed', 'approved'])
             ->where('appointment_date', '>=', today())
             ->orderBy('appointment_date')
             ->orderBy('appointment_time')

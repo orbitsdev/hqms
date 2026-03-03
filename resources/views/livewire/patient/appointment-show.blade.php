@@ -18,7 +18,7 @@
                 'completed' => ['bg' => 'bg-success/10', 'text' => 'text-success', 'dot' => 'bg-success', 'border' => 'border-success/30'],
                 'checked_in', 'in_progress' => ['bg' => 'bg-primary/10', 'text' => 'text-primary', 'dot' => 'bg-primary', 'border' => 'border-primary/30'],
                 'cancelled', 'no_show' => ['bg' => 'bg-destructive/10', 'text' => 'text-destructive', 'dot' => 'bg-destructive', 'border' => 'border-destructive/30'],
-                'pending' => ['bg' => 'bg-warning/10', 'text' => 'text-warning', 'dot' => 'bg-warning', 'border' => 'border-warning/30'],
+                'confirmed' => ['bg' => 'bg-teal-500/10', 'text' => 'text-teal-600 dark:text-teal-400', 'dot' => 'bg-teal-500', 'border' => 'border-teal-500/30'],
                 default => ['bg' => 'bg-zinc-100 dark:bg-zinc-800', 'text' => 'text-zinc-600 dark:text-zinc-400', 'dot' => 'bg-zinc-400', 'border' => 'border-zinc-200 dark:border-zinc-700'],
             };
             $statusLabel = str_replace('_', ' ', ucfirst($appointment->status));
@@ -35,8 +35,8 @@
                         <p class="font-semibold {{ $statusConfig['text'] }}">{{ $statusLabel }}</p>
                         <p class="text-sm {{ $statusConfig['text'] }} opacity-80">
                             @switch($appointment->status)
-                                @case('pending')
-                                    {{ __('Waiting for approval from the clinic') }}
+                                @case('confirmed')
+                                    {{ __('Your appointment is confirmed. You\'ll receive your queue number on the appointment day.') }}
                                     @break
                                 @case('approved')
                                     {{ __('Your appointment has been confirmed') }}
@@ -183,8 +183,8 @@
                 </div>
             @endif
 
-            {{-- Action Button for Pending --}}
-            @if($appointment->status === 'pending')
+            {{-- Action Button for Confirmed --}}
+            @if($appointment->status === 'confirmed')
                 <div class="sticky bottom-20 lg:bottom-4">
                     <flux:modal.trigger name="cancel-appointment">
                         <button type="button"

@@ -27,15 +27,16 @@ class Dashboard extends Component
     public function getStatsProperty(): array
     {
         return [
-            'pending_appointments' => Appointment::query()
-                ->where('status', 'pending')
+            'confirmed_appointments' => Appointment::query()
+                ->where('status', 'confirmed')
                 ->count(),
             'today_appointments' => Appointment::query()
                 ->whereDate('appointment_date', today())
                 ->count(),
-            'waiting_checkin' => Appointment::query()
-                ->where('status', 'approved')
+            'unqueued_today' => Appointment::query()
+                ->where('status', 'confirmed')
                 ->whereDate('appointment_date', today())
+                ->doesntHave('queue')
                 ->count(),
             'queue_waiting' => Queue::query()
                 ->today()
@@ -144,17 +145,18 @@ class Dashboard extends Component
     {
         $alerts = [];
 
-        // Pending appointments needing approval (older than 1 hour)
-        $oldPending = Appointment::query()
-            ->where('status', 'pending')
-            ->where('created_at', '<', now()->subHour())
+        // Confirmed appointments for today that haven't been queued
+        $unqueuedToday = Appointment::query()
+            ->where('status', 'confirmed')
+            ->whereDate('appointment_date', today())
+            ->doesntHave('queue')
             ->count();
 
-        if ($oldPending > 0) {
-            $alerts['pending'][] = [
+        if ($unqueuedToday > 0) {
+            $alerts['confirmed'][] = [
                 'type' => 'warning',
-                'message' => __(':count pending appointments older than 1 hour', ['count' => $oldPending]),
-                'action' => route('nurse.appointments', ['status' => 'pending']),
+                'message' => __(':count confirmed appointments for today not yet queued', ['count' => $unqueuedToday]),
+                'action' => route('nurse.queue'),
             ];
         }
 
