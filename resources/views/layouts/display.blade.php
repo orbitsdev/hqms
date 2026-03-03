@@ -13,9 +13,11 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
-        /* Prevent screen from sleeping/dimming */
-        body {
-            cursor: none;
+        /* Hide cursor on large screens (TV/kiosk mode) */
+        @media (min-width: 1024px) {
+            body {
+                cursor: none;
+            }
         }
 
         /* Animation for called number */

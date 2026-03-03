@@ -17,9 +17,9 @@ class ConsultationTypeFactory extends Factory
     public function definition(): array
     {
         $types = [
-            ['code' => 'test_ob', 'name' => 'Test Obstetrics', 'short_name' => 'TO'],
-            ['code' => 'test_ped', 'name' => 'Test Pediatrics', 'short_name' => 'TP'],
-            ['code' => 'test_gen', 'name' => 'Test General', 'short_name' => 'TG'],
+            ['code' => 'ob', 'name' => 'Test Obstetrics', 'short_name' => 'TO'],
+            ['code' => 'pd', 'name' => 'Test Pediatrics', 'short_name' => 'TP'],
+            ['code' => 'gn', 'name' => 'Test General', 'short_name' => 'TG'],
         ];
 
         $type = fake()->randomElement($types);

@@ -52,6 +52,9 @@
                         <flux:sidebar.item icon="ticket" :href="route('patient.queue')" :current="request()->routeIs('patient.queue')" wire:navigate>
                             {{ __('Queue Status') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="tv" :href="route('queue-display.select')" :current="request()->routeIs('queue-display.select')" wire:navigate>
+                            {{ __('Queue Display') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="document-text" :href="route('patient.records')" :current="request()->routeIs('patient.records*')" wire:navigate>
                             {{ __('Medical Records') }}
                         </flux:sidebar.item>
@@ -69,6 +72,9 @@
                         </flux:sidebar.item>
                         <flux:sidebar.item icon="queue-list" :href="route('doctor.queue')" :current="request()->routeIs('doctor.queue') || request()->routeIs('doctor.examine')" wire:navigate>
                             {{ __('Patient Queue') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="tv" :href="route('queue-display.select')" :current="request()->routeIs('queue-display.select')" wire:navigate>
+                            {{ __('Queue Display') }}
                         </flux:sidebar.item>
                         <flux:sidebar.item icon="clipboard-document-list" :href="route('doctor.patient-history')" :current="request()->routeIs('doctor.patient-history')" wire:navigate>
                             {{ __('Patient History') }}
@@ -97,6 +103,9 @@
                         <flux:sidebar.item icon="queue-list" :href="route('nurse.queue')" :current="request()->routeIs('nurse.queue')" wire:navigate>
                             {{ __('Today\'s Queue') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="tv" :href="route('queue-display.select')" :current="request()->routeIs('queue-display.select')" wire:navigate>
+                            {{ __('Queue Display') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="clipboard-document-list" :href="route('nurse.medical-records')" :current="request()->routeIs('nurse.medical-records')" wire:navigate>
                             {{ __('Medical Records') }}
                         </flux:sidebar.item>
@@ -117,6 +126,9 @@
                         </flux:sidebar.item>
                         <flux:sidebar.item icon="banknotes" :href="route('cashier.queue')" :current="request()->routeIs('cashier.queue') || request()->routeIs('cashier.process')" wire:navigate>
                             {{ __('Billing Queue') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="tv" :href="route('queue-display.select')" :current="request()->routeIs('queue-display.select')" wire:navigate>
+                            {{ __('Queue Display') }}
                         </flux:sidebar.item>
                         <flux:sidebar.item icon="clock" :href="route('cashier.history')" :current="request()->routeIs('cashier.history')" wire:navigate>
                             {{ __('Payment History') }}
@@ -145,6 +157,9 @@
                         <flux:sidebar.item icon="document-chart-bar" :href="route('admin.reports')" :current="request()->routeIs('admin.reports')" wire:navigate>
                             {{ __('Reports') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="tv" :href="route('queue-display.select')" :current="request()->routeIs('queue-display.select')" wire:navigate>
+                            {{ __('Queue Display') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="cog" :href="route('profile.edit')" :current="request()->routeIs('profile.edit')" wire:navigate>
                             {{ __('Settings') }}
                         </flux:sidebar.item>
@@ -153,6 +168,9 @@
                     <flux:sidebar.group :heading="$portalLabel" class="grid">
                         <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                             {{ __('Dashboard') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="tv" :href="route('queue-display.select')" :current="request()->routeIs('queue-display.select')" wire:navigate>
+                            {{ __('Queue Display') }}
                         </flux:sidebar.item>
                         <flux:sidebar.item icon="cog" :href="route('profile.edit')" :current="request()->routeIs('profile.edit')" wire:navigate>
                             {{ __('Settings') }}

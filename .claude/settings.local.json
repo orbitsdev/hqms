@@ -51,7 +51,10 @@
       "WebSearch",
       "WebFetch(domain:healthspace.ph)",
       "Bash(xargs grep:*)",
-      "Bash(mysql:*)"
+      "Bash(mysql:*)",
+      "Bash(where php:*)",
+      "Bash(\"C:\\\\Users\\\\Owner\\\\.config\\\\herd\\\\bin\\\\php.bat\":*)",
+      "Bash(\"C:\\\\Users\\\\Owner\\\\.config\\\\herd\\\\bin\\\\php.bat\" artisan:*)"
     ]
   }
 }

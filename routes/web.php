@@ -11,6 +11,7 @@ use App\Livewire\Cashier\Dashboard as CashierDashboard;
 use App\Livewire\Cashier\PaymentHistory as CashierPaymentHistory;
 use App\Livewire\Cashier\ProcessBilling as CashierProcessBilling;
 use App\Livewire\Cashier\TransactionDetails as CashierTransactionDetails;
+use App\Livewire\Display\QueueDisplaySelector;
 use App\Livewire\Display\QueueMonitor;
 use App\Livewire\Doctor\Admissions as DoctorAdmissions;
 use App\Livewire\Doctor\Dashboard as DoctorDashboard;
@@ -43,6 +44,8 @@ Route::prefix('display')->name('display.')->group(function () {
     Route::get('/', QueueMonitor::class)->name('all');
     Route::get('/{type}', QueueMonitor::class)->name('type');
 });
+
+Route::get('queue-display', QueueDisplaySelector::class)->middleware(['auth'])->name('queue-display.select');
 
 Route::get('dashboard', function () {
     // redirect based on role

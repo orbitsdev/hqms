@@ -10,13 +10,13 @@ use Livewire\Component;
 
 class QueueMonitor extends Component
 {
-    public ?int $consultationTypeId = null;
+    public int $consultationTypeId = 0;
 
     public ?ConsultationType $consultationType = null;
 
     public function mount(?int $type = null): void
     {
-        $this->consultationTypeId = $type;
+        $this->consultationTypeId = $type ?? 0;
 
         if ($type) {
             $this->consultationType = ConsultationType::find($type);
