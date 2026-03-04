@@ -334,6 +334,30 @@
                     </div>
                 @endif
 
+                {{-- Possible Doctors --}}
+                @if(!empty($doctorAvailability))
+                    <div class="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
+                        <div class="mb-2 flex items-center gap-2">
+                            <flux:icon name="user-group" class="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                            <h3 class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">{{ __('Possible Doctors') }}</h3>
+                        </div>
+                        <p class="mb-3 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Your doctor will be assigned based on availability. These doctors handle this consultation type:') }}</p>
+                        <div class="space-y-2">
+                            @foreach($doctorAvailability as $doctor)
+                                <div wire:key="doctor-avail-{{ $loop->index }}" class="flex items-start gap-2">
+                                    <flux:icon name="user-circle" class="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                                    <div>
+                                        <p class="text-sm font-medium text-zinc-900 dark:text-white">{{ $doctor['name'] }}</p>
+                                        <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                                            {{ implode(', ', $doctor['days']) }} &middot; {{ $doctor['hours'] }}
+                                        </p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 <div class="mt-6 flex gap-3">
                     <button type="button"
                             wire:click="previousStep"
@@ -382,9 +406,20 @@
                                 <span class="font-medium text-zinc-900 dark:text-white">{{ ucfirst($patientRelationship) }}</span>
                             </div>
                         @endif
-                        <div class="flex items-center justify-between">
+                        <div class="flex items-center justify-between border-b border-zinc-100 pb-3 dark:border-zinc-700">
                             <span class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Visit Type') }}</span>
                             <span class="font-medium text-zinc-900 dark:text-white">{{ ucfirst($visitType) }}</span>
+                        </div>
+                        <div class="flex items-start justify-between">
+                            <span class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Doctor') }}</span>
+                            <div class="text-right">
+                                <span class="font-medium text-zinc-900 dark:text-white">{{ __('To be assigned') }}</span>
+                                @if(!empty($doctorAvailability))
+                                    <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                                        {{ implode(', ', array_column($doctorAvailability, 'name')) }}
+                                    </p>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>

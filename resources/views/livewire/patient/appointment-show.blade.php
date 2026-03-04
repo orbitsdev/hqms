@@ -110,8 +110,18 @@
 
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
-                            <p class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{{ __('Doctor') }}</p>
-                            <p class="mt-1 font-medium text-zinc-900 dark:text-white">{{ $appointment->doctor?->name ?? __('To be assigned') }}</p>
+                            <p class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                                {{ $appointment->doctor_id ? __('Doctor') : __('Possible Doctors') }}
+                            </p>
+                            @if($appointment->doctor_id)
+                                <p class="mt-1 font-medium text-zinc-900 dark:text-white">{{ $appointment->doctor->name }}</p>
+                            @elseif($possibleDoctors->isNotEmpty())
+                                <p class="mt-1 font-medium text-zinc-900 dark:text-white">
+                                    {{ $possibleDoctors->pluck('name')->join(', ') }}
+                                </p>
+                            @else
+                                <p class="mt-1 font-medium text-zinc-900 dark:text-white">{{ __('To be assigned') }}</p>
+                            @endif
                         </div>
                         <div>
                             <p class="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{{ __('Visit Type') }}</p>

@@ -55,7 +55,8 @@
       "Bash(where php:*)",
       "Bash(\"C:\\\\Users\\\\Owner\\\\.config\\\\herd\\\\bin\\\\php.bat\":*)",
       "Bash(\"C:\\\\Users\\\\Owner\\\\.config\\\\herd\\\\bin\\\\php.bat\" artisan:*)",
-      "WebFetch(domain:medium.com)"
+      "WebFetch(domain:medium.com)",
+      "Bash(/c/Users/Owner/.config/herd/bin/php.bat:*)"
     ]
   }
 }

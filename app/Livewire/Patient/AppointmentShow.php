@@ -47,7 +47,15 @@ class AppointmentShow extends Component
 
     public function render(): View
     {
-        return view('livewire.patient.appointment-show')
+        $possibleDoctors = collect();
+
+        if (! $this->appointment->doctor_id && $this->appointment->consultationType) {
+            $possibleDoctors = $this->appointment->consultationType->doctors()->get(['users.id', 'users.name']);
+        }
+
+        return view('livewire.patient.appointment-show', [
+            'possibleDoctors' => $possibleDoctors,
+        ])
             ->layout('layouts.app');
     }
 }

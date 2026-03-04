@@ -84,6 +84,18 @@
     <div id="cursor-glow" class="hidden lg:block fixed w-48 h-48 rounded-full pointer-events-none z-[9997] opacity-0" style="transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0.05) 40%, transparent 70%);"></div>
     <canvas id="cursor-ekg" class="hidden lg:block fixed inset-0 pointer-events-none z-[9996]"></canvas>
 
+    {{-- Sound Toggle Button (desktop only) --}}
+    <button id="sound-toggle" class="hidden lg:flex fixed bottom-6 right-6 z-[9999] items-center justify-center w-10 h-10 rounded-full bg-zinc-800/60 border border-teal-400/60 backdrop-blur-sm text-white/70 hover:text-white hover:bg-zinc-800/80 transition-all duration-200 cursor-pointer" title="Toggle heartbeat sound">
+        {{-- Speaker off icon (hidden by default) --}}
+        <svg id="sound-icon-off" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+        </svg>
+        {{-- Speaker on icon (shown by default) --}}
+        <svg id="sound-icon-on" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/>
+        </svg>
+    </button>
+
     {{-- Hero Section with Background --}}
     <div id="hero-section" class="relative min-h-screen overflow-hidden">
         {{-- Background Image with Parallax --}}
@@ -460,9 +472,78 @@
                     mouseY = e.clientY;
                 });
 
+                // === Heartbeat Sound (Web Audio API) ===
+                let audioCtx = null;
+                let soundEnabled = true;
+                const soundToggle = document.getElementById('sound-toggle');
+                const soundIconOff = document.getElementById('sound-icon-off');
+                const soundIconOn = document.getElementById('sound-icon-on');
+
+                function initAudio() {
+                    if (!audioCtx) {
+                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    if (audioCtx.state === 'suspended') {
+                        audioCtx.resume();
+                    }
+                }
+
+                // Auto-init AudioContext on first user gesture (browser autoplay policy)
+                function autoInitAudio() {
+                    initAudio();
+                    document.removeEventListener('click', autoInitAudio);
+                    document.removeEventListener('mousemove', autoInitAudio);
+                }
+                document.addEventListener('click', autoInitAudio);
+                document.addEventListener('mousemove', autoInitAudio);
+
+                function playBeep(frequency, duration, delay = 0, gain = 0.06) {
+                    if (!audioCtx || !soundEnabled) return;
+                    const startTime = audioCtx.currentTime + delay;
+                    const osc = audioCtx.createOscillator();
+                    const vol = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = frequency;
+                    vol.gain.setValueAtTime(0, startTime);
+                    vol.gain.linearRampToValueAtTime(gain, startTime + 0.01);
+                    vol.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+                    osc.connect(vol);
+                    vol.connect(audioCtx.destination);
+                    osc.start(startTime);
+                    osc.stop(startTime + duration);
+                }
+
+                function playHeartbeatSound() {
+                    if (!soundEnabled) return;
+                    // Lub (higher pitch)
+                    playBeep(880, 0.08, 0, 0.06);
+                    // Dub (lower pitch, delayed)
+                    playBeep(660, 0.06, 0.15, 0.04);
+                }
+
+                function playClickSound() {
+                    if (!soundEnabled) return;
+                    playBeep(1200, 0.04, 0, 0.05);
+                }
+
+                soundToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    initAudio();
+                    soundEnabled = !soundEnabled;
+                    soundIconOff.classList.toggle('hidden', soundEnabled);
+                    soundIconOn.classList.toggle('hidden', !soundEnabled);
+                    soundToggle.classList.toggle('border-teal-400/60', soundEnabled);
+                    soundToggle.classList.toggle('border-teal-500/30', !soundEnabled);
+                    if (soundEnabled) {
+                        playHeartbeatSound();
+                    }
+                });
+
                 // Heartbeat pulse on the ring (72 BPM = ~833ms)
                 function heartbeatPulse() {
                     if (!isHovering) {
+                        // Play heartbeat beep synced with visual pulse
+                        playHeartbeatSound();
                         // Double-beat like a real heartbeat: lub-dub
                         gsap.timeline()
                             .to(cursorPulse, { scale: 1.5, borderColor: 'rgba(167,243,208,0.9)', duration: 0.1, ease: 'power2.out' })
@@ -744,6 +825,7 @@
 
                 // Click burst - lightning explosion + medical cross particles
                 document.addEventListener('mousedown', () => {
+                    playClickSound();
                     gsap.fromTo(cursorPulse,
                         { scale: 0.7 },
                         { scale: 2, opacity: 0, duration: 0.5, ease: 'power2.out',
