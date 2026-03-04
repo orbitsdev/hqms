@@ -44,12 +44,12 @@ trait QueueRelations
 
     public function getFormattedNumberAttribute(): string
     {
-        return $this->consultationType->short_name . '-' . $this->queue_number;
+        return ($this->consultationType?->short_name ?? '?').'-'.$this->queue_number;
     }
 
     public function getWaitTimeAttribute(): ?int
     {
-        if (!$this->serving_started_at) {
+        if (! $this->serving_started_at) {
             return null;
         }
 
@@ -58,7 +58,7 @@ trait QueueRelations
 
     public function getServiceTimeAttribute(): ?int
     {
-        if (!$this->serving_started_at || !$this->serving_ended_at) {
+        if (! $this->serving_started_at || ! $this->serving_ended_at) {
             return null;
         }
 

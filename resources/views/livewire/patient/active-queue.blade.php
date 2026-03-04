@@ -16,7 +16,7 @@
 
         @if($activeQueue)
             {{-- Active Queue Card --}}
-            <div class="mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary/80 p-6 text-white shadow-lg">
+            <a href="{{ route('display.type', $activeQueue->consultation_type_id) }}" class="mb-6 block overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary/80 p-6 text-white shadow-lg transition hover:shadow-xl hover:scale-[1.01] active:scale-[0.99]">
                 <div class="flex items-start justify-between">
                     <div>
                         <p class="text-sm font-medium text-white/80">{{ __('Your Queue Number') }}</p>
@@ -56,7 +56,11 @@
                         </p>
                     @endif
                 </div>
-            </div>
+                <span class="mt-4 flex items-center gap-1 text-sm font-medium text-white hover:text-white/80">
+                    {{ __('View Queue Display') }}
+                    <flux:icon name="chevron-right" class="h-4 w-4" />
+                </span>
+            </a>
 
             {{-- Queue Position (only for waiting) --}}
             @if($activeQueue->status === 'waiting' && $queuePosition)

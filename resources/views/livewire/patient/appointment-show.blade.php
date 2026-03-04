@@ -66,7 +66,7 @@
 
             {{-- Queue Card (if available) --}}
             @if($appointment->queue)
-                <div class="overflow-hidden rounded-xl bg-gradient-to-br from-primary to-primary/80 p-5 text-white shadow-lg">
+                <a href="{{ route('display.type', $appointment->queue->consultation_type_id) }}" class="block overflow-hidden rounded-xl bg-gradient-to-br from-primary to-primary/80 p-5 text-white shadow-lg transition hover:shadow-xl hover:scale-[1.01] active:scale-[0.99]">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-white/80">{{ __('Your Queue Number') }}</p>
@@ -76,10 +76,28 @@
                             <flux:icon name="ticket" class="h-6 w-6" />
                         </div>
                     </div>
-                    <p class="mt-3 text-sm text-white/80">
-                        {{ __('Queue date') }}: {{ $appointment->queue->queue_date?->format('M d, Y') }}
-                    </p>
-                </div>
+                    <div class="mt-3 flex items-center gap-2">
+                        <span class="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-xs font-medium">
+                            @if($appointment->queue->status === 'serving')
+                                <span class="mr-1.5 h-2 w-2 rounded-full bg-success animate-pulse"></span>
+                                {{ __('Now Serving') }}
+                            @elseif($appointment->queue->status === 'called')
+                                <span class="mr-1.5 h-2 w-2 rounded-full bg-warning animate-pulse"></span>
+                                {{ __('Please Proceed') }}
+                            @else
+                                <span class="mr-1.5 h-2 w-2 rounded-full bg-white/60"></span>
+                                {{ __('Waiting') }}
+                            @endif
+                        </span>
+                        <span class="text-sm text-white/80">
+                            {{ $appointment->queue->consultationType?->name }}
+                        </span>
+                    </div>
+                    <span class="mt-3 flex items-center gap-1 text-sm font-medium text-white hover:text-white/80">
+                        {{ __('View Queue Display') }}
+                        <flux:icon name="chevron-right" class="h-4 w-4" />
+                    </span>
+                </a>
             @endif
 
             {{-- Appointment Info Card --}}

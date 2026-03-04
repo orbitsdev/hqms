@@ -50,7 +50,7 @@ class AppointmentShow extends Component
         $possibleDoctors = collect();
 
         if (! $this->appointment->doctor_id && $this->appointment->consultationType) {
-            $possibleDoctors = $this->appointment->consultationType->doctors()->get(['users.id', 'users.name']);
+            $possibleDoctors = $this->appointment->consultationType->doctors()->get(['users.id', 'users.first_name', 'users.last_name']);
         }
 
         return view('livewire.patient.appointment-show', [
